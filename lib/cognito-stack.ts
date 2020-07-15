@@ -31,6 +31,13 @@ export class CognitoStack extends cdk.Stack {
      * Use Lambda to send custom messages
      */
     this.addTriggerCustomMessage();
+
+    /**
+     * Use SES to send emails
+     */
+    this.setEmailConfiguration(
+      'arn:aws:ses:eu-west-1:255378392675:identity/no-reply@tifo-sport.com',
+    );
   }
 
   createWebClient() {
@@ -53,8 +60,8 @@ export class CognitoStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment: {
-        VERIFICATION_URL: `https://my-tifo.com/account/verification`,
-        RECOVERY_URL: `https://my-tifo.com/account/recovery`,
+        VERIFICATION_URL: `http://tifo-web-experiments.s3-website.eu-central-1.amazonaws.com/account/verification`,
+        RECOVERY_URL: `http://tifo-web-experiments.s3-website.eu-central-1.amazonaws.com/account/recovery`,
       },
     });
 
@@ -62,5 +69,15 @@ export class CognitoStack extends cdk.Stack {
       cognito.UserPoolOperation.CUSTOM_MESSAGE,
       cognitoCustomMessageFunction,
     );
+  }
+
+  setEmailConfiguration(sesArn: string) {
+    const cfnUserPool = this.userPool.node.defaultChild as cognito.CfnUserPool;
+    cfnUserPool.emailConfiguration = {
+      emailSendingAccount: 'DEVELOPER',
+      sourceArn: sesArn,
+      from: 'Tifo <no-reply@tifo-sport.com>',
+      // replyToEmailAddress: 'no-reply@tifo-sport.com',
+    };
   }
 }
