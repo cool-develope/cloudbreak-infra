@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy": "npm run build && cdk synth && cdk deploy '*' --profile tifo"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^1.51.0",
@@ -21,8 +22,15 @@
     "typescript": "^3.9.6"
   },
   "dependencies": {
+    "@aws-cdk/aws-appsync": "^1.51.0",
+    "@aws-cdk/aws-certificatemanager": "^1.51.0",
+    "@aws-cdk/aws-cloudfront": "^1.51.0",
     "@aws-cdk/aws-cognito": "^1.51.0",
+    "@aws-cdk/aws-dynamodb": "^1.51.0",
+    "@aws-cdk/aws-iam": "^1.51.0",
     "@aws-cdk/aws-lambda": "^1.51.0",
+    "@aws-cdk/aws-route53": "^1.51.0",
+    "@aws-cdk/aws-route53-targets": "^1.51.0",
     "@aws-cdk/core": "^1.51.0",
     "@types/aws-lambda": "^8.10.59",
     "source-map-support": "^0.5.16"
