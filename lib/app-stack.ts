@@ -2,6 +2,7 @@ import * as cdk from '@aws-cdk/core';
 import { CognitoStack } from './cognito-stack';
 import { ApiDomainStack } from './api-domain-stack';
 import { ApiStack } from './api-stack';
+import { WebSiteStack } from './website-stack';
 
 interface AppStackProps extends cdk.StackProps {
   prod: boolean;
@@ -40,5 +41,14 @@ export class AppStack extends cdk.Stack {
       appSyncDomain,
       certificateArn: usCertificateArn,
     });
+
+    new WebSiteStack(this, 'admin-website-stack', {
+      bucketName: 'admin.tifo-sport.com',
+      bucketRefererHeader: '9c33fyuWNcB8bn9r24',
+      zoneId,
+      zoneName: 'tifo-sport.com',
+      domain: 'admin.tifo-sport.com',
+      certificateArn: usCertificateArn
+    })
   }
 }
