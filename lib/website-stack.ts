@@ -68,7 +68,7 @@ export class WebSiteStack extends cdk.Stack {
     certificate: ICertificate,
     bucketRefererHeader: string,
   ) {
-    const distribution = new cloudfront.CloudFrontWebDistribution(this, 'cloudfront-appsync-api', {
+    const distribution = new cloudfront.CloudFrontWebDistribution(this, 'cloudfront-website', {
       originConfigs: [
         {
           customOriginSource: {
