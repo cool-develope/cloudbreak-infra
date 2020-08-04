@@ -3,11 +3,19 @@ import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
 
+export interface CognitoStackProps extends cdk.StackProps {
+  sesARN: string;
+  verificationUrl: string;
+  recoveryUrl: string;
+}
+
 export class CognitoStack extends cdk.Stack {
   public readonly userPool: cognito.UserPool;
 
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
+
+    const { sesARN, verificationUrl, recoveryUrl } = props;
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
@@ -30,14 +38,12 @@ export class CognitoStack extends cdk.Stack {
     /**
      * Use Lambda to send custom messages
      */
-    this.addTriggerCustomMessage();
+    this.addTriggerCustomMessage(verificationUrl, recoveryUrl);
 
     /**
      * Use SES to send emails
      */
-    this.setEmailConfiguration(
-      'arn:aws:ses:eu-west-1:255378392675:identity/no-reply@tifo-sport.com',
-    );
+    this.setEmailConfiguration(sesARN);
   }
 
   createWebClient() {
@@ -54,14 +60,17 @@ export class CognitoStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'user-pool-web-client-id', { value: webClient.userPoolClientId });
   }
 
-  addTriggerCustomMessage() {
+  addTriggerCustomMessage(verificationUrl: string, recoveryUrl: string) {
     const cognitoCustomMessageFunction = new lambda.Function(this, 'cognitoCustomMessage', {
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'cognitoCustomMessage')),
+      functionName: 'cognito-customMessage',
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, '../', 'functions', 'cognito', 'customMessage'),
+      ),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment: {
-        VERIFICATION_URL: `http://tifo-web-experiments.s3-website.eu-central-1.amazonaws.com/account/verification`,
-        RECOVERY_URL: `http://tifo-web-experiments.s3-website.eu-central-1.amazonaws.com/account/recovery`,
+        VERIFICATION_URL: verificationUrl,
+        RECOVERY_URL: recoveryUrl,
       },
     });
 
@@ -77,7 +86,6 @@ export class CognitoStack extends cdk.Stack {
       emailSendingAccount: 'DEVELOPER',
       sourceArn: sesArn,
       from: 'Tifo <no-reply@tifo-sport.com>',
-      // replyToEmailAddress: 'no-reply@tifo-sport.com',
     };
   }
 }
