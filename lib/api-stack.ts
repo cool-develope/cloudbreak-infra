@@ -1,13 +1,17 @@
+import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import { ITable } from '@aws-cdk/aws-dynamodb';
 import { MappingTemplate, PrimaryKey, Values, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import * as cognito from '@aws-cdk/aws-cognito';
+import * as lambda from '@aws-cdk/aws-lambda';
 
 const SCHEMA_FILE = './schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
-  userPool: cognito.UserPool;
+  userPoolId: string;
+  dictionaryTableName: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -16,7 +20,13 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPool } = props;
+    const { userPoolId, dictionaryTableName } = props;
+    const userPool = cognito.UserPool.fromUserPoolId(this, 'user-pool', userPoolId);
+    const dictionaryTable = dynamodb.Table.fromTableName(
+      this,
+      'table-dictionary',
+      dictionaryTableName,
+    );
 
     /**
      * AppSync API
@@ -49,88 +59,137 @@ export class ApiStack extends cdk.Stack {
     });
 
     /**
-     * Place
+     * Dictionary
      */
-    // this.createPlaceDataSource(placeTable);
+    this.createDictionaryDataSource(dictionaryTable);
 
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
-  // createPlaceDataSource(placeTable: dynamodb.Table) {
-  //   const placeDS = this.api.addDynamoDbDataSource('Place', 'The Place data source', placeTable);
+  createDictionaryDataSource(dictionaryTable: ITable) {
+    const dictionaryFunction = new lambda.Function(this, 'dictionary', {
+      functionName: 'api-dictionary',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', 'dictionary')),
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'index.handler',
+      environment: {},
+    });
 
-  //   /**
-  //    * Query: allPlaces
-  //    */
-  //   placeDS.createResolver({
-  //     typeName: 'Query',
-  //     fieldName: 'allPlaces',
-  //     requestMappingTemplate: MappingTemplate.fromString(`
-  //       {
-  //         "version": "2017-02-28",
-  //         "operation": "Scan",
-  //         "limit": $util.defaultIfNull($ctx.args.limit, 10),
-  //         "nextToken": $util.toJson($util.defaultIfNullOrEmpty($ctx.args.nextToken, null))
-  //       }
-  //     `),
-  //     responseMappingTemplate: MappingTemplate.fromString(`
-  //       #**
-  //         Scan and Query operations return a list of items and a nextToken. Pass them
-  //         to the client for use in pagination.
-  //       *#
-  //       {
-  //         "items": $util.toJson($ctx.result.items),
-  //         "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
-  //       }
-  //     `),
-  //   });
+    dictionaryTable.grantReadData(dictionaryFunction);
 
-  //   /**
-  //    * Query: place
-  //    */
-  //   placeDS.createResolver({
-  //     typeName: 'Query',
-  //     fieldName: 'place',
-  //     requestMappingTemplate: MappingTemplate.dynamoDbGetItem('placeId', 'placeId'),
-  //     responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-  //   });
+    const dictionaryDS = this.api.addLambdaDataSource('dictionaryFunction', '', dictionaryFunction);
 
-  //   /**
-  //    * Mutation: createPlace
-  //    */
-  //   placeDS.createResolver({
-  //     typeName: 'Mutation',
-  //     fieldName: 'createPlace',
-  //     requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
-  //       PrimaryKey.partition('placeId').auto(),
-  //       Values.projecting('input'),
-  //     ),
-  //     responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-  //   });
+    /**
+     * Query: countries
+     */
+    dictionaryDS.createResolver({
+      typeName: 'Query',
+      fieldName: 'countries',
+      requestMappingTemplate: MappingTemplate.fromString(`
+        {
+          "version" : "2017-02-28",
+          "operation": "Invoke",
+          "payload": {
+            "field": "countries",
+            "arguments":  $utils.toJson($context.arguments)
+          }
+        }
+      `),
+      responseMappingTemplate: MappingTemplate.fromString(`
+        $util.toJson($context.result)
+      `),
+    });
 
-  //   /**
-  //    * Mutation: updatePlace
-  //    */
-  //   placeDS.createResolver({
-  //     typeName: 'Mutation',
-  //     fieldName: 'updatePlace',
-  //     requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
-  //       PrimaryKey.partition('placeId').is('placeId'),
-  //       Values.projecting('input'),
-  //     ),
-  //     responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-  //   });
+    /**
+     * Query: languages
+     */
+    dictionaryDS.createResolver({
+      typeName: 'Query',
+      fieldName: 'languages',
+      requestMappingTemplate: MappingTemplate.fromString(`
+        {
+          "version" : "2017-02-28",
+          "operation": "Invoke",
+          "payload": {
+            "field": "languages",
+            "arguments":  $utils.toJson($context.arguments)
+          }
+        }
+      `),
+      responseMappingTemplate: MappingTemplate.fromString(`
+        $util.toJson($context.result)
+      `),
+    });
 
-  //   /**
-  //    * Mutation: deletePlace
-  //    */
-  //   placeDS.createResolver({
-  //     typeName: 'Mutation',
-  //     fieldName: 'deletePlace',
-  //     requestMappingTemplate: MappingTemplate.dynamoDbDeleteItem('placeId', 'placeId'),
-  //     responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-  //   });
-  // }
+    // dictionaryDS.createResolver({
+    //   typeName: 'Query',
+    //   fieldName: 'countries',
+    //   requestMappingTemplate: MappingTemplate.fromString(`
+    //     {
+    //       "version": "2017-02-28",
+    //       "operation": "Scan",
+    //       "limit": $util.defaultIfNull($ctx.args.limit, 10),
+    //       "nextToken": $util.toJson($util.defaultIfNullOrEmpty($ctx.args.nextToken, null))
+    //     }
+    //   `),
+    //   responseMappingTemplate: MappingTemplate.fromString(`
+    //     #**
+    //       Scan and Query operations return a list of items and a nextToken. Pass them
+    //       to the client for use in pagination.
+    //     *#
+    //     {
+    //       "items": $util.toJson($ctx.result.items),
+    //       "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
+    //     }
+    //   `),
+    // });
+
+    /**
+     * Query: place
+     */
+    // placeDS.createResolver({
+    //   typeName: 'Query',
+    //   fieldName: 'place',
+    //   requestMappingTemplate: MappingTemplate.dynamoDbGetItem('placeId', 'placeId'),
+    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    // });
+
+    /**
+     * Mutation: createPlace
+     */
+    // placeDS.createResolver({
+    //   typeName: 'Mutation',
+    //   fieldName: 'createPlace',
+    //   requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
+    //     PrimaryKey.partition('placeId').auto(),
+    //     Values.projecting('input'),
+    //   ),
+    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    // });
+
+    /**
+     * Mutation: updatePlace
+     */
+    // placeDS.createResolver({
+    //   typeName: 'Mutation',
+    //   fieldName: 'updatePlace',
+    //   requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
+    //     PrimaryKey.partition('placeId').is('placeId'),
+    //     Values.projecting('input'),
+    //   ),
+    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    // });
+
+    /**
+     * Mutation: deletePlace
+     */
+    // placeDS.createResolver({
+    //   typeName: 'Mutation',
+    //   fieldName: 'deletePlace',
+    //   requestMappingTemplate: MappingTemplate.dynamoDbDeleteItem('placeId', 'placeId'),
+    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    // });
+  }
 
   getApiKeyExpiration(days: number): string {
     const dateNow = new Date();
