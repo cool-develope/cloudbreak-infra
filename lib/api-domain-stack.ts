@@ -32,7 +32,11 @@ export class ApiDomainStack extends cdk.Stack {
     this.createDomainRecord(hostedZone, apiDomain, distribution);
   }
 
-  createCloudFrontDistribution(appSyncDomain: string, apiDomain: string, certificate: ICertificate) {
+  createCloudFrontDistribution(
+    appSyncDomain: string,
+    apiDomain: string,
+    certificate: ICertificate,
+  ) {
     const distribution = new cloudfront.CloudFrontWebDistribution(this, 'cloudfront-appsync-api', {
       originConfigs: [
         {
@@ -40,7 +44,9 @@ export class ApiDomainStack extends cdk.Stack {
             domainName: appSyncDomain,
             originProtocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
           },
-          behaviors: [{ isDefaultBehavior: true }],
+          behaviors: [
+            { isDefaultBehavior: true, allowedMethods: cloudfront.CloudFrontAllowedMethods.ALL },
+          ],
         },
       ],
       viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
