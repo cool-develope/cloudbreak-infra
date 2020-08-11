@@ -15,5 +15,14 @@ export class TableStack extends cdk.Stack {
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
     });
+
+    /**
+     * Users
+     */
+    this.dictionaryTable = new dynamodb.Table(this, 'UsersTable', {
+      tableName: 'Users',
+      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+    });
   }
 }
