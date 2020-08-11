@@ -2,7 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import { AcmStack } from '../lib/acm-stack';
-import { AppStack } from '../lib/app-stack';
+import { TableStack } from '../lib/table-stack';
 
 const app = new cdk.App();
 
@@ -15,11 +15,10 @@ new AcmStack(app, 'acm-us-stack', {
   },
 });
 
-new AppStack(app, 'prod', {
-  prod: true,
-  env: {
-    region: 'eu-central-1',
-  },
+/**
+ * Create DynamoDB tables
+ */
+new TableStack(app, 'table-stack');
 });
 
 // new AppStack(app, 'dev', {
