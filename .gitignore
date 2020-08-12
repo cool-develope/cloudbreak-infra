@@ -29,3 +29,8 @@ cdk.out
 # Parcel build directories
 .cache
 .build
+
+# .env
+.env
+.env.prod
+.env.dev
