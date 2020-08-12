@@ -1,0 +1,10 @@
+{
+  "name": "signinMobile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "Sergey Onufrienko <sergey@onufrienko.com>",
+  "license": "ISC"
+}
