@@ -62,6 +62,7 @@ export class ApiStack extends cdk.Stack {
       },
       schemaDefinition: appsync.SchemaDefinition.FILE,
       schemaDefinitionFile: SCHEMA_FILE,
+      xrayEnabled: true,
     });
 
     /**
