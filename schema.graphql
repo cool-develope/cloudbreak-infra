@@ -24,6 +24,11 @@ input SignoutMobileInput {
   deviceId: String
 }
 
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -32,9 +37,14 @@ type SignoutMobilePayload {
   errors: [String]
 }
 
+type UpdateUserPayload {
+  errors: [String]
+}
+
 type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
+  updateUser(input: UpdateUserInput!): UpdateUserPayload!
 }
 
 type Query {
