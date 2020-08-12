@@ -2,16 +2,18 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
-import { ITable } from '@aws-cdk/aws-dynamodb';
-import { MappingTemplate, PrimaryKey, Values, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
+import { ITable } from '@aws-cdk/aws-dynamodb';
+import { UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
+import { RetentionDays } from '@aws-cdk/aws-logs';
 
 const SCHEMA_FILE = './schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
   userPoolId: string;
   dictionaryTableName: string;
+  usersTableName: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -20,13 +22,16 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPoolId, dictionaryTableName } = props;
+    const { userPoolId, dictionaryTableName, usersTableName } = props;
     const userPool = cognito.UserPool.fromUserPoolId(this, 'user-pool', userPoolId);
+
     const dictionaryTable = dynamodb.Table.fromTableName(
       this,
       'table-dictionary',
       dictionaryTableName,
     );
+
+    const usersTable = dynamodb.Table.fromTableName(this, 'table-users', usersTableName);
 
     /**
      * AppSync API
@@ -60,141 +65,100 @@ export class ApiStack extends cdk.Stack {
     });
 
     /**
-     * Dictionary
+     * Query: countries, languages
      */
-    this.createDictionaryDataSource(dictionaryTable);
+    this.dictionaryQuery(dictionaryTable);
+
+    /**
+     * Mutation: signinMobile, signoutMobile
+     */
+    this.signinMobileMutation(usersTable);
+
+    /**
+     * Mutation: updateUser
+     */
+    this.updateUserMutation(usersTable);
 
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
-  createDictionaryDataSource(dictionaryTable: ITable) {
-    const dictionaryFunction = new lambda.Function(this, 'dictionary', {
-      functionName: 'api-dictionary',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', 'dictionary')),
-      runtime: lambda.Runtime.NODEJS_12_X,
-      handler: 'index.handler',
-      environment: {},
-    });
+  dictionaryQuery(dictionaryTable: ITable) {
+    const dictionaryFunction = this.getFunction('dictionary', 'api-dictionary', 'dictionary');
 
     dictionaryTable.grantReadData(dictionaryFunction);
 
     const dictionaryDS = this.api.addLambdaDataSource('dictionaryFunction', '', dictionaryFunction);
 
-    /**
-     * Query: countries
-     */
     dictionaryDS.createResolver({
       typeName: 'Query',
       fieldName: 'countries',
-      requestMappingTemplate: MappingTemplate.fromString(`
-        {
-          "version" : "2017-02-28",
-          "operation": "Invoke",
-          "payload": {
-            "field": "countries",
-            "arguments":  $utils.toJson($context.arguments)
-          }
-        }
-      `),
-      responseMappingTemplate: MappingTemplate.fromString(`
-        $util.toJson($context.result)
-      `),
     });
 
-    /**
-     * Query: languages
-     */
     dictionaryDS.createResolver({
       typeName: 'Query',
       fieldName: 'languages',
-      requestMappingTemplate: MappingTemplate.fromString(`
-        {
-          "version" : "2017-02-28",
-          "operation": "Invoke",
-          "payload": {
-            "field": "languages",
-            "arguments":  $utils.toJson($context.arguments)
-          }
-        }
-      `),
-      responseMappingTemplate: MappingTemplate.fromString(`
-        $util.toJson($context.result)
-      `),
+    });
+  }
+
+  signinMobileMutation(usersTable: ITable) {
+    const signinMobileFunction = this.getFunction(
+      'signinMobile',
+      'api-signinMobile',
+      'signinMobile',
+      {
+        USERS_TABLE_NAME: usersTable.tableName,
+      },
+    );
+
+    usersTable.grantReadWriteData(signinMobileFunction);
+
+    const dataSource = this.api.addLambdaDataSource(
+      'signinMobileFunction',
+      '',
+      signinMobileFunction,
+    );
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'signinMobile',
     });
 
-    // dictionaryDS.createResolver({
-    //   typeName: 'Query',
-    //   fieldName: 'countries',
-    //   requestMappingTemplate: MappingTemplate.fromString(`
-    //     {
-    //       "version": "2017-02-28",
-    //       "operation": "Scan",
-    //       "limit": $util.defaultIfNull($ctx.args.limit, 10),
-    //       "nextToken": $util.toJson($util.defaultIfNullOrEmpty($ctx.args.nextToken, null))
-    //     }
-    //   `),
-    //   responseMappingTemplate: MappingTemplate.fromString(`
-    //     #**
-    //       Scan and Query operations return a list of items and a nextToken. Pass them
-    //       to the client for use in pagination.
-    //     *#
-    //     {
-    //       "items": $util.toJson($ctx.result.items),
-    //       "nextToken": $util.toJson($util.defaultIfNullOrBlank($context.result.nextToken, null))
-    //     }
-    //   `),
-    // });
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'signoutMobile',
+    });
+  }
 
-    /**
-     * Query: place
-     */
-    // placeDS.createResolver({
-    //   typeName: 'Query',
-    //   fieldName: 'place',
-    //   requestMappingTemplate: MappingTemplate.dynamoDbGetItem('placeId', 'placeId'),
-    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-    // });
+  updateUserMutation(usersTable: ITable) {
+    const updateUserFunction = this.getFunction('updateUser', 'api-updateUser', 'updateUser', {
+      USERS_TABLE_NAME: usersTable.tableName,
+    });
 
-    /**
-     * Mutation: createPlace
-     */
-    // placeDS.createResolver({
-    //   typeName: 'Mutation',
-    //   fieldName: 'createPlace',
-    //   requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
-    //     PrimaryKey.partition('placeId').auto(),
-    //     Values.projecting('input'),
-    //   ),
-    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-    // });
+    usersTable.grantReadWriteData(updateUserFunction);
 
-    /**
-     * Mutation: updatePlace
-     */
-    // placeDS.createResolver({
-    //   typeName: 'Mutation',
-    //   fieldName: 'updatePlace',
-    //   requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
-    //     PrimaryKey.partition('placeId').is('placeId'),
-    //     Values.projecting('input'),
-    //   ),
-    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-    // });
+    const dataSource = this.api.addLambdaDataSource('updateUserFunction', '', updateUserFunction);
 
-    /**
-     * Mutation: deletePlace
-     */
-    // placeDS.createResolver({
-    //   typeName: 'Mutation',
-    //   fieldName: 'deletePlace',
-    //   requestMappingTemplate: MappingTemplate.dynamoDbDeleteItem('placeId', 'placeId'),
-    //   responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
-    // });
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateUser',
+    });
   }
 
   getApiKeyExpiration(days: number): string {
     const dateNow = new Date();
     dateNow.setDate(dateNow.getDate() + days);
     return dateNow.toISOString();
+  }
+
+  getFunction(id: string, functionName: string, folderName: string, environment?: any) {
+    return new lambda.Function(this, id, {
+      functionName,
+      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName)),
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'index.handler',
+      environment,
+      logRetention: RetentionDays.TWO_WEEKS,
+      tracing: lambda.Tracing.ACTIVE,
+    });
   }
 }
