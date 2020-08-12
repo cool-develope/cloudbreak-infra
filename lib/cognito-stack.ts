@@ -2,11 +2,12 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
+import { UserPoolOperation } from '@aws-cdk/aws-cognito';
+import { RetentionDays } from '@aws-cdk/aws-logs';
+import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface CognitoStackProps extends cdk.StackProps {
-  sesARN: string;
-  verificationUrl: string;
-  recoveryUrl: string;
+  signinUrl: string;
 }
 
 export class CognitoStack extends cdk.Stack {
@@ -15,7 +16,7 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { sesARN, verificationUrl, recoveryUrl } = props;
+    const { signinUrl } = props;
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
@@ -36,14 +37,13 @@ export class CognitoStack extends cdk.Stack {
     this.createWebClient();
 
     /**
-     * Use Lambda to send custom messages
+     * Add triggers
      */
-    this.addTriggerCustomMessage(verificationUrl, recoveryUrl);
-
-    /**
-     * Use SES to send emails
-     */
-    this.setEmailConfiguration(sesARN);
+    this.addTriggerCreateAuthChallenge(signinUrl);
+    this.addTriggerDefineAuthChallenge();
+    this.addTriggerPreSignup();
+    this.addTriggerVerifyAuthChallenge();
+    this.addTriggerPostAuthentication();
   }
 
   createWebClient() {
@@ -60,26 +60,76 @@ export class CognitoStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'user-pool-web-client-id', { value: webClient.userPoolClientId });
   }
 
-  addTriggerCustomMessage(verificationUrl: string, recoveryUrl: string) {
-    const cognitoCustomMessageFunction = new lambda.Function(this, 'cognitoCustomMessage', {
-      functionName: 'cognito-customMessage',
-      code: lambda.Code.fromAsset(
-        path.join(__dirname, '../', 'functions', 'cognito', 'customMessage'),
-      ),
-      runtime: lambda.Runtime.NODEJS_12_X,
-      handler: 'index.handler',
-      environment: {
-        VERIFICATION_URL: verificationUrl,
-        RECOVERY_URL: recoveryUrl,
+  addTriggerCreateAuthChallenge(signinUrl: string) {
+    const triggerFunction = this.getFunction(
+      'cognitoCreateAuthChallenge',
+      'cognito-createAuthChallenge',
+      'createAuthChallenge',
+      {
+        SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
+        SES_REGION: 'eu-west-1',
+        SIGNIN_URL: signinUrl,
       },
-    });
-
-    this.userPool.addTrigger(
-      cognito.UserPoolOperation.CUSTOM_MESSAGE,
-      cognitoCustomMessageFunction,
     );
+
+    const sesPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    sesPolicy.addActions('ses:SendEmail');
+    sesPolicy.addResources('*');
+
+    triggerFunction.addToRolePolicy(sesPolicy);
+
+    this.userPool.addTrigger(UserPoolOperation.CREATE_AUTH_CHALLENGE, triggerFunction);
   }
 
+  addTriggerDefineAuthChallenge() {
+    const triggerFunction = this.getFunction(
+      'cognito-defineAuthChallenge',
+      'cognito-defineAuthChallenge',
+      'defineAuthChallenge',
+    );
+
+    this.userPool.addTrigger(UserPoolOperation.DEFINE_AUTH_CHALLENGE, triggerFunction);
+  }
+
+  addTriggerPreSignup() {
+    const triggerFunction = this.getFunction('cognito-preSignup', 'cognito-preSignup', 'preSignup');
+
+    this.userPool.addTrigger(UserPoolOperation.PRE_SIGN_UP, triggerFunction);
+  }
+
+  addTriggerVerifyAuthChallenge() {
+    const triggerFunction = this.getFunction(
+      'cognito-verifyAuthChallenge',
+      'cognito-verifyAuthChallenge',
+      'verifyAuthChallenge',
+    );
+
+    this.userPool.addTrigger(UserPoolOperation.VERIFY_AUTH_CHALLENGE_RESPONSE, triggerFunction);
+  }
+
+  addTriggerPostAuthentication() {
+    const triggerFunction = this.getFunction(
+      'cognito-postAuthentication',
+      'cognito-postAuthentication',
+      'postAuthentication',
+    );
+
+    const eventsPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    eventsPolicy.addActions('events:PutEvents');
+    eventsPolicy.addResources('*');
+
+    triggerFunction.addToRolePolicy(eventsPolicy);
+
+    this.userPool.addTrigger(UserPoolOperation.POST_AUTHENTICATION, triggerFunction);
+  }
+
+  /**
+   * Not used right now
+   */
   setEmailConfiguration(sesArn: string) {
     const cfnUserPool = this.userPool.node.defaultChild as cognito.CfnUserPool;
     cfnUserPool.emailConfiguration = {
@@ -87,5 +137,17 @@ export class CognitoStack extends cdk.Stack {
       sourceArn: sesArn,
       from: 'Tifo <no-reply@tifo-sport.com>',
     };
+  }
+
+  getFunction(id: string, functionName: string, folderName: string, environment?: any) {
+    return new lambda.Function(this, id, {
+      functionName,
+      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'cognito', folderName)),
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'index.handler',
+      environment,
+      logRetention: RetentionDays.ONE_WEEK,
+      tracing: lambda.Tracing.ACTIVE,
+    });
   }
 }
