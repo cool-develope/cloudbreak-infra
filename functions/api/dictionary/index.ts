@@ -4,6 +4,11 @@ import { Handler } from 'aws-lambda';
 
 const db = new AWS.DynamoDB.DocumentClient();
 
+enum QueryName {
+  countries = 'countries',
+  languages = 'languages',
+}
+
 const query = (pk: string) => {
   const params = {
     TableName: 'Dictionary',
@@ -16,9 +21,15 @@ const query = (pk: string) => {
   return db.query(params).promise();
 };
 
-export const handler: Handler = async (event, context, callback) => {
-  switch (event.field) {
-    case 'countries': {
+export const handler: Handler = async (event) => {
+  const {
+    info: { fieldName },
+  } = event;
+
+  const queryName = fieldName as QueryName;
+
+  switch (queryName) {
+    case QueryName.countries: {
       const data = await query('country');
       const result = data.Items.map((item: any) => ({
         code: item.sk,
@@ -27,11 +38,10 @@ export const handler: Handler = async (event, context, callback) => {
         phone: item.phone,
       }));
 
-      callback(null, result);
-      break;
+      return result;
     }
 
-    case 'languages': {
+    case QueryName.languages: {
       const data = await query('language');
       const result = data.Items.map((item: any) => ({
         code: item.sk,
@@ -39,12 +49,10 @@ export const handler: Handler = async (event, context, callback) => {
         native: item.native,
       }));
 
-      callback(null, result);
-      break;
+      return result;
     }
 
     default:
-      callback('Unknown field, unable to resolve' + event.field, null);
-      break;
+      return [];
   }
 };
