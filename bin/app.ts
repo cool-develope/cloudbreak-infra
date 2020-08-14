@@ -6,6 +6,7 @@ import { CognitoStack } from '../lib/cognito-stack';
 import { ApiDomainStack } from '../lib/api-domain-stack';
 import { ApiStack } from '../lib/api-stack';
 import { WebSiteStack } from '../lib/website-stack';
+import { StorageStack } from '../lib/storage-stack';
 import { TableStack } from '../lib/table-stack';
 import { EventsStack } from '../lib/events-stack';
 import * as dotenv from 'dotenv';
@@ -31,6 +32,7 @@ new AcmStack(app, 'acm-us-stack', {
  */
 new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
+  imagesBucketName: process.env.IMAGES_BUCKET_NAME || '',
 });
 
 /**
@@ -72,6 +74,17 @@ new WebSiteStack(app, 'mobile-website-stack', {
   zoneName: process.env.ZONE_NAME || '',
   domain: `mobile.${process.env.ZONE_NAME}`,
   certificateArn: process.env.US_CERTIFICATE_ARN || '',
+});
+
+/**
+ * Storage: https://images.tifo-sport.com
+ */
+new StorageStack(app, 'images-storage-stack', {
+  bucketName: process.env.IMAGES_BUCKET_NAME || '',
+  // zoneId: process.env.ZONE_ID || '',
+  // zoneName: process.env.ZONE_NAME || '',
+  // domain: `images.${process.env.ZONE_NAME}`,
+  // certificateArn: process.env.US_CERTIFICATE_ARN || '',
 });
 
 /**
