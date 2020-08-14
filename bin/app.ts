@@ -51,7 +51,7 @@ new ApiStack(app, 'api-stack', {
 });
 
 /**
- * Create S3 Bucket for admin dashboard
+ * WebSite: https://admin.tifo-sport.com
  */
 new WebSiteStack(app, 'admin-website-stack', {
   bucketName: process.env.ADMIN_BUCKET_NAME || '',
@@ -59,6 +59,18 @@ new WebSiteStack(app, 'admin-website-stack', {
   zoneId: process.env.ZONE_ID || '',
   zoneName: process.env.ZONE_NAME || '',
   domain: `admin.${process.env.ZONE_NAME}`,
+  certificateArn: process.env.US_CERTIFICATE_ARN || '',
+});
+
+/**
+ * WebSite: https://mobile.tifo-sport.com
+ */
+new WebSiteStack(app, 'mobile-website-stack', {
+  bucketName: process.env.MOBILE_BUCKET_NAME || '',
+  bucketRefererHeader: '9c33fyuWNcB8bn9r24',
+  zoneId: process.env.ZONE_ID || '',
+  zoneName: process.env.ZONE_NAME || '',
+  domain: `mobile.${process.env.ZONE_NAME}`,
   certificateArn: process.env.US_CERTIFICATE_ARN || '',
 });
 
