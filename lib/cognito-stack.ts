@@ -2,12 +2,14 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
+import * as iam from '@aws-cdk/aws-iam';
 import { UserPoolOperation } from '@aws-cdk/aws-cognito';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface CognitoStackProps extends cdk.StackProps {
   signinUrl: string;
+  imagesBucketName: string;
 }
 
 export class CognitoStack extends cdk.Stack {
@@ -16,7 +18,7 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { signinUrl } = props;
+    const { signinUrl, imagesBucketName } = props;
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
@@ -32,9 +34,9 @@ export class CognitoStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'user-pool-id', { value: this.userPool.userPoolId });
 
     /**
-     * Create a WebClient for web app
+     * Create a UserPool client for web/mobile app
      */
-    this.createWebClient();
+    const userPoolClient = this.createUserPoolClient();
 
     /**
      * Add triggers
@@ -44,10 +46,12 @@ export class CognitoStack extends cdk.Stack {
     this.addTriggerPreSignup();
     this.addTriggerVerifyAuthChallenge();
     this.addTriggerPostAuthentication();
+
+    this.createIdentityPool(userPoolClient, imagesBucketName);
   }
 
-  createWebClient() {
-    const webClient = new cognito.UserPoolClient(this, 'user-pool-web-client', {
+  createUserPoolClient() {
+    const userPoolClient = new cognito.UserPoolClient(this, 'user-pool-web-client', {
       userPool: this.userPool,
       userPoolClientName: 'web-client',
       authFlows: {
@@ -57,7 +61,8 @@ export class CognitoStack extends cdk.Stack {
       },
     });
 
-    new cdk.CfnOutput(this, 'user-pool-web-client-id', { value: webClient.userPoolClientId });
+    new cdk.CfnOutput(this, 'user-pool-web-client-id', { value: userPoolClient.userPoolClientId });
+    return userPoolClient;
   }
 
   addTriggerCreateAuthChallenge(signinUrl: string) {
@@ -125,6 +130,77 @@ export class CognitoStack extends cdk.Stack {
     triggerFunction.addToRolePolicy(eventsPolicy);
 
     this.userPool.addTrigger(UserPoolOperation.POST_AUTHENTICATION, triggerFunction);
+  }
+
+  createIdentityPool(userPoolClient: cognito.UserPoolClient, imagesBucketName: string) {
+    const cognitoUserID = '${cognito-identity.amazonaws.com:sub}';
+
+    /**
+     * IdentityPool
+     */
+    const identityPool = new cognito.CfnIdentityPool(this, 'identity-pool', {
+      allowUnauthenticatedIdentities: false,
+      cognitoIdentityProviders: [
+        {
+          clientId: userPoolClient.userPoolClientId,
+          providerName: this.userPool.userPoolProviderName,
+        },
+      ],
+    });
+
+    /**
+     * Unauthenticated Role
+     */
+    const unauthenticatedRole = new iam.Role(this, 'CognitoDefaultUnauthenticatedRole', {
+      assumedBy: new iam.FederatedPrincipal(
+        'cognito-identity.amazonaws.com',
+        {
+          StringEquals: { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
+          'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
+        },
+        'sts:AssumeRoleWithWebIdentity',
+      ),
+    });
+    unauthenticatedRole.addToPolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ['mobileanalytics:PutEvents'],
+        resources: ['*'],
+      }),
+    );
+
+    /**
+     * Authenticated Role
+     */
+    const authenticatedRole = new iam.Role(this, 'CognitoDefaultAuthenticatedRole', {
+      assumedBy: new iam.FederatedPrincipal(
+        'cognito-identity.amazonaws.com',
+        {
+          StringEquals: { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
+          'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'authenticated' },
+        },
+        'sts:AssumeRoleWithWebIdentity',
+      ),
+    });
+    authenticatedRole.addToPolicy(
+      new PolicyStatement({
+        sid: 'AllowS3',
+        effect: Effect.ALLOW,
+        actions: ['s3:GetObject', 's3:PutObject'],
+        resources: [`arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*`],
+      }),
+    );
+
+    /**
+     * Set roles
+     */
+    const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(this, 'DefaultValid', {
+      identityPoolId: identityPool.ref,
+      roles: {
+        unauthenticated: unauthenticatedRole.roleArn,
+        authenticated: authenticatedRole.roleArn,
+      },
+    });
   }
 
   /**
