@@ -187,7 +187,12 @@ export class CognitoStack extends cdk.Stack {
         sid: 'AllowS3',
         effect: Effect.ALLOW,
         actions: ['s3:GetObject', 's3:PutObject'],
-        resources: [`arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*`],
+        resources: [
+          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.png`,
+          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.gif`,
+          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.jpg`,
+          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.jpeg`,
+        ],
       }),
     );
 
