@@ -24,6 +24,7 @@
     "@aws-cdk/aws-appsync": "^1.57.0",
     "@aws-cdk/aws-certificatemanager": "^1.57.0",
     "@aws-cdk/aws-cloudfront": "^1.57.0",
+    "@aws-cdk/aws-cloudfront-origins": "^1.59.0",
     "@aws-cdk/aws-cognito": "^1.57.0",
     "@aws-cdk/aws-dynamodb": "^1.57.0",
     "@aws-cdk/aws-events": "^1.57.0",
