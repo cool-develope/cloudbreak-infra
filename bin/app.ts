@@ -9,6 +9,7 @@ import { WebSiteStack } from '../lib/website-stack';
 import { StorageStack } from '../lib/storage-stack';
 import { TableStack } from '../lib/table-stack';
 import { EventsStack } from '../lib/events-stack';
+import { EdgeStack } from '../lib/edge-stack';
 import * as dotenv from 'dotenv';
 
 dotenv.config({
@@ -22,6 +23,12 @@ const app = new cdk.App();
  */
 new AcmStack(app, 'acm-us-stack', {
   domainName: process.env.ZONE_NAME || '',
+  env: {
+    region: 'us-east-1',
+  },
+});
+
+new EdgeStack(app, 'edge-stack', {
   env: {
     region: 'us-east-1',
   },
@@ -81,10 +88,11 @@ new WebSiteStack(app, 'mobile-website-stack', {
  */
 new StorageStack(app, 'images-storage-stack', {
   bucketName: process.env.IMAGES_BUCKET_NAME || '',
-  // zoneId: process.env.ZONE_ID || '',
-  // zoneName: process.env.ZONE_NAME || '',
-  // domain: `images.${process.env.ZONE_NAME}`,
-  // certificateArn: process.env.US_CERTIFICATE_ARN || '',
+  zoneId: process.env.ZONE_ID || '',
+  zoneName: process.env.ZONE_NAME || '',
+  domain: `images.${process.env.ZONE_NAME}`,
+  certificateArn: process.env.US_CERTIFICATE_ARN || '',
+  imagesOriginRequestArn: process.env.IMAGES_ORIGIN_REQUEST_ARN || '',
 });
 
 /**
