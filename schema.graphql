@@ -27,6 +27,7 @@ input SignoutMobileInput {
 input UpdateUserInput {
   firstName: String
   lastName: String
+  photo: String
 }
 
 type SigninMobilePayload {
