@@ -2,7 +2,8 @@
 import * as AWS from 'aws-sdk';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
-AWS.config.update({ region: process.env.SES_REGION });
+const { SIGNIN_URL, SES_FROM_ADDRESS, SES_REGION } = process.env;
+AWS.config.update({ region: SES_REGION });
 const ses = new AWS.SES();
 
 const getRandomInteger = (min: number, max: number) =>
@@ -13,6 +14,41 @@ const randomDigits = (len: number): string =>
     .fill(0)
     .map(() => getRandomInteger(0, 9))
     .join('');
+
+const SIGNIN_TEMPLATE = `
+    <div style="color: #202020; line-height: 1.5;">
+          Your email address {{email}} was just used to request<br />a sign in email.
+          <div style="padding: 60px 0px;"><a href="{{link}}" style="background-color: #3f51b5; color: #ffffff; padding: 12px 26px; font-size: 18px; border-radius: 28px; text-decoration: none;">Click here to sign in</a></div>
+          Code: {{code}}<br /><br />
+          If this was not you, you can safely ignore this email.<br /><br />
+          Best,<br />
+          Tifo`;
+
+const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
+  const signinUrl = `${SIGNIN_URL}?code=${secretLoginCode}`;
+  const template = SIGNIN_TEMPLATE.replace('{{email}}', emailAddress)
+    .replace('{{link}}', signinUrl)
+    .replace('{{code}}', secretLoginCode);
+
+  const params: AWS.SES.SendEmailRequest = {
+    Destination: { ToAddresses: [emailAddress] },
+    Message: {
+      Body: {
+        Html: {
+          Charset: 'UTF-8',
+          Data: template,
+        },
+      },
+      Subject: {
+        Charset: 'UTF-8',
+        Data: 'Tifo signin',
+      },
+    },
+    Source: SES_FROM_ADDRESS,
+  };
+
+  await ses.sendEmail(params).promise();
+};
 
 export const handler: CognitoUserPoolTriggerHandler = async (event) => {
   let secretLoginCode: string;
@@ -45,28 +81,3 @@ export const handler: CognitoUserPoolTriggerHandler = async (event) => {
 
   return event;
 };
-
-async function sendEmail(emailAddress: string, secretLoginCode: string) {
-  const params: AWS.SES.SendEmailRequest = {
-    Destination: { ToAddresses: [emailAddress] },
-    Message: {
-      Body: {
-        Html: {
-          Charset: 'UTF-8',
-          Data: `<html><body><p>This is your secret login code:</p>
-                           <h3>${secretLoginCode}</h3></body></html>`,
-        },
-        Text: {
-          Charset: 'UTF-8',
-          Data: `Your secret login code: ${secretLoginCode}`,
-        },
-      },
-      Subject: {
-        Charset: 'UTF-8',
-        Data: 'Your secret login code',
-      },
-    },
-    Source: process.env.SES_FROM_ADDRESS!,
-  };
-  await ses.sendEmail(params).promise();
-}
