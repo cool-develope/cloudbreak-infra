@@ -14,6 +14,7 @@ export interface ApiStackProps extends cdk.StackProps {
   userPoolId: string;
   dictionaryTableName: string;
   usersTableName: string;
+  imagesDomain: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -22,7 +23,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPoolId, dictionaryTableName, usersTableName } = props;
+    const { userPoolId, dictionaryTableName, usersTableName, imagesDomain } = props;
     const userPool = cognito.UserPool.fromUserPoolId(this, 'user-pool', userPoolId);
 
     const dictionaryTable = dynamodb.Table.fromTableName(
@@ -130,9 +131,12 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  updateUserMutation(usersTable: ITable) {
+  updateUserMutation(usersTable: ITable, imagesDomain: string) {
     const updateUserFunction = this.getFunction('updateUser', 'api-updateUser', 'updateUser', {
       USERS_TABLE_NAME: usersTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
+      ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
     });
 
     usersTable.grantReadWriteData(updateUserFunction);

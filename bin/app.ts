@@ -57,6 +57,7 @@ new ApiStack(app, 'api-stack', {
   userPoolId: process.env.USER_POOL_ID || '',
   dictionaryTableName: 'Dictionary',
   usersTableName: 'Users',
+  imagesDomain: `images.${process.env.ZONE_NAME}`,
 });
 
 /**
