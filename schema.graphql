@@ -27,7 +27,13 @@ input SignoutMobileInput {
 input UpdateUserInput {
   firstName: String
   lastName: String
+  country: String
   photo: String
+  birthDate: String
+  birthCountry: String
+  birthCity: String
+  gender: Gender
+  usCitizen: Boolean
 }
 
 type SigninMobilePayload {
