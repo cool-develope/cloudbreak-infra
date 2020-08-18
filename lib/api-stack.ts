@@ -79,7 +79,7 @@ export class ApiStack extends cdk.Stack {
     /**
      * Mutation: updateUser
      */
-    this.updateUserMutation(usersTable);
+    this.updateUserMutation(usersTable, imagesDomain);
 
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
@@ -146,6 +146,11 @@ export class ApiStack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Mutation',
       fieldName: 'updateUser',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'me',
     });
   }
 
