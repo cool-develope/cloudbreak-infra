@@ -46,6 +46,28 @@ type SignoutMobilePayload {
 
 type UpdateUserPayload {
   errors: [String]
+  user: User
+}
+
+enum Gender {
+  M
+  F
+}
+
+type Image {
+  url: String
+}
+
+type User {
+  firstName: String
+  lastName: String
+  country: String
+  photo: Image
+  birthDate: String
+  birthCountry: String
+  birthCity: String
+  gender: Gender
+  usCitizen: Boolean
 }
 
 type Mutation {
@@ -57,4 +79,5 @@ type Mutation {
 type Query {
   countries: [Country!] @aws_api_key @aws_cognito_user_pools
   languages: [Language!] @aws_api_key @aws_cognito_user_pools
+  me: User!
 }
