@@ -7,6 +7,7 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import { ITable } from '@aws-cdk/aws-dynamodb';
 import { UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
+import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 const SCHEMA_FILE = './schema.graphql';
 
@@ -81,6 +82,11 @@ export class ApiStack extends cdk.Stack {
      */
     this.updateUserMutation(usersTable, imagesDomain);
 
+    /**
+     * Query: uploadUrl
+     */
+    this.uploadUrlQuery();
+
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
@@ -99,6 +105,29 @@ export class ApiStack extends cdk.Stack {
     dictionaryDS.createResolver({
       typeName: 'Query',
       fieldName: 'languages',
+    });
+  }
+
+  uploadUrlQuery() {
+    const { IMAGES_BUCKET_NAME } = process.env;
+
+    const lambdaFunction = this.getFunction('uploadUrl', 'api-uploadUrl', 'uploadUrl', {
+      IMAGES_BUCKET: IMAGES_BUCKET_NAME,
+    });
+
+    const s3Policy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    s3Policy.addActions('s3:PutObject');
+    s3Policy.addResources(`arn:aws:s3:::${IMAGES_BUCKET_NAME}/*`);
+
+    lambdaFunction.addToRolePolicy(s3Policy);
+
+    const lambdaDS = this.api.addLambdaDataSource('uploadUrlFunction', '', lambdaFunction);
+
+    lambdaDS.createResolver({
+      typeName: 'Query',
+      fieldName: 'uploadUrl',
     });
   }
 
