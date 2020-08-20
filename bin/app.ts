@@ -32,7 +32,6 @@ new AcmStack(app, 'acm-us-stack', {
  */
 new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
-  imagesBucketName: process.env.IMAGES_BUCKET_NAME || '',
 });
 
 /**

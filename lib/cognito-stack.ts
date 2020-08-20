@@ -9,7 +9,6 @@ import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface CognitoStackProps extends cdk.StackProps {
   signinUrl: string;
-  imagesBucketName: string;
 }
 
 export class CognitoStack extends cdk.Stack {
@@ -18,7 +17,7 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { signinUrl, imagesBucketName } = props;
+    const { signinUrl } = props;
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
@@ -46,8 +45,6 @@ export class CognitoStack extends cdk.Stack {
     this.addTriggerPreSignup();
     this.addTriggerVerifyAuthChallenge();
     this.addTriggerPostAuthentication();
-
-    this.createIdentityPool(userPoolClient, imagesBucketName);
   }
 
   createUserPoolClient() {
@@ -130,82 +127,6 @@ export class CognitoStack extends cdk.Stack {
     triggerFunction.addToRolePolicy(eventsPolicy);
 
     this.userPool.addTrigger(UserPoolOperation.POST_AUTHENTICATION, triggerFunction);
-  }
-
-  createIdentityPool(userPoolClient: cognito.UserPoolClient, imagesBucketName: string) {
-    const cognitoUserID = '${cognito-identity.amazonaws.com:sub}';
-
-    /**
-     * IdentityPool
-     */
-    const identityPool = new cognito.CfnIdentityPool(this, 'identity-pool', {
-      allowUnauthenticatedIdentities: false,
-      cognitoIdentityProviders: [
-        {
-          clientId: userPoolClient.userPoolClientId,
-          providerName: this.userPool.userPoolProviderName,
-        },
-      ],
-    });
-
-    /**
-     * Unauthenticated Role
-     */
-    const unauthenticatedRole = new iam.Role(this, 'CognitoDefaultUnauthenticatedRole', {
-      assumedBy: new iam.FederatedPrincipal(
-        'cognito-identity.amazonaws.com',
-        {
-          StringEquals: { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
-          'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
-        },
-        'sts:AssumeRoleWithWebIdentity',
-      ),
-    });
-    unauthenticatedRole.addToPolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ['mobileanalytics:PutEvents'],
-        resources: ['*'],
-      }),
-    );
-
-    /**
-     * Authenticated Role
-     */
-    const authenticatedRole = new iam.Role(this, 'CognitoDefaultAuthenticatedRole', {
-      assumedBy: new iam.FederatedPrincipal(
-        'cognito-identity.amazonaws.com',
-        {
-          StringEquals: { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
-          'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'authenticated' },
-        },
-        'sts:AssumeRoleWithWebIdentity',
-      ),
-    });
-    authenticatedRole.addToPolicy(
-      new PolicyStatement({
-        sid: 'AllowS3',
-        effect: Effect.ALLOW,
-        actions: ['s3:GetObject', 's3:PutObject'],
-        resources: [
-          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.png`,
-          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.gif`,
-          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.jpg`,
-          `arn:aws:s3:::${imagesBucketName}/u/${cognitoUserID}/*.jpeg`,
-        ],
-      }),
-    );
-
-    /**
-     * Set roles
-     */
-    const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(this, 'DefaultValid', {
-      identityPoolId: identityPool.ref,
-      roles: {
-        unauthenticated: unauthenticatedRole.roleArn,
-        authenticated: authenticatedRole.roleArn,
-      },
-    });
   }
 
   /**
