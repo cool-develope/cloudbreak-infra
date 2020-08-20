@@ -3,13 +3,8 @@ import * as s3 from '@aws-cdk/aws-s3';
 import * as cloudfront from '@aws-cdk/aws-cloudfront';
 import * as route53 from '@aws-cdk/aws-route53';
 import * as route53tg from '@aws-cdk/aws-route53-targets';
-import * as lambda from '@aws-cdk/aws-lambda';
 import { Certificate, ICertificate } from '@aws-cdk/aws-certificatemanager';
-import {
-  CloudFrontWebDistribution,
-  OriginAccessIdentity,
-  LambdaEdgeEventType,
-} from '@aws-cdk/aws-cloudfront';
+import { CloudFrontWebDistribution, OriginAccessIdentity } from '@aws-cdk/aws-cloudfront';
 
 export interface StorageStackProps extends cdk.StackProps {
   bucketName: string;
@@ -17,7 +12,6 @@ export interface StorageStackProps extends cdk.StackProps {
   zoneName: string;
   domain: string;
   certificateArn: string;
-  imagesOriginRequestArn: string;
 }
 
 export class StorageStack extends cdk.Stack {
@@ -26,7 +20,7 @@ export class StorageStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
 
-    const { bucketName, zoneId, zoneName, domain, certificateArn, imagesOriginRequestArn } = props;
+    const { bucketName, zoneId, zoneName, domain, certificateArn } = props;
 
     /**
      * Create S3 Bucket. Enable static Web Site
@@ -37,14 +31,8 @@ export class StorageStack extends cdk.Stack {
      * Create CloudFront
      */
     const certificate = Certificate.fromCertificateArn(this, 'us-certificate', certificateArn);
-    const imagesOriginRequestVersion = lambda.Version.fromVersionArn(this, 'imagesOriginRequestVersion', imagesOriginRequestArn);
-    
-    const distribution = this.createCloudFrontDistribution(
-      bucket,
-      domain,
-      certificate,
-      imagesOriginRequestVersion,
-    );
+
+    const distribution = this.createCloudFrontDistribution(bucket, domain, certificate);
 
     /**
      * Add record to Route53
@@ -81,12 +69,7 @@ export class StorageStack extends cdk.Stack {
     return bucket;
   }
 
-  createCloudFrontDistribution(
-    bucket: s3.Bucket,
-    domain: string,
-    certificate: ICertificate,
-    imagesOriginRequestVersion: lambda.IVersion,
-  ) {
+  createCloudFrontDistribution(bucket: s3.Bucket, domain: string, certificate: ICertificate) {
     const cloudFrontOAI = new OriginAccessIdentity(this, `${domain}-OAI`, {
       comment: `OAI for ${bucket.bucketName}`,
     });
@@ -101,12 +84,6 @@ export class StorageStack extends cdk.Stack {
           behaviors: [
             {
               isDefaultBehavior: true,
-              lambdaFunctionAssociations: [
-                {
-                  eventType: LambdaEdgeEventType.ORIGIN_REQUEST,
-                  lambdaFunction: imagesOriginRequestVersion
-                },
-              ],
             },
           ],
         },

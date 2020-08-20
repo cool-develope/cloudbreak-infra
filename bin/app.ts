@@ -86,7 +86,6 @@ new StorageStack(app, 'images-storage-stack', {
   zoneName: process.env.ZONE_NAME || '',
   domain: `images.${process.env.ZONE_NAME}`,
   certificateArn: process.env.US_CERTIFICATE_ARN || '',
-  imagesOriginRequestArn: process.env.IMAGES_ORIGIN_REQUEST_ARN || '',
 });
 
 /**
