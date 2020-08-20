@@ -29,12 +29,9 @@ export const handler: CognitoUserPoolTriggerHandler = async (event) => {
 
   const detail = { userPoolId, userAttributes };
   const hasTreezorUserId = 'cognito:trzUserId' in userAttributes;
+  const eventType = hasTreezorUserId ? 'signin' : 'signup';
 
-  if (hasTreezorUserId) {
-    await putEvents('signin', detail);
-  } else {
-    await putEvents('signup', detail);
-  }
+  await putEvents(eventType, detail);
 
   return event;
 };
