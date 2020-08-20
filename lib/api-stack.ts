@@ -94,7 +94,7 @@ export class ApiStack extends cdk.Stack {
 
     dictionaryTable.grantReadData(dictionaryFunction);
 
-    const dictionaryDS = this.api.addLambdaDataSource('dictionaryFunction', '', dictionaryFunction);
+    const dictionaryDS = this.api.addLambdaDataSource('dictionaryFunction', dictionaryFunction);
 
     dictionaryDS.createResolver({
       typeName: 'Query',
@@ -122,7 +122,7 @@ export class ApiStack extends cdk.Stack {
 
     lambdaFunction.addToRolePolicy(s3Policy);
 
-    const lambdaDS = this.api.addLambdaDataSource('uploadUrlFunction', '', lambdaFunction);
+    const lambdaDS = this.api.addLambdaDataSource('uploadUrlFunction', lambdaFunction);
 
     lambdaDS.createResolver({
       typeName: 'Query',
@@ -142,11 +142,7 @@ export class ApiStack extends cdk.Stack {
 
     usersTable.grantReadWriteData(signinMobileFunction);
 
-    const dataSource = this.api.addLambdaDataSource(
-      'signinMobileFunction',
-      '',
-      signinMobileFunction,
-    );
+    const dataSource = this.api.addLambdaDataSource('signinMobileFunction', signinMobileFunction);
 
     dataSource.createResolver({
       typeName: 'Mutation',
@@ -169,7 +165,7 @@ export class ApiStack extends cdk.Stack {
 
     usersTable.grantReadWriteData(updateUserFunction);
 
-    const dataSource = this.api.addLambdaDataSource('updateUserFunction', '', updateUserFunction);
+    const dataSource = this.api.addLambdaDataSource('updateUserFunction', updateUserFunction);
 
     dataSource.createResolver({
       typeName: 'Mutation',
