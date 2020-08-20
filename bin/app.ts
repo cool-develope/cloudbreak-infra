@@ -30,7 +30,7 @@ new AcmStack(app, 'acm-us-stack', {
 /**
  * Create Cognito
  */
-new CognitoStack(app, 'cognito-stack', {
+const cognito = new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
 });
 
@@ -45,12 +45,14 @@ new TableStack(app, 'table-stack', {
 /**
  * Create GraphQL API
  */
-new ApiStack(app, 'api-stack', {
-  userPoolId: process.env.USER_POOL_ID || '',
+const api = new ApiStack(app, 'api-stack', {
+  userPool: cognito.userPool,
   dictionaryTableName: 'Dictionary',
   usersTableName: 'Users',
   imagesDomain: `images.${process.env.ZONE_NAME}`,
 });
+
+api.addDependency(cognito);
 
 /**
  * WebSite: https://admin.tifo-sport.com

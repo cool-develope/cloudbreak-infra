@@ -12,7 +12,7 @@ import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 const SCHEMA_FILE = './schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
-  userPoolId: string;
+  userPool: cognito.UserPool;
   dictionaryTableName: string;
   usersTableName: string;
   imagesDomain: string;
@@ -24,8 +24,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPoolId, dictionaryTableName, usersTableName, imagesDomain } = props;
-    const userPool = cognito.UserPool.fromUserPoolId(this, 'user-pool', userPoolId);
+    const { userPool, dictionaryTableName, usersTableName, imagesDomain } = props;
 
     const dictionaryTable = dynamodb.Table.fromTableName(
       this,
