@@ -12,13 +12,19 @@ export class EventsStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: EventsStackProps) {
     super(scope, id, props);
 
+    const { TREEZOR_BASE_URL, TREEZOR_CLIENT_ID, TREEZOR_CLIENT_SECRET } = process.env;
+
     const createTreezorUserFunction = this.getFunction(
       'events-createTreezorUser',
       'events-createTreezorUser',
       'createTreezorUser',
+      {
+        TREEZOR_BASE_URL,
+        TREEZOR_CLIENT_ID,
+        TREEZOR_CLIENT_SECRET,
+      },
     );
 
-    
     const cognitoPolicy = new PolicyStatement({
       effect: Effect.ALLOW,
     });
@@ -27,6 +33,7 @@ export class EventsStack extends cdk.Stack {
     createTreezorUserFunction.addToRolePolicy(cognitoPolicy);
 
     const rule = new Rule(this, 'CognitoSignupRule', {
+      enabled: false,
       eventPattern: {
         source: ['custom.cognito'],
         detailType: ['signup'],
