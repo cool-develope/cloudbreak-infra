@@ -91,3 +91,4 @@ type Query {
   uploadUrl(type: String!, fileName: String!): String
   me: User!
 }
+
