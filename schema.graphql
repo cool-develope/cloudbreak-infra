@@ -98,6 +98,7 @@ type User {
 }
 
 type Event {
+  id: ID!
   title: String
   description: String
   photo: Image
