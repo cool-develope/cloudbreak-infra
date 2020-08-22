@@ -14,9 +14,15 @@ jobs:
       image: node:lts
 
     steps:
+    - uses: actions/checkout@v1
 
     - name: Create clean schema
-      run: cat schema.graphql | awk '{sub(/ @aws_cognito_user_pools/,"")}1' | awk '{sub(/ @aws_api_key/,"")}1' > schema_public.graphql
+      run: |
+        pwd
+        ls
+        cat schema.graphql
+        cat schema.graphql | awk '{sub(/ @aws_cognito_user_pools/,"")}1' | awk '{sub(/ @aws_api_key/,"")}1' > schema_public.graphql
+        cat schema_public.graphql
 
     - name: Push schema to Apollo
       env:
