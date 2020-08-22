@@ -150,5 +150,5 @@ type Query {
   Get current logged user
   """
   me: User!
+  getEvent(id: ID!): Event
 }
-
