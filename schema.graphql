@@ -86,6 +86,12 @@ input UpdatePostInput {
   targetTeams: [String]
 }
 
+input Contact {
+  fullName: String
+  phoneNumber: String
+  email: String
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -134,12 +140,6 @@ type Image {
 
 type File {
   url: String
-}
-
-type Contact {
-  fullName: String
-  phoneNumber: String
-  email: String
 }
 
 type ContactUser {
@@ -213,4 +213,5 @@ type Query {
   me: User!
   getEvent(id: ID!): Event
   getPost(id: ID!): Post
+  feed(filer: Post|Event, sort, from, limit): [Event|Post]
 }
