@@ -1,0 +1,24 @@
+name: Upload schema to Apollo
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'schema.graphql'
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    container: 
+      image: node:lts
+
+    steps:
+
+    - name: Create clean schema
+      run: cat schema.graphql | awk '{sub(/ @aws_cognito_user_pools/,"")}1' | awk '{sub(/ @aws_api_key/,"")}1' > schema_public.graphql
+
+    - name: Push schema to Apollo
+      env:
+        APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+      run: npx apollo service:push --graph=tifo-api --key=$APOLLO_KEY --variant=current --localSchemaFile=schema_public.graphql
