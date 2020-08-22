@@ -40,6 +40,20 @@ input InviteParentInput {
   email: String!
 }
 
+input CreateEventInput {
+  title: String
+  description: String
+  photo: String
+  startDate: String
+  endDate: String
+  address: String
+  price: Number
+  likes: Number
+  views: Number
+  targetClubs: [String]
+  targetTeams: [String]
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -55,6 +69,11 @@ type UpdateUserPayload {
 
 type InviteParentPayload {
   errors: [String]
+}
+
+type CreateEventPayload {
+  errors: [String]
+  event: Event
 }
 
 enum Gender {
@@ -78,11 +97,24 @@ type User {
   usCitizen: Boolean
 }
 
+type Event {
+  title: String
+  description: String
+  photo: Image
+  startDate: String
+  endDate: String
+  address: String
+  price: Number
+  likes: Number
+  views: Number
+}
+
 type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
   inviteParent(input: InviteParentInput!): InviteParentPayload!
+  createEvent(input: CreateEventInput!): CreateEventPayload!
 }
 
 type Query {
