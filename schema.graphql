@@ -47,9 +47,22 @@ input CreateEventInput {
   startDate: String
   endDate: String
   address: String
+  activityType: String
   price: Float
-  likes: Int
-  views: Int
+  targetClubs: [String]
+  targetTeams: [String]
+}
+
+input UpdateEventInput {
+  id: ID!
+  title: String
+  description: String
+  photo: String
+  startDate: String
+  endDate: String
+  address: String
+  activityType: String
+  price: Float
   targetClubs: [String]
   targetTeams: [String]
 }
@@ -72,6 +85,11 @@ type InviteParentPayload {
 }
 
 type CreateEventPayload {
+  errors: [String]
+  event: Event
+}
+
+type UpdateEventPayload {
   errors: [String]
   event: Event
 }
@@ -105,6 +123,7 @@ type Event {
   startDate: String
   endDate: String
   address: String
+  activityType: String
   price: Float
   likes: Int
   views: Int
@@ -116,6 +135,7 @@ type Mutation {
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
   inviteParent(input: InviteParentInput!): InviteParentPayload!
   createEvent(input: CreateEventInput!): CreateEventPayload!
+  updateEvent(input: UpdateEventInput!): UpdateEventPayload!
 }
 
 type Query {
