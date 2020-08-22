@@ -213,5 +213,4 @@ type Query {
   me: User!
   getEvent(id: ID!): Event
   getPost(id: ID!): Post
-  feed(filer: Post|Event, sort, from, limit): [Event|Post]
 }
