@@ -67,6 +67,14 @@ input UpdateEventInput {
   targetTeams: [String]
 }
 
+input CreatePostInput {
+  title: String
+  description: String
+  photo: String
+  file: String
+  targetClubs: [String]
+  targetTeams: [String]
+}
 type SigninMobilePayload {
   errors: [String]
 }
@@ -94,12 +102,20 @@ type UpdateEventPayload {
   event: Event
 }
 
+type CreatePostPayload {
+  errors: [String]
+  post: Post
+}
 enum Gender {
   M
   F
 }
 
 type Image {
+  url: String
+}
+
+type File {
   url: String
 }
 
@@ -129,6 +145,18 @@ type Event {
   views: Int
 }
 
+type Post {
+  id: ID!
+  title: String
+  description: String
+  photo: Image
+  file: File
+  likes: Int
+  views: Int
+  targetClubs: [String]
+  targetTeams: [String]
+}
+
 type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
@@ -136,6 +164,7 @@ type Mutation {
   inviteParent(input: InviteParentInput!): InviteParentPayload!
   createEvent(input: CreateEventInput!): CreateEventPayload!
   updateEvent(input: UpdateEventInput!): UpdateEventPayload!
+  createPost(input: CreatePostInput!): CreatePostPayload!
 }
 
 type Query {
