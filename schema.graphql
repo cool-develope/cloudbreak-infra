@@ -160,6 +160,8 @@ type Event {
   price: Float
   likes: Int
   views: Int
+  targetClubs: [String]
+  targetTeams: [String]
 }
 
 type Post {
