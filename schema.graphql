@@ -36,6 +36,10 @@ input UpdateUserInput {
   usCitizen: Boolean
 }
 
+input InviteParentInput {
+  email: String!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -47,6 +51,10 @@ type SignoutMobilePayload {
 type UpdateUserPayload {
   errors: [String]
   user: User
+}
+
+type InviteParentPayload {
+  errors: [String]
 }
 
 enum Gender {
@@ -74,6 +82,7 @@ type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
+  inviteParent(input: InviteParentInput!): InviteParentPayload!
 }
 
 type Query {
