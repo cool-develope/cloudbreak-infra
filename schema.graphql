@@ -136,6 +136,17 @@ type File {
   url: String
 }
 
+type Contact {
+  fullName: String
+  phoneNumber: String
+  email: String
+}
+
+type ContactUser {
+  email: String
+  exist: Boolean
+}
+
 type User {
   firstName: String
   lastName: String
@@ -185,6 +196,7 @@ type Mutation {
   updateEvent(input: UpdateEventInput!): UpdateEventPayload!
   createPost(input: CreatePostInput!): CreatePostPayload!
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
+  syncContacts(contacts: [Contact]!): [ContactUser]!
 }
 
 type Query {
