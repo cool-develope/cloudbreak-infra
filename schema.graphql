@@ -200,4 +200,5 @@ type Query {
   """
   me: User!
   getEvent(id: ID!): Event
+  getPost(id: ID!): Post
 }
