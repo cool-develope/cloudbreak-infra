@@ -47,9 +47,9 @@ input CreateEventInput {
   startDate: String
   endDate: String
   address: String
-  price: Number
-  likes: Number
-  views: Number
+  price: Float
+  likes: Int
+  views: Int
   targetClubs: [String]
   targetTeams: [String]
 }
