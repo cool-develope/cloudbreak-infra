@@ -88,7 +88,14 @@ type Mutation {
 type Query {
   countries: [Country!] @aws_api_key @aws_cognito_user_pools
   languages: [Language!] @aws_api_key @aws_cognito_user_pools
+  """
+  Get direct link to upload user files
+  """
   uploadUrl(type: String!, fileName: String!): String
+
+  """
+  Get current logged user
+  """
   me: User!
 }
 
