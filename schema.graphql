@@ -1,3 +1,11 @@
+scalar AWSDate
+scalar AWSTime
+scalar AWSDateTime
+scalar AWSTimestamp
+scalar AWSEmail
+scalar AWSURL
+scalar AWSPhone
+
 schema {
   query: Query
   mutation: Mutation
