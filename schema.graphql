@@ -1,6 +1,22 @@
+"""
+The AWSDate scalar type represents a valid extended ISO 8601 Date string.
+For example, 1970-01-01Z, 1970-01-01-07:00 and 1970-01-01+05:30
+"""
 scalar AWSDate
+"""
+The AWSTime scalar type represents a valid extended ISO 8601 Time.
+For example, 12:30Z, 12:30:24-07:00 and 12:30:24.500+05:30
+"""
 scalar AWSTime
+"""
+The AWSDateTime scalar type represents a valid extended ISO 8601 DateTime string.
+Datetime strings of the form YYYY-MM-DDThh:mm:ss.sssZ
+"""
 scalar AWSDateTime
+"""
+The AWSTimestamp scalar type represents the number of seconds that have
+elapsed since 1970-01-01T00:00Z. Timestamps are serialized and deserialized as numbers.
+"""
 scalar AWSTimestamp
 scalar AWSEmail
 scalar AWSURL
