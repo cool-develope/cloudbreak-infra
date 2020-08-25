@@ -71,7 +71,7 @@ input CreateEventInput {
   startDate: String
   endDate: String
   address: String
-  activityType: String
+  discipline: String
   price: Float
   targetClubs: [String]
   targetTeams: [String]
@@ -85,7 +85,7 @@ input UpdateEventInput {
   startDate: String
   endDate: String
   address: String
-  activityType: String
+  discipline: String
   price: Float
   targetClubs: [String]
   targetTeams: [String]
@@ -191,7 +191,7 @@ type Event {
   startDate: String
   endDate: String
   address: String
-  activityType: String
+  discipline: String
   price: Float
   likes: Int
   views: Int
