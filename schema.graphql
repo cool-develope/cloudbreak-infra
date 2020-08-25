@@ -133,22 +133,22 @@ type InviteParentPayload {
 
 type CreateEventPayload {
   errors: [String]
-  event: Event
+  event: EventForAdmin
 }
 
 type UpdateEventPayload {
   errors: [String]
-  event: Event
+  event: EventForAdmin
 }
 
 type CreatePostPayload {
   errors: [String]
-  post: Post
+  post: PostForAdmin
 }
 
 type UpdatePostPayload {
   errors: [String]
-  post: Post
+  post: PostForAdmin
 }
 
 enum Gender {
@@ -189,7 +189,7 @@ type User {
   usCitizen: Boolean
 }
 
-type Event {
+type EventForAdmin {
   id: ID!
   title: String
   description: String
@@ -204,7 +204,21 @@ type Event {
   target: EventTarget
 }
 
-type Post {
+type Event {
+  id: ID!
+  title: String
+  description: String
+  photo: Image
+  startDate: AWSDateTime
+  endDate: AWSDateTime
+  address: String
+  discipline: String
+  price: Float
+  likes: Int
+  views: Int
+}
+
+type PostForAdmin {
   id: ID!
   title: String
   description: String
@@ -213,6 +227,16 @@ type Post {
   likes: Int
   views: Int
   target: EventTarget
+}
+
+type Post {
+  id: ID!
+  title: String
+  description: String
+  photo: Image
+  file: File
+  likes: Int
+  views: Int
 }
 
 type EventTarget {
@@ -272,6 +296,24 @@ type Query {
   Get current logged user
   """
   me: User!
+
+  """
+  Lookup an Event by the id as Admin
+  """
+  getEventAsAdmin(id: ID!): EventForAdmin
+
+  """
+  Lookup an Event by the id
+  """
   getEvent(id: ID!): Event
+  
+  """
+  Lookup a Post by the id as Admin
+  """
+  getPostAsAdmin(id: ID!): PostForAdmin
+  
+  """
+  Lookup a Post by the id
+  """
   getPost(id: ID!): Post
 }
