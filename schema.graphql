@@ -73,7 +73,7 @@ input CreateEventInput {
   address: String
   discipline: String
   price: Float
-  target: EditEventTarget
+  target: EventTargetInput
 }
 
 input UpdateEventInput {
@@ -86,7 +86,7 @@ input UpdateEventInput {
   address: String
   discipline: String
   price: Float
-  target: EditEventTarget
+  target: EventTargetInput
 }
 
 input CreatePostInput {
@@ -224,7 +224,7 @@ type EventTarget {
   roles: [UserRole]
 }
 
-type EditEventTarget {
+input EventTargetInput {
   country: String
   federations: [String]
   clubs: [String]
