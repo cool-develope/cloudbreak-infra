@@ -73,8 +73,7 @@ input CreateEventInput {
   address: String
   discipline: String
   price: Float
-  targetClubs: [String]
-  targetTeams: [String]
+  target: EditEventTarget
 }
 
 input UpdateEventInput {
@@ -87,8 +86,7 @@ input UpdateEventInput {
   address: String
   discipline: String
   price: Float
-  targetClubs: [String]
-  targetTeams: [String]
+  target: EditEventTarget
 }
 
 input CreatePostInput {
@@ -158,6 +156,14 @@ enum Gender {
   F
 }
 
+enum UserRole {
+  Coach
+  Adult
+  Parent
+  Teenager
+  Fan
+}
+
 type Image {
   url: String
 }
@@ -195,8 +201,7 @@ type Event {
   price: Float
   likes: Int
   views: Int
-  targetClubs: [String]
-  targetTeams: [String]
+  target: EventTarget
 }
 
 type Post {
@@ -207,8 +212,40 @@ type Post {
   file: File
   likes: Int
   views: Int
-  targetClubs: [String]
-  targetTeams: [String]
+  target: EventTarget
+}
+
+type EventTarget {
+  country: String
+  federations: [FederationEventTarget]
+  clubs: [ClubEventTarget]
+  discipline: [String]
+  teams: [TeamEventTarget]
+  roles: [UserRole]
+}
+
+type EditEventTarget {
+  country: String
+  federations: [String]
+  clubs: [String]
+  discipline: [String]
+  teams: [String]
+  roles: [String]
+}
+
+type FederationEventTarget {
+  id: ID!
+  name: String
+}
+
+type ClubEventTarget {
+  id: ID!
+  name: String
+}
+
+type TeamEventTarget {
+  id: ID!
+  name: String
 }
 
 type Mutation {
