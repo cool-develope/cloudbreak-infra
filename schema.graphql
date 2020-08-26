@@ -95,7 +95,7 @@ input CreatePostInput {
   title: String!
   description: String
   photo: String
-  file: String
+  attachment: String
   target: EventTargetInput
 }
 
@@ -104,7 +104,7 @@ input UpdatePostInput {
   title: String
   description: String
   photo: String
-  file: String
+  attachment: String
   target: EventTargetInput
 }
 
@@ -210,8 +210,8 @@ type EventForAdmin {
   address: String
   discipline: String
   price: Float
-  likes: Int
-  views: Int
+  likesCount: Int
+  viewsCount: Int
   target: EventTarget
 }
 
@@ -225,8 +225,8 @@ type Event {
   address: String
   discipline: String
   price: Float
-  likes: Int
-  views: Int
+  likesCount: Int
+  viewsCount: Int
 }
 
 type PostForAdmin {
@@ -234,9 +234,9 @@ type PostForAdmin {
   title: String
   description: String
   photo: Image
-  file: File
-  likes: Int
-  views: Int
+  attachment: File
+  likesCount: Int
+  viewsCount: Int
   target: EventTarget
 }
 
@@ -245,9 +245,9 @@ type Post {
   title: String
   description: String
   photo: Image
-  file: File
-  likes: Int
-  views: Int
+  attachment: File
+  likesCount: Int
+  viewsCount: Int
 }
 
 type EventTarget {
@@ -256,7 +256,7 @@ type EventTarget {
   clubs: [ClubEventTarget]
   discipline: [String]
   teams: [TeamEventTarget]
-  roles: [UserRole]
+  userRole: [UserRole]
 }
 
 input EventTargetInput {
@@ -265,7 +265,7 @@ input EventTargetInput {
   clubs: [String]
   discipline: [String]
   teams: [String]
-  roles: [UserRole]
+  userRole: [UserRole]
 }
 
 type FederationEventTarget {
