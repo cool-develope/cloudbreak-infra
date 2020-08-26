@@ -69,7 +69,7 @@ const getTypeUser = ({
   birthCity,
   gender,
   usCitizen,
-}: UpdateUserInput): User => ({
+}: UpdateUserInput = {}): User => ({
   firstName,
   lastName,
   country,
