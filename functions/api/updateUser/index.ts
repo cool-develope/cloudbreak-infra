@@ -5,9 +5,12 @@ import * as OneSignal from 'onesignal-node';
 import { UpdateUserInput, User, Gender, Image, FieldName } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
-const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID || '';
-const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY || '';
-const IMAGES_DOMAIN = process.env.IMAGES_DOMAIN;
+const {
+  MAIN_TABLE_NAME,
+  IMAGES_DOMAIN,
+  ONESIGNAL_APP_ID = '',
+  ONESIGNAL_API_KEY = '',
+} = process.env;
 
 const getUpdateExpression = (attributes = {}) =>
   Object.keys(attributes)
@@ -25,7 +28,7 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
   const values = getExpressionAttributeValues(attributes);
 
   const params = {
-    TableName: 'Users',
+    TableName: MAIN_TABLE_NAME,
     Key: { pk, sk },
     UpdateExpression: condition,
     ExpressionAttributeValues: values,
@@ -37,7 +40,7 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
 
 const getItem = (pk: string, sk: string) => {
   const params = {
-    TableName: 'Users',
+    TableName: MAIN_TABLE_NAME,
     Key: { pk, sk },
   };
 
@@ -105,7 +108,7 @@ const sendPushNotifications = (player_ids?: [string]) => {
 };
 
 const updateUser = async (pk: string, input: any) => {
-  const { Attributes } = await updateItem(pk, 'info', input);
+  const { Attributes } = await updateItem(pk, 'metadata', input);
   const user = getTypeUser(Attributes);
   return user;
 };
@@ -133,7 +136,7 @@ export const handler: Handler = async (event) => {
     /**
      * Query me:
      */
-    const { Item } = await getItem(sub, 'info');
+    const { Item } = await getItem(sub, 'metadata');
     const user = getTypeUser(Item);
     return user;
   }

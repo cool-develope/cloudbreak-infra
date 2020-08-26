@@ -3,6 +3,7 @@ import * as AWS from 'aws-sdk';
 import { Handler } from 'aws-lambda';
 
 const db = new AWS.DynamoDB.DocumentClient();
+const { MAIN_TABLE_NAME } = process.env;
 
 enum MutationName {
   signinMobile = 'signinMobile',
@@ -11,7 +12,7 @@ enum MutationName {
 
 const updateItemSet = (pk: string, sk: string, deviceId: string, isAdd: boolean = true) => {
   const params = {
-    TableName: process.env.USERS_TABLE_NAME,
+    TableName: MAIN_TABLE_NAME,
     Key: { pk, sk },
     UpdateExpression: `${isAdd ? 'ADD' : 'DELETE'} ids :id`,
     ExpressionAttributeValues: {
