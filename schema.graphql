@@ -53,7 +53,7 @@ input UpdateUserInput {
   lastName: String
   country: String
   photo: String
-  phone: Strin
+  phone: String
   phoneCountry: String
   birthDate: AWSDate
   birthCountry: String
@@ -184,7 +184,7 @@ type User {
   lastName: String
   country: String
   photo: Image
-  phone: Strin
+  phone: String
   phoneCountry: String
   birthDate: AWSDate
   birthCountry: String
