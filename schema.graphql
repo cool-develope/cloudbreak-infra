@@ -265,7 +265,7 @@ input EventTargetInput {
   clubs: [String]
   discipline: [String]
   teams: [String]
-  roles: [String]
+  roles: [UserRole]
 }
 
 type FederationEventTarget {
