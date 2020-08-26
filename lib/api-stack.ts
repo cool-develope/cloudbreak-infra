@@ -14,7 +14,7 @@ const SCHEMA_FILE = './schema.graphql';
 export interface ApiStackProps extends cdk.StackProps {
   userPool: cognito.UserPool;
   dictionaryTableName: string;
-  usersTableName: string;
+  mainTableName: string;
   imagesDomain: string;
 }
 
@@ -24,7 +24,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPool, dictionaryTableName, usersTableName, imagesDomain } = props;
+    const { userPool, dictionaryTableName, mainTableName, imagesDomain } = props;
 
     const dictionaryTable = dynamodb.Table.fromTableName(
       this,
@@ -32,7 +32,7 @@ export class ApiStack extends cdk.Stack {
       dictionaryTableName,
     );
 
-    const usersTable = dynamodb.Table.fromTableName(this, 'table-users', usersTableName);
+    const mainTable = dynamodb.Table.fromTableName(this, 'table-main', mainTableName);
 
     /**
      * AppSync API
@@ -74,12 +74,12 @@ export class ApiStack extends cdk.Stack {
     /**
      * Mutation: signinMobile, signoutMobile
      */
-    this.signinMobileMutation(usersTable);
+    this.signinMobileMutation(mainTable);
 
     /**
      * Mutation: updateUser
      */
-    this.updateUserMutation(usersTable, imagesDomain);
+    this.updateUserMutation(mainTable, imagesDomain);
 
     /**
      * Query: uploadUrl
@@ -130,17 +130,17 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  signinMobileMutation(usersTable: ITable) {
+  signinMobileMutation(mainTable: ITable) {
     const signinMobileFunction = this.getFunction(
       'signinMobile',
       'api-signinMobile',
       'signinMobile',
       {
-        USERS_TABLE_NAME: usersTable.tableName,
+        MAIN_TABLE_NAME: mainTable.tableName,
       },
     );
 
-    usersTable.grantReadWriteData(signinMobileFunction);
+    mainTable.grantReadWriteData(signinMobileFunction);
 
     const dataSource = this.api.addLambdaDataSource('signinMobileFunction', signinMobileFunction);
 
@@ -155,15 +155,15 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  updateUserMutation(usersTable: ITable, imagesDomain: string) {
+  updateUserMutation(mainTable: ITable, imagesDomain: string) {
     const updateUserFunction = this.getFunction('updateUser', 'api-updateUser', 'updateUser', {
-      USERS_TABLE_NAME: usersTable.tableName,
+      MAIN_TABLE_NAME: mainTable.tableName,
       IMAGES_DOMAIN: imagesDomain,
       ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
       ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
     });
 
-    usersTable.grantReadWriteData(updateUserFunction);
+    mainTable.grantReadWriteData(updateUserFunction);
 
     const dataSource = this.api.addLambdaDataSource('updateUserFunction', updateUserFunction);
 
