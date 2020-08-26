@@ -116,6 +116,10 @@ input Contact {
   email: String
 }
 
+input FeedFilterInput {
+  type: EventType
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -164,6 +168,11 @@ enum UserRole {
   Parent
   Teenager
   Fan
+}
+
+enum EventType {
+  Event
+  Post
 }
 
 type Image {
@@ -276,6 +285,12 @@ type TeamEventTarget {
   name: String
 }
 
+type FeedConnection {
+  items: [FeedItem]
+}
+
+union FeedItem = Event | Post
+
 type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
@@ -320,4 +335,9 @@ type Query {
   Lookup a Post by the id
   """
   getPost(id: ID!): Post
+
+  """
+  Search Events and Posts relevant to the user
+  """
+  feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection
 }
