@@ -39,7 +39,7 @@ const cognito = new CognitoStack(app, 'cognito-stack', {
  */
 new TableStack(app, 'table-stack', {
   dictionaryTableName: 'Dictionary',
-  usersTableName: 'Users',
+  mainTableName: process.env.MAIN_TABLE_NAME || '',
 });
 
 /**
@@ -48,7 +48,7 @@ new TableStack(app, 'table-stack', {
 const api = new ApiStack(app, 'api-stack', {
   userPool: cognito.userPool,
   dictionaryTableName: 'Dictionary',
-  usersTableName: 'Users',
+  mainTableName: process.env.MAIN_TABLE_NAME || '',
   imagesDomain: `images.${process.env.ZONE_NAME}`,
 });
 
