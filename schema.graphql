@@ -252,19 +252,19 @@ type Post {
 
 type EventTarget {
   country: String
-  federations: [FederationEventTarget]
-  clubs: [ClubEventTarget]
+  federation: [FederationEventTarget]
+  club: [ClubEventTarget]
   discipline: [String]
-  teams: [TeamEventTarget]
+  team: [TeamEventTarget]
   userRole: [UserRole]
 }
 
 input EventTargetInput {
   country: String
-  federations: [String]
-  clubs: [String]
+  federation: [String]
+  club: [String]
   discipline: [String]
-  teams: [String]
+  team: [String]
   userRole: [UserRole]
 }
 
