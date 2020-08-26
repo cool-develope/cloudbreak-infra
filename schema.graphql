@@ -80,24 +80,23 @@ input CreateEventInput {
 
 input UpdateEventInput {
   id: ID!
-  title: String
+  title: String!
   description: String
   photo: String
-  startDate: AWSDateTime
+  startDate: AWSDateTime!
   endDate: AWSDateTime
   address: String
   discipline: String
-  price: Float
+  price: Float!
   target: EventTargetInput
 }
 
 input CreatePostInput {
-  title: String
+  title: String!
   description: String
   photo: String
   file: String
-  targetClubs: [String]
-  targetTeams: [String]
+  target: EventTargetInput
 }
 
 input UpdatePostInput {
@@ -106,8 +105,7 @@ input UpdatePostInput {
   description: String
   photo: String
   file: String
-  targetClubs: [String]
-  targetTeams: [String]
+  target: EventTargetInput
 }
 
 input Contact {
