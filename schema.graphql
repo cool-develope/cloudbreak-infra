@@ -115,7 +115,7 @@ input Contact {
 }
 
 input FeedFilterInput {
-  type: EventType
+  eventType: EventType
 }
 
 type SigninMobilePayload {
