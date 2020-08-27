@@ -300,11 +300,27 @@ type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
+  
+  """
+  TODO: 
+  """
   inviteParent(input: InviteParentInput!): InviteParentPayload!
   createEvent(input: CreateEventInput!): CreateEventPayload!
+  
+  """
+  TODO: 
+  """
   updateEvent(input: UpdateEventInput!): UpdateEventPayload!
   createPost(input: CreatePostInput!): CreatePostPayload!
+  
+  """
+  TODO: 
+  """
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
+  
+  """
+  TODO: 
+  """
   syncContacts(contacts: [Contact]!): [ContactUser]!
 }
 
@@ -322,22 +338,22 @@ type Query {
   me: User!
 
   """
-  Lookup an Event by the id as Admin
+  TODO: Lookup an Event by the id as Admin
   """
   getEventAsAdmin(id: ID!): EventForAdmin
 
   """
-  Lookup an Event by the id
+  TODO: Lookup an Event by the id
   """
   getEvent(id: ID!): Event
   
   """
-  Lookup a Post by the id as Admin
+  TODO: Lookup a Post by the id as Admin
   """
   getPostAsAdmin(id: ID!): PostForAdmin
   
   """
-  Lookup a Post by the id
+  TODO: Lookup a Post by the id
   """
   getPost(id: ID!): Post
 
