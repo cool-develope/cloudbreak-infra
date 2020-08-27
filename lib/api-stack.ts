@@ -238,8 +238,9 @@ export class ApiStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment,
-      logRetention: RetentionDays.TWO_WEEKS,
+      logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
+      timeout: cdk.Duration.seconds(30),
     });
   }
 }
