@@ -7,5 +7,7 @@
   "keywords": [],
   "author": "Sergey Onufrienko <sergey@onufrienko.com>",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "uuid": "^8.3.0"
+  }
 }
