@@ -155,6 +155,11 @@ type UpdatePostPayload {
   post: PostForAdmin
 }
 
+type UploadUrlPayload {
+  uploadUrl: String
+  key: String
+}
+
 enum Gender {
   M
   F
@@ -330,7 +335,7 @@ type Query {
   """
   Get direct link to upload user files
   """
-  uploadUrl(type: UploadType!, fileName: String!): String
+  uploadUrl(type: UploadType!, fileName: String!): UploadUrlPayload!
 
   """
   Get current logged user
