@@ -67,15 +67,15 @@ input InviteParentInput {
 }
 
 input CreateEventInput {
-  title: String
+  title: String!
   description: String
   photo: String
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
   discipline: String
-  price: Float
-  target: EventTargetInput
+  price: Float!
+  target: EventTargetInput!
 }
 
 input UpdateEventInput {
@@ -96,7 +96,7 @@ input CreatePostInput {
   description: String
   photo: String
   attachment: String
-  target: EventTargetInput
+  target: EventTargetInput!
 }
 
 input UpdatePostInput {
