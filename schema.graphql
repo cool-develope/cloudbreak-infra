@@ -173,6 +173,13 @@ enum EventType {
   Post
 }
 
+enum UploadType {
+  UserPhoto
+  EventImage
+  PostImage
+  PostAttachment
+}
+
 type Image {
   url: String
 }
@@ -307,7 +314,7 @@ type Query {
   """
   Get direct link to upload user files
   """
-  uploadUrl(type: String!, fileName: String!): String
+  uploadUrl(type: UploadType!, fileName: String!): String
 
   """
   Get current logged user
