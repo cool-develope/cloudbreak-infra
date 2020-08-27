@@ -69,7 +69,7 @@ input InviteParentInput {
 input CreateEventInput {
   title: String!
   description: String
-  photo: String
+  image: String
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
@@ -82,7 +82,7 @@ input UpdateEventInput {
   id: ID!
   title: String!
   description: String
-  photo: String
+  image: String
   startDate: AWSDateTime!
   endDate: AWSDateTime
   address: String
@@ -94,7 +94,7 @@ input UpdateEventInput {
 input CreatePostInput {
   title: String!
   description: String
-  photo: String
+  image: String
   attachment: String
   target: EventTargetInput!
 }
@@ -103,7 +103,7 @@ input UpdatePostInput {
   id: ID!
   title: String
   description: String
-  photo: String
+  image: String
   attachment: String
   target: EventTargetInput
 }
@@ -204,7 +204,7 @@ type EventForAdmin {
   id: ID!
   title: String
   description: String
-  photo: Image
+  image: Image
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
@@ -219,7 +219,7 @@ type Event {
   id: ID!
   title: String
   description: String
-  photo: Image
+  image: Image
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
@@ -233,7 +233,7 @@ type PostForAdmin {
   id: ID!
   title: String
   description: String
-  photo: Image
+  image: Image
   attachment: File
   likesCount: Int
   viewsCount: Int
@@ -244,7 +244,7 @@ type Post {
   id: ID!
   title: String
   description: String
-  photo: Image
+  image: Image
   attachment: File
   likesCount: Int
   viewsCount: Int
