@@ -109,9 +109,9 @@ input UpdatePostInput {
 }
 
 input Contact {
-  fullName: String
+  fullName: [String]
   phoneNumber: String
-  email: String
+  email: [String]
 }
 
 input FeedFilterInput {
@@ -191,11 +191,6 @@ type Image {
 
 type File {
   url: String
-}
-
-type ContactUser {
-  email: String
-  exist: Boolean
 }
 
 type User {
@@ -324,9 +319,10 @@ type Mutation {
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
   
   """
-  TODO: 
+  TODO: Lookup a users by phone contacts.
+  Return array of emails for existing users.
   """
-  syncContacts(contacts: [Contact]!): [ContactUser]!
+  syncContacts(contacts: [Contact]!): [String]!
 }
 
 type Query {
