@@ -86,6 +86,16 @@ export class ApiStack extends cdk.Stack {
      */
     this.uploadUrlQuery();
 
+    /**
+     * Mutation: createEvent, createPost
+     */
+    this.createEventMutation(mainTable, imagesDomain);
+
+    /**
+     * Query: feed
+     */
+    this.feedQuery(mainTable, imagesDomain);
+
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
@@ -175,6 +185,43 @@ export class ApiStack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'me',
+    });
+  }
+
+  createEventMutation(mainTable: ITable, imagesDomain: string) {
+    const createEventFunction = this.getFunction('createEvent', 'api-createEvent', 'createEvent', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+    });
+
+    mainTable.grantReadWriteData(createEventFunction);
+
+    const dataSource = this.api.addLambdaDataSource('createEventFunction', createEventFunction);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createEvent',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createPost',
+    });
+  }
+
+  feedQuery(mainTable: ITable, imagesDomain: string) {
+    const feedFunction = this.getFunction('feed', 'api-feed', 'feed', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+    });
+
+    mainTable.grantReadWriteData(feedFunction);
+
+    const dataSource = this.api.addLambdaDataSource('feedFunction', feedFunction);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'feed',
     });
   }
 
