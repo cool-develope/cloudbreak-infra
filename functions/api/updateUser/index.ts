@@ -47,8 +47,8 @@ const getItem = (pk: string, sk: string) => {
   return db.get(params).promise();
 };
 
-const getDeviceIds = async (userId: string) => {
-  const getResult = await getItem(userId, 'devices');
+const getDeviceIds = async (pk: string) => {
+  const getResult = await getItem(pk, 'devices');
   if (getResult.Item) {
     return getResult.Item.ids.values;
   }
@@ -73,7 +73,7 @@ const getTypeUser = ({
   firstName,
   lastName,
   country,
-  photo: getTypeImage(pk, photo),
+  photo: getTypeImage(photo),
   phone,
   phoneCountry,
   birthDate,
@@ -83,18 +83,11 @@ const getTypeUser = ({
   usCitizen,
 });
 
-const getTypeImage = (pk: string = '', photo: string = '') => ({
-  url: photo ? `https://${IMAGES_DOMAIN}/u/${pk}/photo/${photo}` : '',
+const getTypeImage = (photo: string = '') => ({
+  url: photo ? `https://${IMAGES_DOMAIN}/${photo}` : '',
 });
 
 const sendPushNotifications = (player_ids?: [string]) => {
-  // const ids = await getDeviceIds(sub);
-  // try {
-  //   await sendPushNotifications(ids);
-  // } catch (e) {
-  //   errors.push(e.body || e.message || 'error');
-  // }
-
   const client = new OneSignal.Client(ONESIGNAL_APP_ID, ONESIGNAL_API_KEY);
 
   const notification = {
@@ -121,12 +114,21 @@ export const handler: Handler = async (event) => {
   } = event;
 
   const field = fieldName as FieldName;
+  const pk = `user#${sub}`;
 
   if (field === FieldName.updateUser) {
+    // const ids = await getDeviceIds(pk);
+    // try {
+    //   const res = await sendPushNotifications(ids);
+    //   console.log(res);
+    // } catch (e) {
+    //   console.log(e);
+    // }
+
     /**
      * Mutation updateUser:
      */
-    const user = await updateUser(sub, input);
+    const user = await updateUser(pk, input);
 
     return {
       errors: [],
@@ -136,7 +138,7 @@ export const handler: Handler = async (event) => {
     /**
      * Query me:
      */
-    const { Item } = await getItem(sub, 'metadata');
+    const { Item } = await getItem(pk, 'metadata');
     const user = getTypeUser(Item);
     return user;
   }
