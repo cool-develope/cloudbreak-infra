@@ -108,10 +108,10 @@ input UpdatePostInput {
   target: EventTargetInput
 }
 
-input Contact {
-  fullName: [String]
-  phoneNumber: String
-  email: [String]
+input PhoneContact {
+  fullName: String!
+  photo: String
+  email: [String]!
 }
 
 input FeedFilterInput {
@@ -191,6 +191,13 @@ type Image {
 
 type File {
   url: String
+}
+
+type Contact {
+  firstName: String
+  lastName: String
+  photo: String
+  email: String!
 }
 
 type User {
@@ -319,10 +326,9 @@ type Mutation {
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
   
   """
-  TODO: Lookup a users by phone contacts.
-  Return array of emails for existing users.
+  TODO: Synchronize contacts from phone to Tifo
   """
-  syncContacts(contacts: [Contact]!): [String]!
+  syncContacts(contacts: [PhoneContact]!): [Contact]!
 }
 
 type Query {
