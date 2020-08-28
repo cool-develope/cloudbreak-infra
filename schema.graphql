@@ -194,8 +194,7 @@ type File {
 }
 
 type Contact {
-  firstName: String
-  lastName: String
+  fullName: String!
   photo: String
   email: String!
 }
