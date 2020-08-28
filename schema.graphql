@@ -368,4 +368,9 @@ type Query {
   Search Events and Posts relevant to the user
   """
   feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection
+
+  """
+  TODO: User contacts
+  """
+  contacts: [Contact]
 }
