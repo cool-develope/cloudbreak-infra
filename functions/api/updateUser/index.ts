@@ -131,6 +131,7 @@ export const handler: Handler = async (event) => {
     /**
      * Mutation updateUser:
      */
+    input.modifiedAt = new Date().toISOString();
     const user = await updateUser(pk, input);
 
     return {
