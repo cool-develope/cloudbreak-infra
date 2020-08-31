@@ -12,14 +12,17 @@ const {
   ONESIGNAL_API_KEY = '',
 } = process.env;
 
-const getUpdateExpression = (attributes = {}) =>
+const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
-    .map((key) => `${key} = :${key}`)
+    .map((key) => (attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null))
+    .filter((attr) => !!attr)
     .join(', ');
 
 const getExpressionAttributeValues = (attributes = {}) => {
   const obj: any = {};
-  Object.entries(attributes).forEach(([key, value]) => (obj[`:${key}`] = value));
+  Object.entries(attributes).forEach(([key, value]) =>
+    value !== undefined && value !== null ? (obj[`:${key}`] = value) : null,
+  );
   return obj;
 };
 
