@@ -34,9 +34,10 @@ export const handler: Handler = async (event) => {
 
   const mutation = fieldName as MutationName;
   const isAdd = mutation === MutationName.signinMobile;
+  const pk = `user#${sub}`;
 
   if (deviceId) {
-    await updateItemSet(sub, 'devices', deviceId, isAdd);
+    await updateItemSet(pk, 'devices', deviceId, isAdd);
   }
 
   return {
