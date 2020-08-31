@@ -9,7 +9,7 @@ import { UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
-const SCHEMA_FILE = './schema.graphql';
+const SCHEMA_FILE = '../schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
   userPool: cognito.UserPool;
@@ -56,13 +56,12 @@ export class ApiStack extends cdk.Stack {
             apiKeyConfig: {
               name: 'test-public-key',
               description: 'Public API_KEY for testing',
-              expires: this.getApiKeyExpiration(320),
+              expires: this.getApiKeyExpiration(),
             },
           },
         ],
       },
-      schemaDefinition: appsync.SchemaDefinition.FILE,
-      schemaDefinitionFile: SCHEMA_FILE,
+      schema: appsync.Schema.fromAsset(path.join(__dirname, SCHEMA_FILE)),
       xrayEnabled: true,
     });
 
@@ -251,10 +250,9 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  getApiKeyExpiration(days: number): string {
-    const dateNow = new Date();
-    dateNow.setDate(dateNow.getDate() + days);
-    return dateNow.toISOString();
+  getApiKeyExpiration(): string {
+    const date = new Date(2021, 8, 1)
+    return date.toISOString();
   }
 
   getFunction(id: string, functionName: string, folderName: string, environment?: any, timeoutSeconds = 30) {
