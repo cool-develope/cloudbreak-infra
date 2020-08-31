@@ -14,7 +14,9 @@ const {
 
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
-    .map((key) => (attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null))
+    .map((key) =>
+      attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null,
+    )
     .filter((attr) => !!attr)
     .join(', ');
 
