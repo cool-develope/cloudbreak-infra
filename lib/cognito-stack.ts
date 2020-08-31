@@ -3,12 +3,14 @@ import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as iam from '@aws-cdk/aws-iam';
+import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import { UserPoolOperation } from '@aws-cdk/aws-cognito';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface CognitoStackProps extends cdk.StackProps {
   signinUrl: string;
+  mainTableName: string;
 }
 
 export class CognitoStack extends cdk.Stack {
@@ -17,7 +19,8 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { signinUrl } = props;
+    const { signinUrl, mainTableName } = props;
+    const mainTable = dynamodb.Table.fromTableName(this, 'events-table-main', mainTableName);
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
@@ -44,7 +47,7 @@ export class CognitoStack extends cdk.Stack {
     this.addTriggerDefineAuthChallenge();
     this.addTriggerPreSignup();
     this.addTriggerVerifyAuthChallenge();
-    this.addTriggerPostAuthentication();
+    this.addTriggerPostAuthentication(mainTable);
   }
 
   createUserPoolClient() {
@@ -111,11 +114,14 @@ export class CognitoStack extends cdk.Stack {
     this.userPool.addTrigger(UserPoolOperation.VERIFY_AUTH_CHALLENGE_RESPONSE, triggerFunction);
   }
 
-  addTriggerPostAuthentication() {
+  addTriggerPostAuthentication(mainTable: dynamodb.ITable) {
     const triggerFunction = this.getFunction(
       'cognito-postAuthentication',
       'cognito-postAuthentication',
       'postAuthentication',
+      {
+        MAIN_TABLE_NAME: mainTable.tableName,
+      },
     );
 
     const eventsPolicy = new PolicyStatement({
@@ -125,6 +131,7 @@ export class CognitoStack extends cdk.Stack {
     eventsPolicy.addResources('*');
 
     triggerFunction.addToRolePolicy(eventsPolicy);
+    mainTable.grantReadData(triggerFunction);
 
     this.userPool.addTrigger(UserPoolOperation.POST_AUTHENTICATION, triggerFunction);
   }
