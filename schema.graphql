@@ -325,7 +325,7 @@ type Mutation {
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
 
   """
-  TODO: Synchronize contacts from phone to Tifo
+  Synchronize contacts from phone to Tifo
   """
   syncContacts(contacts: [PhoneContact]!): [Contact]!
 }
@@ -369,7 +369,7 @@ type Query {
   feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection
 
   """
-  TODO: User contacts
+  Lookup a user contacts
   """
   contacts: [Contact]!
 }
