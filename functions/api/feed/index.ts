@@ -36,7 +36,7 @@ const getTypeEvent = ({
   id: pk.replace('event#', ''),
   title,
   description,
-  image: getTypeImage(pk.replace('event#', ''), image),
+  image: getTypeImage(image),
   startDate,
   endDate,
   address,
