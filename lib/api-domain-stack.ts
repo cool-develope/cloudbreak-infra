@@ -4,6 +4,7 @@ import * as route53 from '@aws-cdk/aws-route53';
 import * as route53tg from '@aws-cdk/aws-route53-targets';
 import { Certificate, ICertificate } from '@aws-cdk/aws-certificatemanager';
 import { CloudFrontWebDistribution } from '@aws-cdk/aws-cloudfront';
+import { Duration } from '@aws-cdk/core';
 
 export interface ApiDomainStackProps extends cdk.StackProps {
   zoneId: string;
@@ -45,7 +46,13 @@ export class ApiDomainStack extends cdk.Stack {
             originProtocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
           },
           behaviors: [
-            { isDefaultBehavior: true, allowedMethods: cloudfront.CloudFrontAllowedMethods.ALL },
+            {
+              isDefaultBehavior: true,
+              allowedMethods: cloudfront.CloudFrontAllowedMethods.ALL,
+              defaultTtl: Duration.seconds(0),
+              maxTtl: Duration.seconds(0),
+              minTtl: Duration.seconds(0),
+            },
           ],
         },
       ],
