@@ -306,24 +306,24 @@ type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
-  
+
   """
-  TODO: 
+  TODO:
   """
   inviteParent(input: InviteParentInput!): InviteParentPayload!
   createEvent(input: CreateEventInput!): CreateEventPayload!
-  
+
   """
-  TODO: 
+  TODO:
   """
   updateEvent(input: UpdateEventInput!): UpdateEventPayload!
   createPost(input: CreatePostInput!): CreatePostPayload!
-  
+
   """
-  TODO: 
+  TODO:
   """
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
-  
+
   """
   TODO: Synchronize contacts from phone to Tifo
   """
@@ -352,12 +352,12 @@ type Query {
   TODO: Lookup an Event by the id
   """
   getEvent(id: ID!): Event
-  
+
   """
   TODO: Lookup a Post by the id as Admin
   """
   getPostAsAdmin(id: ID!): PostForAdmin
-  
+
   """
   TODO: Lookup a Post by the id
   """
@@ -371,5 +371,5 @@ type Query {
   """
   TODO: User contacts
   """
-  contacts: [Contact]
+  contacts: [Contact]!
 }
