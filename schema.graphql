@@ -118,6 +118,16 @@ input FeedFilterInput {
   eventType: EventType
 }
 
+input LikeEventInput {
+  id: ID!
+  like: Boolean!
+}
+
+input ParticipateEventInput {
+  id: ID!
+  participate: Boolean!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -158,6 +168,16 @@ type UpdatePostPayload {
 type UploadUrlPayload {
   uploadUrl: String
   key: String
+}
+
+type LikeEventPayload {
+  id: ID!
+  like: Boolean
+}
+
+type ParticipateEventPayload {
+  id: ID!
+  participate: Boolean
 }
 
 enum Gender {
@@ -323,6 +343,9 @@ type Mutation {
   TODO:
   """
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
+
+  likeEvent(input: LikeEventInput!): LikeEventPayload
+  participateEvent(input: ParticipateEventInput!): ParticipateEventPayload
 
   """
   Synchronize contacts from phone to Tifo
