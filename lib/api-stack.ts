@@ -96,6 +96,12 @@ export class ApiStack extends cdk.Stack {
      */
     this.feedQuery(mainTable, imagesDomain);
 
+    /**
+     * Mutation: syncContacts
+     * Query: contacts
+     */
+    this.syncContactsMutation(mainTable);
+
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
@@ -225,13 +231,33 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
+  syncContactsMutation(mainTable: ITable) {
+    const lambdaFunction = this.getFunction('syncContacts', 'api-syncContacts', 'syncContacts', {
+      MAIN_TABLE_NAME: mainTable.tableName
+    }, 120 );
+
+    mainTable.grantReadWriteData(lambdaFunction);
+
+    const lambdaDS = this.api.addLambdaDataSource('syncContactsFunction', lambdaFunction);
+
+    lambdaDS.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'syncContacts',
+    });
+
+    lambdaDS.createResolver({
+      typeName: 'Query',
+      fieldName: 'contacts',
+    });
+  }
+
   getApiKeyExpiration(days: number): string {
     const dateNow = new Date();
     dateNow.setDate(dateNow.getDate() + days);
     return dateNow.toISOString();
   }
 
-  getFunction(id: string, functionName: string, folderName: string, environment?: any) {
+  getFunction(id: string, functionName: string, folderName: string, environment?: any, timeoutSeconds = 30) {
     return new lambda.Function(this, id, {
       functionName,
       code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName)),
@@ -240,7 +266,7 @@ export class ApiStack extends cdk.Stack {
       environment,
       logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(timeoutSeconds),
     });
   }
 }
