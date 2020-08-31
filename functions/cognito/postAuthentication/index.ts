@@ -3,6 +3,8 @@ import * as AWS from 'aws-sdk';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
 const eventbridge = new AWS.EventBridge();
+const db = new AWS.DynamoDB.DocumentClient();
+const { MAIN_TABLE_NAME } = process.env;
 
 const putEvents = (type: string, detail: any) => {
   const params = {
@@ -21,6 +23,15 @@ const putEvents = (type: string, detail: any) => {
   return eventbridge.putEvents(params).promise();
 };
 
+const getItem = (pk: string, sk: string) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    Key: { pk, sk },
+  };
+
+  return db.get(params).promise();
+};
+
 export const handler: CognitoUserPoolTriggerHandler = async (event) => {
   const {
     userPoolId,
@@ -28,9 +39,11 @@ export const handler: CognitoUserPoolTriggerHandler = async (event) => {
   } = event;
 
   const detail = { userPoolId, userAttributes };
-  const hasTreezorUserId = 'cognito:trzUserId' in userAttributes;
-  const eventType = hasTreezorUserId ? 'signin' : 'signup';
+  const pk = `user#${userAttributes.sub}`;
+  const { Item } = await getItem(pk, 'metadata');
+  const userExist = Item && Item.pk;
 
+  const eventType = userExist ? 'signin' : 'signup';
   await putEvents(eventType, detail);
 
   return event;
