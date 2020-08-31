@@ -25,14 +25,14 @@ const { MAIN_TABLE_NAME, IMAGES_DOMAIN } = process.env;
 
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
-    .map((key) => (attributes[key] !== undefined ? `${key} = :${key}` : null))
+    .map((key) => (attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null))
     .filter((attr) => !!attr)
     .join(', ');
 
 const getExpressionAttributeValues = (attributes = {}) => {
   const obj: any = {};
   Object.entries(attributes).forEach(([key, value]) =>
-    value !== undefined ? (obj[`:${key}`] = value) : null,
+    value !== undefined && value !== null ? (obj[`:${key}`] = value) : null,
   );
   return obj;
 };
