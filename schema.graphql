@@ -118,13 +118,16 @@ input FeedFilterInput {
   eventType: EventType
 }
 
-input LikeEventInput {
-  id: ID!
-  like: Boolean!
+input AddLikeInput {
+  eventId: ID!
 }
 
-input ParticipateEventInput {
-  id: ID!
+input RemoveLikeInput {
+  eventId: ID!
+}
+
+input AddEventReactionInput {
+  eventId: ID!
   participate: Boolean!
 }
 
@@ -170,14 +173,16 @@ type UploadUrlPayload {
   key: String
 }
 
-type LikeEventPayload {
-  id: ID!
-  like: Boolean
+type AddLikePayload {
+  eventId: ID!
 }
 
-type ParticipateEventPayload {
-  id: ID!
-  participate: Boolean
+type RemoveLikePayload {
+  eventId: ID!
+}
+
+type AddEventReactionPayload {
+  eventId: ID!
 }
 
 enum Gender {
@@ -344,8 +349,9 @@ type Mutation {
   """
   updatePost(input: UpdatePostInput!): UpdatePostPayload!
 
-  likeEvent(input: LikeEventInput!): LikeEventPayload
-  participateEvent(input: ParticipateEventInput!): ParticipateEventPayload
+  addLike(input: AddLikeInput!): AddLikePayload
+  removeLike(input: RemoveLikeInput!): RemoveLikePayload
+  addEventReaction(input: AddEventReactionInput!): AddEventReactionPayload
 
   """
   Synchronize contacts from phone to Tifo
