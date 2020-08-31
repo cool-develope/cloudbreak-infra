@@ -32,6 +32,7 @@ new AcmStack(app, 'acm-us-stack', {
  */
 const cognito = new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
+  mainTableName: process.env.MAIN_TABLE_NAME || '',
 });
 
 /**
@@ -103,4 +104,6 @@ new ApiDomainStack(app, 'api-domain-stack', {
 /**
  * EventBridge
  */
-new EventsStack(app, 'events-stack', {});
+new EventsStack(app, 'events-stack', {
+  mainTableName: process.env.MAIN_TABLE_NAME || '',
+});
