@@ -40,6 +40,8 @@ const getTypeEvent = ({
   price,
   likesCount,
   viewsCount,
+  acceptedCount,
+  ownerUserId,
 }: any): Event => ({
   __typename: EventType.Event,
   id: pk.replace('event#', ''),
@@ -53,6 +55,10 @@ const getTypeEvent = ({
   price,
   likesCount,
   viewsCount,
+  acceptedCount,
+  author: {
+    id: ownerUserId,
+  },
 });
 
 const getTypePost = ({
@@ -63,6 +69,7 @@ const getTypePost = ({
   attachment,
   likesCount,
   viewsCount,
+  ownerUserId,
 }: any): Post => ({
   __typename: EventType.Post,
   id: pk.replace('event#', ''),
@@ -72,6 +79,9 @@ const getTypePost = ({
   attachment: getTypeFile(attachment),
   likesCount,
   viewsCount,
+  author: {
+    id: ownerUserId,
+  },
 });
 
 const getTypeFeed = (items: any[]): FeedConnection => {
