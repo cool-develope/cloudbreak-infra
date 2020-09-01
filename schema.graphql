@@ -338,12 +338,10 @@ type FeedConnection {
 }
 
 type FeedPrivateConnection {
-  items: [FeedItemPrivate]
+  items: [FeedItem]
 }
 
 union FeedItem = Event | Post
-
-union FeedItemPrivate = EventPrivate | PostPrivate
 
 type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
