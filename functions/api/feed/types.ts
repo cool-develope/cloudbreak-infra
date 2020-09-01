@@ -1,3 +1,8 @@
+export enum FieldName {
+  feed = 'feed',
+  feedPrivate = 'feedPrivate',
+}
+
 export enum EventType {
   Event = 'Event',
   Post = 'Post',

@@ -1,7 +1,16 @@
 // @ts-ignore
 import * as AWS from 'aws-sdk';
 import { Handler } from 'aws-lambda';
-import { EventType, Image, File, Event, Post, FeedConnection, FeedFilterInput } from './types';
+import {
+  EventType,
+  Image,
+  File,
+  Event,
+  Post,
+  FeedConnection,
+  FeedFilterInput,
+  FieldName,
+} from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
 const { MAIN_TABLE_NAME, IMAGES_DOMAIN } = process.env;
@@ -90,10 +99,17 @@ export const handler: Handler = async (event) => {
     info: { fieldName },
   } = event;
 
-  /**
-   * Query feed:
-   */
-  const { Items } = await getItems('event#', 'metadata');
-  const feed = getTypeFeed(Items);
+  const field = fieldName as FieldName;
+  let feedItems = [];
+
+  if (field === FieldName.feed) {
+    const { Items } = await getItems('event#', 'metadata');
+    feedItems = Items;
+  } else if (field === FieldName.feedPrivate) {
+    const { Items } = await getItems('event#', 'metadata');
+    feedItems = Items;
+  }
+
+  const feed = getTypeFeed(feedItems);
   return feed;
 };
