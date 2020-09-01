@@ -118,6 +118,11 @@ input FeedFilterInput {
   eventType: EventType
 }
 
+input FeedPrivateFilterInput {
+  eventType: EventType
+  search: String
+}
+
 input AddLikeInput {
   eventId: ID!
 }
@@ -332,7 +337,13 @@ type FeedConnection {
   items: [FeedItem]
 }
 
+type FeedPrivateConnection {
+  items: [FeedItemPrivate]
+}
+
 union FeedItem = Event | Post
+
+union FeedItemPrivate = EventPrivate | PostPrivate
 
 type Mutation {
   signinMobile(input: SigninMobileInput!): SigninMobilePayload
@@ -403,7 +414,12 @@ type Query {
   """
   Search Events and Posts relevant to the user
   """
-  feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection
+  feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection!
+
+  """
+  TODO: Private. Search Events and Posts by filter
+  """
+  feedPrivate(filter: FeedPrivateFilterInput, limit: Int, after: String): FeedPrivateConnection!
 
   """
   Lookup a user contacts
