@@ -251,7 +251,7 @@ export class ApiStack extends cdk.Stack {
   }
 
   getApiKeyExpiration(): string {
-    const date = new Date(2021, 8, 1)
+    const date = new Date(2021, 6, 1)
     return date.toISOString();
   }
 
