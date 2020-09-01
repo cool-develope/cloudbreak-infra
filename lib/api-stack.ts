@@ -5,7 +5,7 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { ITable } from '@aws-cdk/aws-dynamodb';
-import { UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
+import { UserPoolDefaultAction, MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
@@ -105,6 +105,11 @@ export class ApiStack extends cdk.Stack {
      * Mutation: addLike, removeLike, acceptEvent, declineEvent
      */
     this.addLikeMutation(mainTable);
+
+    /**
+     * Field: Event.author
+     */
+    this.eventAuthorField(mainTable);
 
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
@@ -287,6 +292,42 @@ export class ApiStack extends cdk.Stack {
     lambdaDS.createResolver({
       typeName: 'Mutation',
       fieldName: 'declineEvent',
+    });
+  }
+
+  eventAuthorField(mainTable: ITable) {
+    const eventAuthorBatchFunction = this.getFunction('eventAuthorBatch', 'api-eventAuthorBatch', 'eventAuthorBatch', {
+      MAIN_TABLE_NAME: mainTable.tableName
+    }, 120 );
+
+    mainTable.grantReadWriteData(eventAuthorBatchFunction);
+
+    const lambdaDS = this.api.addLambdaDataSource('eventAuthorBatchFunction', eventAuthorBatchFunction);
+
+    lambdaDS.createResolver({
+      typeName: 'Event',
+      fieldName: 'author',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": $utils.toJson($context.source)
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    lambdaDS.createResolver({
+      typeName: 'Post',
+      fieldName: 'author',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": $utils.toJson($context.source)
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
 
