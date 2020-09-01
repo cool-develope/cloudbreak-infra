@@ -101,6 +101,11 @@ export class ApiStack extends cdk.Stack {
      */
     this.syncContactsMutation(mainTable);
 
+    /**
+     * Mutation: addLike, removeLike, acceptEvent, declineEvent
+     */
+    this.addLikeMutation(mainTable);
+
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
@@ -247,6 +252,36 @@ export class ApiStack extends cdk.Stack {
     lambdaDS.createResolver({
       typeName: 'Query',
       fieldName: 'contacts',
+    });
+  }
+
+  addLikeMutation(mainTable: ITable) {
+    const lambdaFunction = this.getFunction('addLike', 'api-addLike', 'addLike', {
+      MAIN_TABLE_NAME: mainTable.tableName
+    }, 120 );
+
+    mainTable.grantReadWriteData(lambdaFunction);
+
+    const lambdaDS = this.api.addLambdaDataSource('addLikeFunction', lambdaFunction);
+
+    lambdaDS.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'addLike',
+    });
+
+    lambdaDS.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'removeLike',
+    });
+
+    lambdaDS.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'acceptEvent',
+    });
+
+    lambdaDS.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'declineEvent',
     });
   }
 
