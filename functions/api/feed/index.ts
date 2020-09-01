@@ -1,6 +1,7 @@
 // @ts-ignore
-import * as AWS from 'aws-sdk';
+import * as AWS_RAW from 'aws-sdk';
 import { Handler } from 'aws-lambda';
+import * as AWSXRay from 'aws-xray-sdk-core';
 import {
   EventType,
   Image,
@@ -12,6 +13,7 @@ import {
   FieldName,
 } from './types';
 
+const AWS = AWSXRay.captureAWS(AWS_RAW);
 const db = new AWS.DynamoDB.DocumentClient();
 const { MAIN_TABLE_NAME, IMAGES_DOMAIN } = process.env;
 

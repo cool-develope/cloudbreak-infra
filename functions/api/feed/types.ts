@@ -29,6 +29,10 @@ export interface Event {
   price: number;
   likesCount: number;
   viewsCount: number;
+  acceptedCount: number;
+  author: {
+    id: string
+  }
 }
 
 export interface Post {
@@ -40,6 +44,9 @@ export interface Post {
   attachment: File;
   likesCount: number;
   viewsCount: number;
+  author: {
+    id: string
+  }
 }
 
 export interface FeedConnection {
