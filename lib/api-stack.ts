@@ -91,7 +91,7 @@ export class ApiStack extends cdk.Stack {
     this.createEventMutation(mainTable, imagesDomain);
 
     /**
-     * Query: feed
+     * Query: feed, feedPrivate
      */
     this.feedQuery(mainTable, imagesDomain);
 
@@ -232,6 +232,11 @@ export class ApiStack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'feed',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'feedPrivate',
     });
   }
 
