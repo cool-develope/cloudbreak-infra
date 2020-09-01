@@ -93,6 +93,7 @@ export interface EventForAdmin {
   price?: number;
   likesCount?: number;
   viewsCount?: number;
+  acceptedCount: number;
   target?: EventTarget;
 }
 

@@ -64,6 +64,7 @@ const getTypeEvent = (metadata: any, target: any): EventForAdmin => ({
   price: metadata.price,
   likesCount: metadata.likesCount,
   viewsCount: metadata.viewsCount,
+  acceptedCount: metadata.acceptedCount,
   target: {
     country: target.country,
     federation: target.federation,
@@ -127,6 +128,7 @@ const createEvent = async (
 
   const metadata = {
     ...getDefaultValues(userId, EventType.Event),
+    acceptedCount: 0, // for Event only
     title,
     description,
     image,
