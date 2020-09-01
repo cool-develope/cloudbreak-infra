@@ -153,22 +153,22 @@ type InviteParentPayload {
 
 type CreateEventPayload {
   errors: [String]
-  event: EventForAdmin
+  event: EventPrivate
 }
 
 type UpdateEventPayload {
   errors: [String]
-  event: EventForAdmin
+  event: EventPrivate
 }
 
 type CreatePostPayload {
   errors: [String]
-  post: PostForAdmin
+  post: PostPrivate
 }
 
 type UpdatePostPayload {
   errors: [String]
-  post: PostForAdmin
+  post: PostPrivate
 }
 
 type UploadUrlPayload {
@@ -245,7 +245,7 @@ type User {
   usCitizen: Boolean
 }
 
-type EventForAdmin {
+type EventPrivate {
   id: ID!
   title: String
   description: String
@@ -274,7 +274,7 @@ type Event {
   viewsCount: Int
 }
 
-type PostForAdmin {
+type PostPrivate {
   id: ID!
   title: String
   description: String
@@ -381,9 +381,9 @@ type Query {
   me: User!
 
   """
-  TODO: Lookup an Event by the id as Admin
+  TODO: Private. Lookup an Event by the id 
   """
-  getEventAsAdmin(id: ID!): EventForAdmin
+  getEventPrivate(id: ID!): EventPrivate
 
   """
   TODO: Lookup an Event by the id
@@ -391,9 +391,9 @@ type Query {
   getEvent(id: ID!): Event
 
   """
-  TODO: Lookup a Post by the id as Admin
+  TODO: Private. Lookup a Post by the id
   """
-  getPostAsAdmin(id: ID!): PostForAdmin
+  getPostPrivate(id: ID!): PostPrivate
 
   """
   TODO: Lookup a Post by the id
