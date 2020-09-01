@@ -126,9 +126,12 @@ input RemoveLikeInput {
   eventId: ID!
 }
 
-input AddEventReactionInput {
+input AcceptEventInput {
   eventId: ID!
-  participate: Boolean!
+}
+
+input DeclineEventInput {
+  eventId: ID!
 }
 
 type SigninMobilePayload {
@@ -181,7 +184,11 @@ type RemoveLikePayload {
   eventId: ID!
 }
 
-type AddEventReactionPayload {
+type AcceptEventPayload {
+  eventId: ID!
+}
+
+type DeclineEventPayload {
   eventId: ID!
 }
 
@@ -351,7 +358,8 @@ type Mutation {
 
   addLike(input: AddLikeInput!): AddLikePayload
   removeLike(input: RemoveLikeInput!): RemoveLikePayload
-  addEventReaction(input: AddEventReactionInput!): AddEventReactionPayload
+  acceptEvent(input: AcceptEventInput!): AcceptEventPayload
+  declineEvent(input: DeclineEventInput!): DeclineEventPayload
 
   """
   Synchronize contacts from phone to Tifo
