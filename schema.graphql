@@ -277,6 +277,8 @@ type Event {
   price: Float
   likesCount: Int
   viewsCount: Int
+  acceptedCount: Int
+  author: Author
 }
 
 type PostPrivate {
@@ -298,6 +300,13 @@ type Post {
   attachment: File
   likesCount: Int
   viewsCount: Int
+  author: Author
+}
+
+type Author {
+  firstName: String
+  lastName: String
+  photo: Image
 }
 
 type EventTarget {
