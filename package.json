@@ -26,6 +26,7 @@
     "@aws-cdk/aws-cloudfront": "^1.61.1",
     "@aws-cdk/aws-cognito": "^1.61.1",
     "@aws-cdk/aws-dynamodb": "^1.61.1",
+    "@aws-cdk/aws-elasticsearch": "^1.61.1",
     "@aws-cdk/aws-events": "^1.61.1",
     "@aws-cdk/aws-events-targets": "^1.61.1",
     "@aws-cdk/aws-iam": "^1.61.1",
