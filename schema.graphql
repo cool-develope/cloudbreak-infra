@@ -118,6 +118,13 @@ input FeedFilterInput {
   eventType: EventType
 }
 
+input MyEventsFilterInput {
+  startDateAfter: AWSDateTime
+  startDateBefore: AWSDateTime
+  endDateAfter: AWSDateTime
+  endDateBefore: AWSDateTime
+}
+
 input FeedPrivateFilterInput {
   eventType: EventType
   search: String
@@ -342,6 +349,15 @@ type TeamEventTarget {
   name: String
 }
 
+
+type MyEventsConnection {
+  items: [Event]
+}
+
+type UpcomingEventsPrivateConnection {
+  items: [Event]
+}
+
 type FeedConnection {
   items: [FeedItem]
 }
@@ -424,7 +440,17 @@ type Query {
   feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection!
 
   """
-  TODO: Private. Search Events and Posts by filter
+  Lookup an Events accepted by user
+  """
+  myEvents(filter: MyEventsFilterInput, limit: Int, after: String): MyEventsConnection!
+
+  """
+  Private. List upcoming Events from my organization
+  """
+  upcomingEventsPrivate(limit: Int): UpcomingEventsPrivateConnection!
+
+  """
+  Private. Search Events and Posts by filter
   """
   feedPrivate(filter: FeedPrivateFilterInput, limit: Int, after: String): FeedPrivateConnection!
 
