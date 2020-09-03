@@ -70,8 +70,8 @@ input CreateEventInput {
   title: String!
   description: String
   image: String
-  startDate: AWSDateTime
-  endDate: AWSDateTime
+  startDate: AWSDateTime!
+  endDate: AWSDateTime!
   address: String
   discipline: String
   price: Float!
