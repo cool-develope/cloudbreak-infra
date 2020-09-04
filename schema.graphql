@@ -75,6 +75,7 @@ input CreateEventInput {
   address: String
   discipline: String
   price: Float!
+  repeatType: RepeatType
   target: EventTargetInput!
 }
 
@@ -264,6 +265,12 @@ enum UploadType {
   PostAttachment
 }
 
+enum RepeatType {
+  None
+  Weekly
+  Monthly
+}
+
 type Image {
   url: String
 }
@@ -304,6 +311,7 @@ type EventPrivate {
   price: Float
   likesCount: Int
   viewsCount: Int
+  repeatType: RepeatType
   target: EventTarget
 }
 

@@ -16,6 +16,12 @@ export enum EventType {
   Post = 'Post',
 }
 
+export enum RepeatType {
+  None = 'None',
+  Weekly = 'Weekly',
+  Monthly = 'Monthly',
+}
+
 export interface Image {
   url: string;
 }
@@ -33,6 +39,7 @@ export interface CreateEventInput {
   address?: string;
   discipline?: string;
   price?: number;
+  repeatType?: RepeatType;
   target?: EventTargetInput;
 }
 
@@ -94,6 +101,7 @@ export interface EventForAdmin {
   likesCount?: number;
   viewsCount?: number;
   acceptedCount: number;
+  repeatType: RepeatType;
   target?: EventTarget;
 }
 
@@ -128,6 +136,7 @@ export interface EventRecord {
   modifiedAt: string;
   ownerUserId: string;
   isDeleted: boolean;
+  repeatType: string;
   targetCountry?: string;
   targetFederation?: string[];
   targetClub?: string[];

@@ -8,6 +8,7 @@ import {
   FieldName,
   UserRole,
   EventType,
+  RepeatType,
   Image,
   File,
   CreateEventInput,
@@ -70,6 +71,7 @@ const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
   likesCount: metadata.likesCount,
   viewsCount: metadata.viewsCount,
   acceptedCount: metadata.acceptedCount,
+  repeatType: (metadata.repeatType || RepeatType.None) as RepeatType,
   target: {
     country: metadata.targetCountry,
     federation: getTargetObject(metadata.targetFederation),
@@ -129,6 +131,7 @@ const createEvent = async (
     address = '',
     discipline = '',
     price,
+    repeatType = RepeatType.None,
     target,
   } = input;
 
@@ -143,6 +146,7 @@ const createEvent = async (
     address,
     discipline,
     price,
+    repeatType,
     targetCountry: target?.country,
     targetFederation: target?.federation,
     targetClub: target?.club,
