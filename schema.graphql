@@ -227,7 +227,7 @@ enum UserRole {
 }
 
 enum Discipline {
-
+  Football
 }
 
 enum EventType {
