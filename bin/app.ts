@@ -9,6 +9,7 @@ import { WebSiteStack } from '../lib/website-stack';
 import { StorageStack } from '../lib/storage-stack';
 import { TableStack } from '../lib/table-stack';
 import { EventsStack } from '../lib/events-stack';
+import { ElasticsearchStack } from '../lib/es-stack';
 import * as dotenv from 'dotenv';
 
 dotenv.config({
@@ -34,6 +35,11 @@ const cognito = new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
   mainTableName: process.env.MAIN_TABLE_NAME || '',
 });
+
+/**
+ * Elasticsearch
+ */
+const elasticsearch = new ElasticsearchStack(app, 'es-stack', {});
 
 /**
  * Create DynamoDB tables
