@@ -73,7 +73,7 @@ input CreateEventInput {
   startDate: AWSDateTime!
   endDate: AWSDateTime!
   address: String
-  discipline: String
+  discipline: Discipline
   price: Float!
   repeatType: RepeatType
   target: EventTargetInput!
@@ -87,7 +87,7 @@ input UpdateEventInput {
   startDate: AWSDateTime!
   endDate: AWSDateTime
   address: String
-  discipline: String
+  discipline: Discipline
   price: Float!
   target: EventTargetInput
 }
@@ -308,7 +308,7 @@ type EventPrivate {
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
-  discipline: String
+  discipline: Discipline
   price: Float
   likesCount: Int
   viewsCount: Int
@@ -324,7 +324,7 @@ type Event {
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
-  discipline: String
+  discipline: Discipline
   price: Float
   likesCount: Int
   viewsCount: Int
@@ -381,7 +381,7 @@ type EventTarget {
   country: String
   federation: [FederationEventTarget]
   club: [ClubEventTarget]
-  discipline: [String]
+  discipline: [Discipline]
   team: [TeamEventTarget]
   userRole: [UserRole]
 }
@@ -390,7 +390,7 @@ input EventTargetInput {
   country: String
   federation: [String]
   club: [String]
-  discipline: [String]
+  discipline: [Discipline]
   team: [String]
   userRole: [UserRole]
 }
