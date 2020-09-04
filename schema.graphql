@@ -130,6 +130,15 @@ input FeedPrivateFilterInput {
   search: String
 }
 
+input TeamsPrivateFilterInput {
+}
+
+input ClubsPrivateFilterInput {
+}
+
+input FederationsPrivateFilterInput {
+}
+
 input AddLikeInput {
   eventId: ID!
 }
@@ -215,6 +224,10 @@ enum UserRole {
   Parent
   Teenager
   Fan
+}
+
+enum Discipline {
+
 }
 
 enum EventType {
@@ -316,6 +329,21 @@ type Author {
   photo: Image
 }
 
+type TeamItemPrivate {
+  id: ID!
+  name: String
+}
+
+type ClubItemPrivate {
+  id: ID!
+  name: String
+}
+
+type FederationItemPrivate {
+  id: ID!
+  name: String
+}
+
 type EventTarget {
   country: String
   federation: [FederationEventTarget]
@@ -364,6 +392,18 @@ type FeedConnection {
 
 type FeedPrivateConnection {
   items: [FeedItem]
+}
+
+type TeamsPrivateConnection {
+  items: [TeamItemPrivate]
+}
+
+type ClubsPrivateConnection {
+  items: [ClubItemPrivate]
+}
+
+type FederationsPrivateConnection {
+  items: [FederationItemPrivate]
 }
 
 union FeedItem = Event | Post
@@ -437,12 +477,12 @@ type Query {
   """
   Search Events and Posts relevant to the user
   """
-  feed(filter: FeedFilterInput, limit: Int, after: String): FeedConnection!
+  feed(filter: FeedFilterInput, limit: Int, from: Int): FeedConnection!
 
   """
   Lookup an Events accepted by user
   """
-  myEvents(filter: MyEventsFilterInput, limit: Int, after: String): MyEventsConnection!
+  myEvents(filter: MyEventsFilterInput, limit: Int, from: Int): MyEventsConnection!
 
   """
   Private. List upcoming Events from my organization
@@ -452,10 +492,14 @@ type Query {
   """
   Private. Search Events and Posts by filter
   """
-  feedPrivate(filter: FeedPrivateFilterInput, limit: Int, after: String): FeedPrivateConnection!
+  feedPrivate(filter: FeedPrivateFilterInput, limit: Int, from: Int): FeedPrivateConnection!
 
   """
   Lookup a user contacts
   """
   contacts: [Contact]!
+
+  teamsPrivate(filter: TeamsPrivateFilterInput, limit: Int, from: Int): TeamsPrivateConnection!
+  clubsPrivate(filter: ClubsPrivateFilterInput, limit: Int, from: Int): ClubsPrivateConnection!
+  federationsPrivate(filter: FederationsPrivateFilterInput, limit: Int, from: Int): FederationsPrivateConnection!
 }
