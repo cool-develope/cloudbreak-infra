@@ -18,6 +18,7 @@ import {
   CreatePostPayload,
   EventForAdmin,
   PostForAdmin,
+  EventRecord,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -25,7 +26,9 @@ const { MAIN_TABLE_NAME, IMAGES_DOMAIN } = process.env;
 
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
-    .map((key) => (attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null))
+    .map((key) =>
+      attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null,
+    )
     .filter((attr) => !!attr)
     .join(', ');
 
@@ -52,7 +55,9 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
   return db.update(params).promise();
 };
 
-const getTypeEvent = (metadata: any, target: any): EventForAdmin => ({
+const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: '' }));
+
+const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
   id: metadata.pk.replace('event#', ''),
   title: metadata.title,
   description: metadata.description,
@@ -66,16 +71,16 @@ const getTypeEvent = (metadata: any, target: any): EventForAdmin => ({
   viewsCount: metadata.viewsCount,
   acceptedCount: metadata.acceptedCount,
   target: {
-    country: target.country,
-    federation: target.federation,
-    club: target.club,
-    discipline: target.discipline,
-    team: target.team,
-    userRole: target.userRole,
+    country: metadata.targetCountry,
+    federation: getTargetObject(metadata.targetFederation),
+    club: getTargetObject(metadata.targetClub),
+    discipline: metadata.targetDiscipline || [],
+    team: getTargetObject(metadata.targetTeam),
+    userRole: metadata.targetUserRole,
   },
 });
 
-const getTypePost = (metadata: any, target: any): PostForAdmin => ({
+const getTypePost = (metadata: EventRecord): PostForAdmin => ({
   id: metadata.pk.replace('event#', ''),
   title: metadata.title,
   description: metadata.description,
@@ -84,12 +89,12 @@ const getTypePost = (metadata: any, target: any): PostForAdmin => ({
   likesCount: metadata.likesCount,
   viewsCount: metadata.viewsCount,
   target: {
-    country: target.country,
-    federation: target.federation,
-    club: target.club,
-    discipline: target.discipline,
-    team: target.team,
-    userRole: target.userRole,
+    country: metadata.targetCountry || '',
+    federation: getTargetObject(metadata.targetFederation),
+    club: getTargetObject(metadata.targetClub),
+    discipline: metadata.targetDiscipline,
+    team: getTargetObject(metadata.targetTeam),
+    userRole: metadata.targetUserRole,
   },
 });
 
@@ -124,6 +129,7 @@ const createEvent = async (
     address = '',
     discipline = '',
     price,
+    target,
   } = input;
 
   const metadata = {
@@ -137,11 +143,16 @@ const createEvent = async (
     address,
     discipline,
     price,
+    targetCountry: target?.country,
+    targetFederation: target?.federation,
+    targetClub: target?.club,
+    targetDiscipline: target?.discipline,
+    targetTeam: target?.team,
+    targetUserRole: target?.userRole,
   };
 
-  const { Attributes: metadataAttributes } = await updateItem(pk, 'metadata', metadata);
-  const { Attributes: targetAttributes } = await updateItem(pk, 'target', input.target);
-  const event = getTypeEvent(metadataAttributes, targetAttributes);
+  const { Attributes } = await updateItem(pk, 'metadata', metadata);
+  const event = getTypeEvent(Attributes);
 
   return {
     errors: [],
@@ -151,7 +162,7 @@ const createEvent = async (
 
 const createPost = async (userId: string, input: CreatePostInput): Promise<CreatePostPayload> => {
   const pk = `event#${uuidv4()}`;
-  const { title, description = '', image, attachment } = input;
+  const { title, description = '', image, attachment, target } = input;
 
   const metadata = {
     ...getDefaultValues(userId, EventType.Post),
@@ -159,11 +170,16 @@ const createPost = async (userId: string, input: CreatePostInput): Promise<Creat
     description,
     image,
     attachment,
+    targetCountry: target?.country,
+    targetFederation: target?.federation,
+    targetClub: target?.club,
+    targetDiscipline: target?.discipline,
+    targetTeam: target?.team,
+    targetUserRole: target?.userRole,
   };
 
-  const { Attributes: metadataAttributes } = await updateItem(pk, 'metadata', metadata);
-  const { Attributes: targetAttributes } = await updateItem(pk, 'target', input.target);
-  const post = getTypePost(metadataAttributes, targetAttributes);
+  const { Attributes } = await updateItem(pk, 'metadata', metadata);
+  const post = getTypePost(Attributes);
 
   return {
     errors: [],
