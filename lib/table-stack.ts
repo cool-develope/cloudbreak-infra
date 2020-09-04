@@ -28,6 +28,7 @@ export class TableStack extends cdk.Stack {
       tableName: mainTableName,
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
     });
   }
 }
