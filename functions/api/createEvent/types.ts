@@ -107,3 +107,31 @@ export interface PostForAdmin {
   viewsCount?: number;
   target?: EventTarget;
 }
+
+export interface EventRecord {
+  pk: string;
+  sk: string;
+  eventType: EventType;
+  title: string;
+  description?: string;
+  image: string;
+  attachment: string;
+  startDate?: string;
+  endDate?: string;
+  address?: string;
+  discipline?: string;
+  price?: number;
+  likesCount: number;
+  viewsCount: number;
+  acceptedCount: number;
+  createdAt: string;
+  modifiedAt: string;
+  ownerUserId: string;
+  isDeleted: boolean;
+  targetCountry?: string;
+  targetFederation?: string[];
+  targetClub?: string[];
+  targetDiscipline?: string[];
+  targetTeam?: string[];
+  targetUserRole?: UserRole[];
+}
