@@ -131,12 +131,15 @@ input FeedPrivateFilterInput {
 }
 
 input TeamsPrivateFilterInput {
+  search: String
 }
 
 input ClubsPrivateFilterInput {
+  search: String
 }
 
 input FederationsPrivateFilterInput {
+  search: String
 }
 
 input AddLikeInput {
