@@ -112,6 +112,31 @@ export class ApiStack extends cdk.Stack {
      */
     this.eventAuthorField(mainTable);
 
+    /**
+     * Query: myEvents
+     */
+    this.myEventsQuery(mainTable, imagesDomain, esDomain);
+
+    /**
+     * Query: upcomingEventsPrivate
+     */
+    this.upcomingEventsPrivateQuery(mainTable, imagesDomain, esDomain);
+
+    /**
+     * Query: teamsPrivate
+     */
+    this.teamsPrivateQuery(mainTable, imagesDomain, esDomain);
+
+    /**
+     * Query: clubsPrivate
+     */
+    this.clubsPrivateQuery(mainTable, imagesDomain, esDomain);
+
+    /**
+     * Query: federationsPrivate
+     */
+    this.federationsPrivateQuery(mainTable, imagesDomain, esDomain);
+
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
@@ -332,6 +357,95 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
+  myEventsQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+    const myEventsFunction = this.getFunction('myEvents', 'api-myEvents', 'myEvents', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+    });
+
+    mainTable.grantReadWriteData(myEventsFunction);
+    this.allowES(myEventsFunction);
+
+    const dataSource = this.api.addLambdaDataSource('myEventsFunction', myEventsFunction);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'myEvents',
+    });
+  }
+
+  upcomingEventsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+    const upcomingEventsPrivateFunction = this.getFunction('upcomingEventsPrivate', 'api-upcomingEventsPrivate', 'upcomingEventsPrivate', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+    });
+
+    mainTable.grantReadWriteData(upcomingEventsPrivateFunction);
+    this.allowES(upcomingEventsPrivateFunction);
+
+    const dataSource = this.api.addLambdaDataSource('upcomingEventsPrivateFunction', upcomingEventsPrivateFunction);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'upcomingEventsPrivate',
+    });
+  }
+
+  teamsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+    const teamsPrivateFunction = this.getFunction('teamsPrivate', 'api-teamsPrivate', 'teamsPrivate', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+    });
+
+    mainTable.grantReadWriteData(teamsPrivateFunction);
+    this.allowES(teamsPrivateFunction);
+
+    const dataSource = this.api.addLambdaDataSource('teamsPrivateFunction', teamsPrivateFunction);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'teamsPrivate',
+    });
+  }
+
+  clubsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+    const clubsPrivateFunction = this.getFunction('clubsPrivate', 'api-clubsPrivate', 'clubsPrivate', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+    });
+
+    mainTable.grantReadWriteData(clubsPrivateFunction);
+    this.allowES(clubsPrivateFunction);
+
+    const dataSource = this.api.addLambdaDataSource('clubsPrivateFunction', clubsPrivateFunction);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'clubsPrivate',
+    });
+  }
+
+  federationsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+    const federationsPrivateFunction = this.getFunction('federationsPrivate', 'api-federationsPrivate', 'federationsPrivate', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+    });
+
+    mainTable.grantReadWriteData(federationsPrivateFunction);
+    this.allowES(federationsPrivateFunction);
+
+    const dataSource = this.api.addLambdaDataSource('federationsPrivateFunction', federationsPrivateFunction);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'federationsPrivate',
+    });
+  }
 
   allowES(lambdaFunction: lambda.Function) {
     const esPolicy = new PolicyStatement({
