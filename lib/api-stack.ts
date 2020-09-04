@@ -16,6 +16,7 @@ export interface ApiStackProps extends cdk.StackProps {
   dictionaryTableName: string;
   mainTableName: string;
   imagesDomain: string;
+  esDomain: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -24,7 +25,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPool, dictionaryTableName, mainTableName, imagesDomain } = props;
+    const { userPool, dictionaryTableName, mainTableName, imagesDomain, esDomain } = props;
 
     const dictionaryTable = dynamodb.Table.fromTableName(
       this,
