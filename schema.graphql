@@ -96,7 +96,7 @@ input CreatePostInput {
   title: String!
   description: String
   image: String
-  attachment: String
+  attachment: [String]
   target: EventTargetInput!
 }
 
@@ -277,6 +277,7 @@ type Image {
 
 type File {
   url: String
+  size: Int
 }
 
 type Contact {
@@ -336,7 +337,7 @@ type PostPrivate {
   title: String
   description: String
   image: Image
-  attachment: File
+  attachment: [File]
   likesCount: Int
   viewsCount: Int
   target: EventTarget
@@ -347,7 +348,7 @@ type Post {
   title: String
   description: String
   image: Image
-  attachment: File
+  attachment: [File]
   likesCount: Int
   viewsCount: Int
   author: Author
