@@ -60,9 +60,11 @@ const api = new ApiStack(app, 'api-stack', {
   dictionaryTableName: 'Dictionary',
   mainTableName: process.env.MAIN_TABLE_NAME || '',
   imagesDomain: `images.${process.env.ZONE_NAME}`,
+  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
 });
 
 api.addDependency(cognito);
+api.addDependency(elasticsearch);
 
 /**
  * WebSite: https://admin.tifo-sport.com
