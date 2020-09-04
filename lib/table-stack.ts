@@ -2,6 +2,7 @@ import * as cdk from '@aws-cdk/core';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 
 export interface TableStackProps extends cdk.StackProps {
+  esDomain: string;
   dictionaryTableName: string;
   mainTableName: string;
 }
@@ -10,7 +11,7 @@ export class TableStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: TableStackProps) {
     super(scope, id, props);
 
-    const { dictionaryTableName, mainTableName } = props;
+    const { dictionaryTableName, mainTableName, esDomain } = props;
 
     /**
      * Dictionary

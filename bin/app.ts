@@ -44,10 +44,13 @@ const elasticsearch = new ElasticsearchStack(app, 'es-stack', {});
 /**
  * Create DynamoDB tables
  */
-new TableStack(app, 'table-stack', {
+const tables = new TableStack(app, 'table-stack', {
+  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
   dictionaryTableName: 'Dictionary',
   mainTableName: process.env.MAIN_TABLE_NAME || '',
 });
+
+tables.addDependency(elasticsearch);
 
 /**
  * Create GraphQL API
