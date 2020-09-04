@@ -13,8 +13,8 @@ export const handler: Handler = async (event) => {
 
   return {
     items: [
-      { id: '10-00', name: 'Federation A' },
-      { id: '10-01', name: 'Federation B' },
+      { id: '10-00', name: 'Federation A', logo: {url: 'https://images.dev.tifo-sport.com/demo-federation-logo.png'} },
+      { id: '10-01', name: 'Federation B', logo: {url: 'https://images.dev.tifo-sport.com/demo-federation-logo.png'} },
     ],
   };
 };

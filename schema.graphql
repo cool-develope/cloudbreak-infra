@@ -359,11 +359,13 @@ type TeamItemPrivate {
 type ClubItemPrivate {
   id: ID!
   name: String
+  logo: Image
 }
 
 type FederationItemPrivate {
   id: ID!
   name: String
+  logo: Image
 }
 
 type EventTarget {
