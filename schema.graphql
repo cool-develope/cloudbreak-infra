@@ -127,8 +127,19 @@ input MyEventsFilterInput {
 }
 
 input FeedPrivateFilterInput {
-  eventType: EventType
   search: String
+  myContent: Boolean
+  eventType: [EventType]
+  federation: [String]
+  club: [String]
+  team: [String]
+  discipline: [Discipline]
+  createDateAfter: AWSDateTime
+  createDateBefore: AWSDateTime
+  startDateAfter: AWSDateTime
+  startDateBefore: AWSDateTime
+  endDateAfter: AWSDateTime
+  endDateBefore: AWSDateTime
 }
 
 input TeamsPrivateFilterInput {
@@ -421,10 +432,12 @@ type UpcomingEventsPrivateConnection {
 
 type FeedConnection {
   items: [FeedItem]
+  totalCount: Int
 }
 
 type FeedPrivateConnection {
   items: [FeedItem]
+  totalCount: Int
 }
 
 type TeamsPrivateConnection {
