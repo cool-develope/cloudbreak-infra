@@ -287,7 +287,7 @@ export class ApiStack extends cdk.Stack {
   syncContactsMutation(mainTable: ITable) {
     const lambdaFunction = this.getFunction('syncContacts', 'api-syncContacts', 'syncContacts', {
       MAIN_TABLE_NAME: mainTable.tableName
-    }, 120 );
+    }, 120, 256);
 
     mainTable.grantReadWriteData(lambdaFunction);
 
@@ -476,7 +476,7 @@ export class ApiStack extends cdk.Stack {
     return date.toISOString();
   }
 
-  getFunction(id: string, functionName: string, folderName: string, environment?: any, timeoutSeconds = 30) {
+  getFunction(id: string, functionName: string, folderName: string, environment?: any, timeoutSeconds = 30, memorySize = 128) {
     return new lambda.Function(this, id, {
       functionName,
       code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName)),
@@ -486,6 +486,7 @@ export class ApiStack extends cdk.Stack {
       logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(timeoutSeconds),
+      memorySize
     });
   }
 }
