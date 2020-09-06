@@ -20,10 +20,13 @@ import {
   EventForAdmin,
   PostForAdmin,
   EventRecord,
+  AttachmentItemRecord,
+  Discipline,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
-const { MAIN_TABLE_NAME, IMAGES_DOMAIN } = process.env;
+const s3 = new AWS.S3();
+const { MAIN_TABLE_NAME, IMAGES_DOMAIN, IMAGES_BUCKET } = process.env;
 
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
@@ -54,6 +57,33 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
   };
 
   return db.update(params).promise();
+};
+
+const describeFile = (s3Key: string) =>
+  s3
+    .headObject({
+      Bucket: IMAGES_BUCKET,
+      Key: s3Key,
+    })
+    .promise()
+    .then(({ ContentLength }: any) => ({
+      key: s3Key,
+      size: ContentLength,
+    }));
+
+const getAttachmentEnriched = async (
+  attachment: string[] = [],
+): Promise<AttachmentItemRecord[]> => {
+  const s3Promises = attachment.map((s3Key) => describeFile(s3Key));
+
+  // @ts-ignore
+  const s3Results = await Promise.allSettled(s3Promises);
+
+  return s3Results
+    .map(({ status, value }: { status: string; value: AttachmentItemRecord }) =>
+      status === 'fulfilled' ? value : null,
+    )
+    .filter((v: AttachmentItemRecord) => !!v);
 };
 
 const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: '' }));
@@ -100,13 +130,15 @@ const getTypePost = (metadata: EventRecord): PostForAdmin => ({
   },
 });
 
-const getTypeImage = (image: string = '') => ({
+const getTypeImage = (image: string = ''): Image => ({
   url: image ? `https://${IMAGES_DOMAIN}/${image}` : '',
 });
 
-const getTypeFile = (attachment: string = '') => ({
-  url: attachment ? `https://${IMAGES_DOMAIN}/${attachment}` : '',
-});
+const getTypeFile = (attachment: AttachmentItemRecord[] = []): File[] =>
+  attachment.map(({ key, size }) => ({
+    url: key ? `https://${IMAGES_DOMAIN}/${key}` : '',
+    size,
+  }));
 
 const getDefaultValues = (userId: string, eventType: EventType) => ({
   eventType,
@@ -167,13 +199,14 @@ const createEvent = async (
 const createPost = async (userId: string, input: CreatePostInput): Promise<CreatePostPayload> => {
   const pk = `event#${uuidv4()}`;
   const { title, description = '', image, attachment, target } = input;
+  const attachmentEnriched = await getAttachmentEnriched(attachment);
 
   const metadata = {
     ...getDefaultValues(userId, EventType.Post),
     title,
     description,
     image,
-    attachment,
+    attachment: attachmentEnriched,
     targetCountry: target?.country,
     targetFederation: target?.federation,
     targetClub: target?.club,

@@ -22,12 +22,36 @@ export enum RepeatType {
   Monthly = 'Monthly',
 }
 
+export enum Discipline {
+  SOCCER = 'SOCCER',
+  TENNIS = 'TENNIS',
+  PADEL = 'PADEL',
+  BASKETBALL = 'BASKETBALL',
+  VOLLEYBALL = 'VOLLEYBALL',
+  ATHLETICS = 'ATHLETICS',
+  ROWING = 'ROWING',
+  BADMINTON = 'BADMINTON',
+  BOXING = 'BOXING',
+  CANOE_KAYAK = 'CANOE_KAYAK',
+  CYCLING = 'CYCLING',
+  GOLF = 'GOLF',
+  GYMNASTIC = 'GYMNASTIC',
+  HANDBALL = 'HANDBALL',
+  JUDO = 'JUDO',
+  SWIMMING = 'SWIMMING',
+  RUGBY = 'RUGBY',
+  EQUESTRIAN = 'EQUESTRIAN',
+  TAEKWONDO = 'TAEKWONDO',
+  TABLE_TENNIS = 'TABLE_TENNIS',
+}
+
 export interface Image {
   url: string;
 }
 
 export interface File {
   url: string;
+  size: number;
 }
 
 export interface CreateEventInput {
@@ -37,7 +61,7 @@ export interface CreateEventInput {
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: string;
+  discipline?: Discipline;
   price?: number;
   repeatType?: RepeatType;
   target?: EventTargetInput;
@@ -47,7 +71,7 @@ export interface CreatePostInput {
   title?: string;
   description?: string;
   image?: string;
-  attachment?: string;
+  attachment?: string[];
   target?: EventTargetInput;
 }
 
@@ -55,7 +79,7 @@ export interface EventTargetInput {
   country?: string;
   federation?: string[];
   club?: string[];
-  discipline?: string[];
+  discipline?: Discipline[];
   team?: string[];
   userRole?: string[];
 }
@@ -70,7 +94,7 @@ export interface EventTarget {
     id: string;
     name?: string;
   }[];
-  discipline?: string[];
+  discipline?: Discipline[];
   team?: {
     id: string;
     name?: string;
@@ -96,7 +120,7 @@ export interface EventForAdmin {
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: string;
+  discipline?: Discipline;
   price?: number;
   likesCount?: number;
   viewsCount?: number;
@@ -110,7 +134,7 @@ export interface PostForAdmin {
   title?: string;
   description?: string;
   image?: Image;
-  attachment?: File;
+  attachment?: File[];
   likesCount?: number;
   viewsCount?: number;
   target?: EventTarget;
@@ -123,11 +147,11 @@ export interface EventRecord {
   title: string;
   description?: string;
   image: string;
-  attachment: string;
+  attachment?: AttachmentItemRecord[];
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: string;
+  discipline?: Discipline;
   price?: number;
   likesCount: number;
   viewsCount: number;
@@ -140,7 +164,12 @@ export interface EventRecord {
   targetCountry?: string;
   targetFederation?: string[];
   targetClub?: string[];
-  targetDiscipline?: string[];
+  targetDiscipline?: Discipline[];
   targetTeam?: string[];
   targetUserRole?: UserRole[];
+}
+
+export interface AttachmentItemRecord {
+  key: string;
+  size: number;
 }
