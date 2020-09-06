@@ -94,7 +94,7 @@ export class ApiStack extends cdk.Stack {
     /**
      * Query: feed, feedPrivate
      */
-    this.feedQuery(mainTable, imagesDomain);
+    this.feedQuery(mainTable, imagesDomain, esDomain);
 
     /**
      * Mutation: syncContacts
