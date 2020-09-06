@@ -14,7 +14,7 @@ interface Item {
 }
 
 const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
-const client = new Client({ node: ES_DOMAIN });
+const es = new Client({ node: ES_DOMAIN });
 
 const eventMetadataHandler = async (items: Item[]) => {
   const body = [];
@@ -44,7 +44,7 @@ const eventMetadataHandler = async (items: Item[]) => {
     }
   }
 
-  const result = await client.bulk({
+  const result = await es.bulk({
     index: 'events',
     refresh: true,
     body,
