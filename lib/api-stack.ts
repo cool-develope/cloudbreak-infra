@@ -261,13 +261,15 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  feedQuery(mainTable: ITable, imagesDomain: string) {
+  feedQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
     const feedFunction = this.getFunction('feed', 'api-feed', 'feed', {
       MAIN_TABLE_NAME: mainTable.tableName,
       IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
     });
 
     mainTable.grantReadWriteData(feedFunction);
+    this.allowES(feedFunction);
 
     const dataSource = this.api.addLambdaDataSource('feedFunction', feedFunction);
 
