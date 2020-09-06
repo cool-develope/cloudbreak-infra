@@ -51,7 +51,7 @@ const eventMetadataHandler = async (items: Item[]) => {
       body,
     });
 
-    console.log(result);
+    console.log(JSON.stringify(result, null, 2));
   }
 };
 
@@ -91,7 +91,7 @@ const eventUserHandler = async (items: Item[]) => {
       body,
     });
 
-    console.log(result);
+    console.log(JSON.stringify(result, null, 2));
   }
 };
 
