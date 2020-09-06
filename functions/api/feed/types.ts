@@ -8,12 +8,50 @@ export enum EventType {
   Post = 'Post',
 }
 
+export enum UserRole {
+  Coach = 'Coach',
+  Adult = 'Adult',
+  Parent = 'Parent',
+  Teenager = 'Teenager',
+  Fan = 'Fan',
+}
+
+export enum RepeatType {
+  None = 'None',
+  Weekly = 'Weekly',
+  Monthly = 'Monthly',
+}
+
+export enum Discipline {
+  SOCCER = 'SOCCER',
+  TENNIS = 'TENNIS',
+  PADEL = 'PADEL',
+  BASKETBALL = 'BASKETBALL',
+  VOLLEYBALL = 'VOLLEYBALL',
+  ATHLETICS = 'ATHLETICS',
+  ROWING = 'ROWING',
+  BADMINTON = 'BADMINTON',
+  BOXING = 'BOXING',
+  CANOE_KAYAK = 'CANOE_KAYAK',
+  CYCLING = 'CYCLING',
+  GOLF = 'GOLF',
+  GYMNASTIC = 'GYMNASTIC',
+  HANDBALL = 'HANDBALL',
+  JUDO = 'JUDO',
+  SWIMMING = 'SWIMMING',
+  RUGBY = 'RUGBY',
+  EQUESTRIAN = 'EQUESTRIAN',
+  TAEKWONDO = 'TAEKWONDO',
+  TABLE_TENNIS = 'TABLE_TENNIS',
+}
+
 export interface Image {
   url: string;
 }
 
 export interface File {
   url: string;
+  size: number;
 }
 
 export interface Event {
@@ -31,8 +69,8 @@ export interface Event {
   viewsCount: number;
   acceptedCount: number;
   author: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export interface Post {
@@ -41,18 +79,65 @@ export interface Post {
   title: string;
   description: string;
   image: Image;
-  attachment: File;
+  attachment: File[];
   likesCount: number;
   viewsCount: number;
   author: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export interface FeedConnection {
   items: (Event | Post)[];
+  totalCount: number;
 }
 
 export interface FeedFilterInput {
+  search?: String;
+  myContent?: Boolean;
+  eventType?: [EventType] | EventType;
+  federation?: [String];
+  club?: [String];
+  team?: [String];
+  discipline?: [Discipline];
+  createDateAfter?: string;
+  createDateBefore?: string;
+  startDateAfter?: string;
+  startDateBefore?: string;
+  endDateAfter?: string;
+  endDateBefore?: string;
+}
+
+export interface EventRecord {
+  pk: string;
+  sk: string;
   eventType: EventType;
+  title: string;
+  description?: string;
+  image: string;
+  attachment?: AttachmentItemRecord[];
+  startDate?: string;
+  endDate?: string;
+  address?: string;
+  discipline?: Discipline;
+  price?: number;
+  likesCount: number;
+  viewsCount: number;
+  acceptedCount: number;
+  createdAt: string;
+  modifiedAt: string;
+  ownerUserId: string;
+  isDeleted: boolean;
+  repeatType: string;
+  targetCountry?: string;
+  targetFederation?: string[];
+  targetClub?: string[];
+  targetDiscipline?: Discipline[];
+  targetTeam?: string[];
+  targetUserRole?: UserRole[];
+}
+
+export interface AttachmentItemRecord {
+  key: string;
+  size: number;
 }
