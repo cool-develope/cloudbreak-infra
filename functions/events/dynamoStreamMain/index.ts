@@ -28,7 +28,6 @@ const eventMetadataHandler = async (items: Item[]) => {
     delete data.pk;
     delete data.sk;
     delete data.modifiedAt;
-    delete data.createdAt;
 
     if (eventName === 'INSERT' || eventName === 'MODIFY') {
       body.push({
