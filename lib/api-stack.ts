@@ -230,12 +230,23 @@ export class ApiStack extends cdk.Stack {
   }
 
   createEventMutation(mainTable: ITable, imagesDomain: string) {
+    const { IMAGES_BUCKET_NAME } = process.env;
+
     const createEventFunction = this.getFunction('createEvent', 'api-createEvent', 'createEvent', {
       MAIN_TABLE_NAME: mainTable.tableName,
       IMAGES_DOMAIN: imagesDomain,
-    });
+      IMAGES_BUCKET: IMAGES_BUCKET_NAME,
+    }, 30, 256);
 
     mainTable.grantReadWriteData(createEventFunction);
+
+    const s3Policy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    s3Policy.addActions('s3:GetObject');
+    s3Policy.addResources(`arn:aws:s3:::${IMAGES_BUCKET_NAME}/*`);
+
+    createEventFunction.addToRolePolicy(s3Policy);
 
     const dataSource = this.api.addLambdaDataSource('createEventFunction', createEventFunction);
 
