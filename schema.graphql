@@ -410,9 +410,9 @@ type TeamEventTarget {
   name: String
 }
 
-
 type MyEventsConnection {
   items: [Event]
+  totalCount: Int
 }
 
 type UpcomingEventsPrivateConnection {
