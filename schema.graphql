@@ -308,11 +308,11 @@ type EventPrivate {
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
-  discipline: Discipline
+  discipline: String
   price: Float
   likesCount: Int
   viewsCount: Int
-  repeatType: RepeatType
+  repeatType: String
   target: EventTarget
 }
 
@@ -324,7 +324,7 @@ type Event {
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
-  discipline: Discipline
+  discipline: String
   price: Float
   likesCount: Int
   viewsCount: Int
