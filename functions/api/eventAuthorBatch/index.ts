@@ -11,6 +11,7 @@ export interface Author {
   firstName?: string;
   lastName?: string;
   photo?: Image;
+  organizationName?: string;
 }
 
 const AWS = AWSXRay.captureAWS(AWS_RAW);
@@ -62,6 +63,7 @@ const getTypeAuthor = ({ firstName, lastName, photo }: any): Author => ({
   firstName,
   lastName,
   photo: getTypeImage(photo),
+  organizationName: 'Horizon sport club',
 });
 
 const getTypeImage = (photo: string = '') => ({

@@ -355,6 +355,7 @@ type EventReaction {
 type Author {
   firstName: String
   lastName: String
+  organizationName: String
   photo: Image
 }
 
