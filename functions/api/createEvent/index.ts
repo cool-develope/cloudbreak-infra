@@ -88,6 +88,15 @@ const getAttachmentEnriched = async (
 
 const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: '' }));
 
+const getTypeEventTarget = (metadata: EventRecord): EventTarget => ({
+  country: metadata.targetCountry || '',
+  federation: getTargetObject(metadata.targetFederation),
+  club: getTargetObject(metadata.targetClub),
+  discipline: metadata.targetDiscipline || [],
+  team: getTargetObject(metadata.targetTeam),
+  userRole: metadata.targetUserRole,
+});
+
 const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
   id: metadata.pk.replace('event#', ''),
   title: metadata.title,
@@ -102,14 +111,7 @@ const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
   viewsCount: metadata.viewsCount,
   acceptedCount: metadata.acceptedCount,
   repeatType: (metadata.repeatType || RepeatType.None) as RepeatType,
-  target: {
-    country: metadata.targetCountry,
-    federation: getTargetObject(metadata.targetFederation),
-    club: getTargetObject(metadata.targetClub),
-    discipline: metadata.targetDiscipline || [],
-    team: getTargetObject(metadata.targetTeam),
-    userRole: metadata.targetUserRole,
-  },
+  target: getTypeEventTarget(metadata),
 });
 
 const getTypePost = (metadata: EventRecord): PostForAdmin => ({
@@ -120,14 +122,7 @@ const getTypePost = (metadata: EventRecord): PostForAdmin => ({
   attachment: getTypeFile(metadata.attachment),
   likesCount: metadata.likesCount,
   viewsCount: metadata.viewsCount,
-  target: {
-    country: metadata.targetCountry || '',
-    federation: getTargetObject(metadata.targetFederation),
-    club: getTargetObject(metadata.targetClub),
-    discipline: metadata.targetDiscipline,
-    team: getTargetObject(metadata.targetTeam),
-    userRole: metadata.targetUserRole,
-  },
+  target: getTypeEventTarget(metadata),
 });
 
 const getTypeImage = (image: string = ''): Image => ({
