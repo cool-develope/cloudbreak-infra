@@ -110,7 +110,7 @@ export class ApiStack extends cdk.Stack {
     /**
      * Field: Event.author
      */
-    this.eventAuthorField(mainTable);
+    this.eventAuthorField(mainTable, imagesDomain);
 
     /**
      * Query: myEvents
@@ -334,9 +334,10 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  eventAuthorField(mainTable: ITable) {
+  eventAuthorField(mainTable: ITable, imagesDomain: string) {
     const eventAuthorBatchFunction = this.getFunction('eventAuthorBatch', 'api-eventAuthorBatch', 'eventAuthorBatch', {
-      MAIN_TABLE_NAME: mainTable.tableName
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
     }, 120 );
 
     mainTable.grantReadWriteData(eventAuthorBatchFunction);
