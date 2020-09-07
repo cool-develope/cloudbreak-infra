@@ -328,7 +328,7 @@ type Event {
   repeatType: String
   target: EventTarget
   myReaction: EventReaction
-  participants(limit: Int, from: Int): UserConnection!
+  participants: UserConnection!
 }
 
 type Post {
@@ -449,7 +449,6 @@ type FederationsPrivateConnection {
 
 type UserConnection {
   items: [UserPublic]
-  totalCount: Int
 }
 
 union FeedItem = Event | Post
