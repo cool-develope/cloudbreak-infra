@@ -113,6 +113,11 @@ export class ApiStack extends cdk.Stack {
     this.eventAuthorField(mainTable, imagesDomain);
 
     /**
+     * Field: Event.myReaction
+     */
+    this.eventMyReactionField(mainTable);
+
+    /**
      * Query: myEvents
      */
     this.myEventsQuery(mainTable, imagesDomain, esDomain);
@@ -370,6 +375,48 @@ export class ApiStack extends cdk.Stack {
   "version" : "2017-02-28",
   "operation": "BatchInvoke",
   "payload": $utils.toJson($context.source)
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+  }
+
+  eventMyReactionField(mainTable: ITable) {
+    const eventMyReactionBatchFunction = this.getFunction('eventMyReactionBatch', 'api-eventMyReactionBatch', 'eventMyReactionBatch', {
+      MAIN_TABLE_NAME: mainTable.tableName
+    }, 120);
+
+    mainTable.grantReadWriteData(eventMyReactionBatchFunction);
+
+    const lambdaDS = this.api.addLambdaDataSource('eventMyReactionBatchFunction', eventMyReactionBatchFunction);
+
+    lambdaDS.createResolver({
+      typeName: 'Event',
+      fieldName: 'myReaction',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    lambdaDS.createResolver({
+      typeName: 'Post',
+      fieldName: 'myReaction',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
 }
 `),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
