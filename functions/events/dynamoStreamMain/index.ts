@@ -29,12 +29,21 @@ const eventMetadataHandler = async (items: Item[]) => {
     delete data.sk;
     delete data.modifiedAt;
 
-    if (eventName === 'INSERT' || eventName === 'MODIFY') {
+    if (eventName === 'INSERT') {
       body.push({
         index: { _id: eventId },
       });
       body.push({
         ...data,
+      });
+    } else if (eventName === 'MODIFY') {
+      body.push({
+        update: { _id: eventId },
+      });
+      body.push({
+        doc: {
+          ...data,
+        },
       });
     } else if (eventName === 'REMOVE') {
       body.push({
