@@ -189,22 +189,22 @@ type InviteParentPayload {
 
 type CreateEventPayload {
   errors: [String]
-  event: EventPrivate
+  event: Event
 }
 
 type UpdateEventPayload {
   errors: [String]
-  event: EventPrivate
+  event: Event
 }
 
 type CreatePostPayload {
   errors: [String]
-  post: PostPrivate
+  post: Post
 }
 
 type UpdatePostPayload {
   errors: [String]
-  post: PostPrivate
+  post: Post
 }
 
 type UploadUrlPayload {
@@ -311,22 +311,6 @@ type User {
   usCitizen: Boolean
 }
 
-type EventPrivate {
-  id: ID!
-  title: String
-  description: String
-  image: Image
-  startDate: AWSDateTime
-  endDate: AWSDateTime
-  address: String
-  discipline: String
-  price: Float
-  likesCount: Int
-  viewsCount: Int
-  repeatType: String
-  target: EventTarget
-}
-
 type Event {
   id: ID!
   title: String
@@ -341,16 +325,7 @@ type Event {
   viewsCount: Int
   acceptedCount: Int
   author: Author
-}
-
-type PostPrivate {
-  id: ID!
-  title: String
-  description: String
-  image: Image
-  attachment: [File]
-  likesCount: Int
-  viewsCount: Int
+  repeatType: String
   target: EventTarget
 }
 
@@ -363,6 +338,7 @@ type Post {
   likesCount: Int
   viewsCount: Int
   author: Author
+  target: EventTarget
 }
 
 type Author {
@@ -501,24 +477,24 @@ type Query {
   me: User!
 
   """
-  TODO: Private. Lookup an Event by the id 
+  Private. Lookup an Event by the id
   """
-  getEventPrivate(id: ID!): EventPrivate
+  eventPrivate(eventId: ID!): Event
 
   """
-  TODO: Lookup an Event by the id
+  Lookup an Event by the id
   """
-  getEvent(id: ID!): Event
+  event(eventId: ID!): Event
 
   """
-  TODO: Private. Lookup a Post by the id
+  Private. Lookup a Post by the id
   """
-  getPostPrivate(id: ID!): PostPrivate
+  postPrivate(eventId: ID!): Post
 
   """
-  TODO: Lookup a Post by the id
+  Lookup a Post by the id
   """
-  getPost(id: ID!): Post
+  post(eventId: ID!): Post
 
   """
   Search Events and Posts relevant to the user
@@ -547,5 +523,9 @@ type Query {
 
   teamsPrivate(filter: TeamsPrivateFilterInput, limit: Int, from: Int): TeamsPrivateConnection!
   clubsPrivate(filter: ClubsPrivateFilterInput, limit: Int, from: Int): ClubsPrivateConnection!
-  federationsPrivate(filter: FederationsPrivateFilterInput, limit: Int, from: Int): FederationsPrivateConnection!
+  federationsPrivate(
+    filter: FederationsPrivateFilterInput
+    limit: Int
+    from: Int
+  ): FederationsPrivateConnection!
 }
