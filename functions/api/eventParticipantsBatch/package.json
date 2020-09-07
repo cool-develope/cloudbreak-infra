@@ -1,0 +1,14 @@
+{
+  "name": "eventParticipantsBatch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "Sergey Onufrienko <sergey@onufrienko.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^7.9.0",
+    "aws-xray-sdk": "^3.1.0"
+  }
+}
