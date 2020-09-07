@@ -28,6 +28,32 @@ const getExpressionAttributeValues = (attributes = {}) => {
   return obj;
 };
 
+const incrementField = (pk: string, sk: string, fieldName: string, value: number = 1) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    Key: { pk, sk },
+    UpdateExpression: `SET ${fieldName} = ${fieldName} + :v`,
+    ExpressionAttributeValues: {
+      ':v': value,
+    },
+  };
+
+  return db.update(params).promise();
+};
+
+const decrementField = (pk: string, sk: string, fieldName: string, value: number = 1) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    Key: { pk, sk },
+    UpdateExpression: `SET ${fieldName} = ${fieldName} - :v`,
+    ExpressionAttributeValues: {
+      ':v': value,
+    },
+  };
+
+  return db.update(params).promise();
+};
+
 const updateItem = (pk: string, sk: string, attributes: any) => {
   const condition = 'SET ' + getUpdateExpression(attributes);
   const values = getExpressionAttributeValues(attributes);
@@ -57,13 +83,29 @@ export const handler: Handler = async (event): Promise<{ eventId: string }> => {
   const sk = `user#${sub}`;
 
   if (field === FieldName.addLike) {
-    await updateItem(pk, sk, { l: true });
+    // @ts-ignore
+    await Promise.allSettled([
+      updateItem(pk, sk, { l: true }),
+      incrementField(pk, 'metadata', 'likesCount'),
+    ]);
   } else if (field === FieldName.removeLike) {
-    await updateItem(pk, sk, { l: false });
+    // @ts-ignore
+    await Promise.allSettled([
+      updateItem(pk, sk, { l: false }),
+      decrementField(pk, 'metadata', 'likesCount'),
+    ]);
   } else if (field === FieldName.acceptEvent) {
-    await updateItem(pk, sk, { a: true });
+    // @ts-ignore
+    await Promise.allSettled([
+      updateItem(pk, sk, { a: true }),
+      incrementField(pk, 'metadata', 'acceptedCount'),
+    ]);
   } else if (field === FieldName.declineEvent) {
-    await updateItem(pk, sk, { a: false });
+    // @ts-ignore
+    await Promise.allSettled([
+      updateItem(pk, sk, { a: false }),
+      decrementField(pk, 'metadata', 'acceptedCount'),
+    ]);
   }
 
   return { eventId };
