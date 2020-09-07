@@ -137,6 +137,11 @@ export class ApiStack extends cdk.Stack {
      */
     this.federationsPrivateQuery(mainTable, imagesDomain, esDomain);
 
+    /**
+     * Query: event, post, eventPrivate, postPrivate
+     */
+    this.eventQuery(mainTable, imagesDomain, esDomain);
+
     new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
   }
 
@@ -458,6 +463,39 @@ export class ApiStack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'federationsPrivate',
+    });
+  }
+
+  eventQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+    const eventFunction = this.getFunction('event', 'api-event', 'event', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+    });
+
+    mainTable.grantReadWriteData(eventFunction);
+    this.allowES(eventFunction);
+
+    const dataSource = this.api.addLambdaDataSource('eventFunction', eventFunction);
+    
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'event',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'post',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'eventPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'postPrivate',
     });
   }
 
