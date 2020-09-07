@@ -327,6 +327,7 @@ type Event {
   author: Author
   repeatType: String
   target: EventTarget
+  myReaction: EventReaction
 }
 
 type Post {
@@ -339,6 +340,16 @@ type Post {
   viewsCount: Int
   author: Author
   target: EventTarget
+  myReaction: PostReaction
+}
+
+type PostReaction {
+  liked: Boolean
+}
+
+type EventReaction {
+  liked: Boolean
+  accepted: Boolean
 }
 
 type Author {
