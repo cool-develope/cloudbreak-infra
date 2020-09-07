@@ -328,6 +328,7 @@ type Event {
   repeatType: String
   target: EventTarget
   myReaction: EventReaction
+  participants(limit: Int, from: Int): UserConnection!
 }
 
 type Post {
@@ -385,6 +386,12 @@ type EventTarget {
   userRole: [UserRole]
 }
 
+type UserPublic {
+  firstName: String
+  lastName: String
+  photo: Image
+}
+
 input EventTargetInput {
   country: String
   federation: [String]
@@ -438,6 +445,11 @@ type ClubsPrivateConnection {
 
 type FederationsPrivateConnection {
   items: [FederationItemPrivate]
+}
+
+type UserConnection {
+  items: [UserPublic]
+  totalCount: Int
 }
 
 union FeedItem = Event | Post
