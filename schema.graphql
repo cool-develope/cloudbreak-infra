@@ -69,6 +69,11 @@ input InviteParentInput {
 input AcceptChildInvitationInput {
   invitationId: ID!
 }
+
+input DeclineChildInvitationInput {
+  invitationId: ID!
+}
+
 input CreateEventInput {
   title: String!
   description: String
@@ -193,6 +198,11 @@ type InviteParentPayload {
 type AcceptChildInvitationPayload {
   errors: [String]
 }
+
+type DeclineChildInvitationPayload {
+  errors: [String]
+}
+
 type CreateEventPayload {
   errors: [String]
   event: Event
@@ -474,6 +484,8 @@ type Mutation {
 
   inviteParent(input: InviteParentInput!): InviteParentPayload
   acceptChildInvitation(input: AcceptChildInvitationInput!): AcceptChildInvitationPayload
+  declineChildInvitation(input: DeclineChildInvitationInput!): DeclineChildInvitationPayload
+
   createEvent(input: CreateEventInput!): CreateEventPayload!
 
   """
