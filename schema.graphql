@@ -66,6 +66,9 @@ input InviteParentInput {
   email: String!
 }
 
+input AcceptChildInvitationInput {
+  invitationId: ID!
+}
 input CreateEventInput {
   title: String!
   description: String
@@ -187,6 +190,9 @@ type InviteParentPayload {
   errors: [String]
 }
 
+type AcceptChildInvitationPayload {
+  errors: [String]
+}
 type CreateEventPayload {
   errors: [String]
   event: Event
@@ -465,6 +471,7 @@ type Mutation {
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
 
   inviteParent(input: InviteParentInput!): InviteParentPayload
+  acceptChildInvitation(input: AcceptChildInvitationInput!): AcceptChildInvitationPayload
   createEvent(input: CreateEventInput!): CreateEventPayload!
 
   """
