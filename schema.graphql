@@ -315,6 +315,8 @@ type User {
   birthCity: String
   gender: Gender
   usCitizen: Boolean
+  children: [UserChild]
+  pendingChildInvitations: [UserChild]
 }
 
 type UserPublic {
