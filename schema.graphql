@@ -311,6 +311,18 @@ type User {
   usCitizen: Boolean
 }
 
+type UserPublic {
+  firstName: String
+  lastName: String
+  photo: Image
+}
+
+type UserChild {
+  firstName: String
+  lastName: String
+  photo: Image
+}
+
 type Event {
   id: ID!
   title: String
@@ -384,12 +396,6 @@ type EventTarget {
   discipline: [Discipline]
   team: [TeamEventTarget]
   userRole: [UserRole]
-}
-
-type UserPublic {
-  firstName: String
-  lastName: String
-  photo: Image
 }
 
 input EventTargetInput {
