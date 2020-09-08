@@ -458,10 +458,7 @@ type Mutation {
   signoutMobile(input: SignoutMobileInput!): SignoutMobilePayload
   updateUser(input: UpdateUserInput!): UpdateUserPayload!
 
-  """
-  TODO:
-  """
-  inviteParent(input: InviteParentInput!): InviteParentPayload!
+  inviteParent(input: InviteParentInput!): InviteParentPayload
   createEvent(input: CreateEventInput!): CreateEventPayload!
 
   """
