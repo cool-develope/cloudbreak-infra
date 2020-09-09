@@ -328,7 +328,7 @@ type User {
   usCitizen: Boolean
   children: [UserChild]
   parent: UserChild
-  pendingChildInvitations: [UserChild]
+  pendingChildInvitations: [ChildInvitation]
 }
 
 type UserPublic {
@@ -341,6 +341,12 @@ type UserChild {
   firstName: String
   lastName: String
   photo: Image
+}
+
+type ChildInvitation {
+  invitationId: ID!
+  createDate: AWSDateTime
+  user: UserChild
 }
 
 type Event {
