@@ -314,6 +314,7 @@ type Contact {
 }
 
 type User {
+  email: String
   firstName: String
   lastName: String
   country: String
