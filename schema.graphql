@@ -327,6 +327,7 @@ type User {
   gender: Gender
   usCitizen: Boolean
   children: [UserChild]
+  parent: UserChild
   pendingChildInvitations: [UserChild]
 }
 
