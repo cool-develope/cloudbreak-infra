@@ -259,6 +259,7 @@ type SendPhoneVerificationPayload {
 }
 type VerifyPhonePayload {
   errors: [String]
+  verified: Boolean
 }
 
 enum Gender {
