@@ -180,12 +180,12 @@ input DeclineEventInput {
 }
 
 input SendPhoneVerificationInput {
-  phoneNumber: String
+  phoneNumber: String!
 }
 
 input VerifyPhoneInput {
-  phoneNumber: String
-  code: String
+  phoneNumber: String!
+  code: String!
 }
 
 type SigninMobilePayload {
