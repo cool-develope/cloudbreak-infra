@@ -179,6 +179,15 @@ input DeclineEventInput {
   eventId: ID!
 }
 
+input SendPhoneVerificationInput {
+  phoneNumber: String
+}
+
+input VerifyPhoneInput {
+  phoneNumber: String
+  code: String
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -243,6 +252,13 @@ type AcceptEventPayload {
 
 type DeclineEventPayload {
   eventId: ID!
+}
+
+type SendPhoneVerificationPayload {
+  errors: [String]
+}
+type VerifyPhonePayload {
+  errors: [String]
 }
 
 enum Gender {
@@ -510,6 +526,9 @@ type Mutation {
   Synchronize contacts from phone to Tifo
   """
   syncContacts(contacts: [PhoneContact]!): [Contact]!
+
+  sendPhoneVerification(input: SendPhoneVerificationInput): SendPhoneVerificationPayload
+  verifyPhone(input: VerifyPhoneInput): VerifyPhonePayload
 }
 
 type Query {
