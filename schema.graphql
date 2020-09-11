@@ -527,8 +527,8 @@ type Mutation {
   """
   syncContacts(contacts: [PhoneContact]!): [Contact]!
 
-  sendPhoneVerification(input: SendPhoneVerificationInput): SendPhoneVerificationPayload
-  verifyPhone(input: VerifyPhoneInput): VerifyPhonePayload
+  sendPhoneVerification(input: SendPhoneVerificationInput!): SendPhoneVerificationPayload
+  verifyPhone(input: VerifyPhoneInput!): VerifyPhonePayload
 }
 
 type Query {
