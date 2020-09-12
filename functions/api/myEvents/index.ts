@@ -60,7 +60,7 @@ const search = async ({
             ],
           },
         },
-        sort: [{ startDate: 'desc' }, { 'title.keyword': 'asc' }],
+        sort: [{ startDate: 'asc' }, { 'title.keyword': 'asc' }],
       },
     });
 
