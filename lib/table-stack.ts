@@ -14,6 +14,9 @@ export interface TableStackProps extends cdk.StackProps {
 }
 
 export class TableStack extends cdk.Stack {
+  public readonly dictionaryTable: dynamodb.Table;
+  public readonly mainTable: dynamodb.Table;
+
   constructor(scope: cdk.Construct, id: string, props: TableStackProps) {
     super(scope, id, props);
 
@@ -22,7 +25,7 @@ export class TableStack extends cdk.Stack {
     /**
      * Dictionary
      */
-    const dictionaryTable = new dynamodb.Table(this, 'DictionaryTable', {
+    this.dictionaryTable = new dynamodb.Table(this, 'DictionaryTable', {
       tableName: dictionaryTableName,
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
@@ -31,14 +34,14 @@ export class TableStack extends cdk.Stack {
     /**
      * Main
      */
-    const mainTable = new dynamodb.Table(this, 'MainTable', {
+    this.mainTable = new dynamodb.Table(this, 'MainTable', {
       tableName: mainTableName,
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
     });
 
-    mainTable.addGlobalSecondaryIndex({
+    this.mainTable.addGlobalSecondaryIndex({
       indexName: 'GSI1',
       partitionKey: {
         name: 'sk',
@@ -64,7 +67,7 @@ export class TableStack extends cdk.Stack {
     );
 
     dynamoStreamMainFunction.addEventSource(
-      new DynamoEventSource(mainTable, {
+      new DynamoEventSource(this.mainTable, {
         batchSize: 100,
         maxBatchingWindow: Duration.seconds(2),
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
