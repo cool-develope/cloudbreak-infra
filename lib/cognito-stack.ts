@@ -11,6 +11,7 @@ import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 export interface CognitoStackProps extends cdk.StackProps {
   signinUrl: string;
   mainTableName: string;
+  imagesDomain: string;
 }
 
 export class CognitoStack extends cdk.Stack {
@@ -19,7 +20,7 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { signinUrl, mainTableName } = props;
+    const { signinUrl, mainTableName, imagesDomain } = props;
     const mainTable = dynamodb.Table.fromTableName(this, 'events-table-main', mainTableName);
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
@@ -43,7 +44,7 @@ export class CognitoStack extends cdk.Stack {
     /**
      * Add triggers
      */
-    this.addTriggerCreateAuthChallenge(signinUrl);
+    this.addTriggerCreateAuthChallenge(signinUrl, imagesDomain);
     this.addTriggerDefineAuthChallenge();
     this.addTriggerPreSignup();
     this.addTriggerVerifyAuthChallenge();
@@ -65,7 +66,7 @@ export class CognitoStack extends cdk.Stack {
     return userPoolClient;
   }
 
-  addTriggerCreateAuthChallenge(signinUrl: string) {
+  addTriggerCreateAuthChallenge(signinUrl: string, imagesDomain: string) {
     const triggerFunction = this.getFunction(
       'cognitoCreateAuthChallenge',
       'cognito-createAuthChallenge',
@@ -74,6 +75,7 @@ export class CognitoStack extends cdk.Stack {
         SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
         SES_REGION: 'eu-west-1',
         SIGNIN_URL: signinUrl,
+        IMAGES_DOMAIN: imagesDomain,
       },
     );
 
