@@ -1,10 +1,21 @@
 // @ts-ignore
 import * as AWS from 'aws-sdk';
+import * as fs from 'fs';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
-const { SIGNIN_URL, SES_FROM_ADDRESS, SES_REGION } = process.env;
+const { SIGNIN_URL, SES_FROM_ADDRESS, SES_REGION, IMAGES_DOMAIN } = process.env;
 AWS.config.update({ region: SES_REGION });
 const ses = new AWS.SES();
+const EMAIL_TEMPLATE = './signin.html';
+
+const getEmailHtml = (templateFileName: string, data: any) => {
+  const html = fs.readFileSync(templateFileName, 'utf8');
+  const htmlWithData = Object.keys(data).reduce(
+    (acc, key) => acc.replace(new RegExp(`{{ ${key} }}`, 'g'), data[key]),
+    html,
+  );
+  return htmlWithData;
+};
 
 const getRandomInteger = (min: number, max: number) =>
   Math.round(Math.random() * (max - min) + min);
@@ -15,20 +26,18 @@ const randomDigits = (len: number): string =>
     .map(() => getRandomInteger(0, 9))
     .join('');
 
-const SIGNIN_TEMPLATE = `
-    <div style="color: #202020; line-height: 1.5;">
-          Your email address {{email}} was just used to request<br />a sign in email.
-          <div style="padding: 60px 0px;"><a href="{{link}}" style="background-color: #3f51b5; color: #ffffff; padding: 12px 26px; font-size: 18px; border-radius: 28px; text-decoration: none;">Click here to sign in</a></div>
-          Code: {{code}}<br /><br />
-          If this was not you, you can safely ignore this email.<br /><br />
-          Best,<br />
-          Tifo`;
-
 const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
   const signinUrl = `${SIGNIN_URL}?code=${secretLoginCode}`;
-  const template = SIGNIN_TEMPLATE.replace('{{email}}', emailAddress)
-    .replace('{{link}}', signinUrl)
-    .replace('{{code}}', secretLoginCode);
+  const signinUrlWeb = `http://tifo-web-experiments.s3-website.eu-central-1.amazonaws.com/signin?code=${secretLoginCode}`;
+
+  const html = getEmailHtml(EMAIL_TEMPLATE, {
+    domain: `https://${IMAGES_DOMAIN}`,
+    url_signin: signinUrl,
+    url_signin_2: signinUrlWeb,
+    text1: 'Click the link below to sign in to your Tifo account.',
+    text2: 'This link will expire in 15 minutes and can only be used once.',
+    button: 'Sign in to Tifo',
+  });
 
   const params: AWS.SES.SendEmailRequest = {
     Destination: { ToAddresses: [emailAddress] },
@@ -36,7 +45,7 @@ const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
       Body: {
         Html: {
           Charset: 'UTF-8',
-          Data: template,
+          Data: html,
         },
       },
       Subject: {
