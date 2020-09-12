@@ -13,32 +13,33 @@ const SCHEMA_FILE = '../schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
   userPool: cognito.UserPool;
-  dictionaryTableName: string;
-  mainTableName: string;
+  dictionaryTable: dynamodb.Table;
+  mainTable: dynamodb.Table;
   imagesDomain: string;
   esDomain: string;
 }
 
 export class ApiStack extends cdk.Stack {
-  public readonly api: appsync.GraphQLApi;
+  public readonly api: appsync.GraphqlApi;
+  public readonly dictionaryTable: dynamodb.Table;
+  public readonly mainTable: dynamodb.Table;
+  public readonly imagesDomain: string;
+  public readonly esDomain: string;
 
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPool, dictionaryTableName, mainTableName, imagesDomain, esDomain } = props;
+    const { userPool, dictionaryTable, mainTable, imagesDomain, esDomain } = props;
 
-    const dictionaryTable = dynamodb.Table.fromTableName(
-      this,
-      'table-dictionary',
-      dictionaryTableName,
-    );
-
-    const mainTable = dynamodb.Table.fromTableName(this, 'table-main', mainTableName);
+    this.dictionaryTable = dictionaryTable;
+    this.mainTable = mainTable;
+    this.imagesDomain = imagesDomain;
+    this.esDomain = esDomain;
 
     /**
      * AppSync API
      */
-    this.api = new appsync.GraphQLApi(this, 'api-appsync', {
+    this.api = new appsync.GraphqlApi(this, 'api-appsync', {
       name: `tifo-api`,
       logConfig: {
         fieldLogLevel: appsync.FieldLogLevel.ALL,
@@ -67,19 +68,14 @@ export class ApiStack extends cdk.Stack {
     });
 
     /**
-     * Query: countries, languages
-     */
-    this.dictionaryQuery(dictionaryTable);
-
-    /**
      * Mutation: signinMobile, signoutMobile
      */
-    this.signinMobileMutation(mainTable);
+    this.signinMobileMutation();
 
     /**
      * Mutation: updateUser
      */
-    this.updateUserMutation(mainTable, imagesDomain);
+    this.updateUserMutation();
 
     /**
      * Query: uploadUrl
@@ -87,90 +83,87 @@ export class ApiStack extends cdk.Stack {
     this.uploadUrlQuery();
 
     /**
-     * Mutation: createEvent, createPost
+     * Mutation: createEvent, createPost, updateEvent, updatePost
      */
-    this.createEventMutation(mainTable, imagesDomain);
+    this.createEventMutation();
 
     /**
      * Query: feed, feedPrivate
      */
-    this.feedQuery(mainTable, imagesDomain, esDomain);
+    this.feedQuery();
 
     /**
      * Mutation: syncContacts
      * Query: contacts
      */
-    this.syncContactsMutation(mainTable);
+    this.syncContactsMutation();
 
     /**
      * Mutation: addLike, removeLike, acceptEvent, declineEvent
      */
-    this.addLikeMutation(mainTable);
+    this.addLikeMutation();
 
     /**
      * Field: Event.author
      */
-    this.eventAuthorField(mainTable, imagesDomain);
+    this.eventAuthorField();
 
     /**
      * Field: Event.myReaction
      */
-    this.eventMyReactionField(mainTable);
+    this.eventMyReactionField();
 
     /**
      * Field: Event.participants
      */
-    this.eventParticipantsField(mainTable, imagesDomain, esDomain);
+    this.eventParticipantsField();
 
     /**
      * Query: myEvents
      */
-    this.myEventsQuery(mainTable, imagesDomain, esDomain);
+    this.myEventsQuery();
 
     /**
      * Query: upcomingEventsPrivate
      */
-    this.upcomingEventsPrivateQuery(mainTable, imagesDomain, esDomain);
+    this.upcomingEventsPrivateQuery();
 
     /**
      * Query: teamsPrivate
      */
-    this.teamsPrivateQuery(mainTable, imagesDomain, esDomain);
+    this.teamsPrivateQuery();
 
     /**
      * Query: clubsPrivate
      */
-    this.clubsPrivateQuery(mainTable, imagesDomain, esDomain);
+    this.clubsPrivateQuery();
 
     /**
      * Query: federationsPrivate
      */
-    this.federationsPrivateQuery(mainTable, imagesDomain, esDomain);
+    this.federationsPrivateQuery();
 
     /**
      * Query: event, post, eventPrivate, postPrivate
      */
-    this.eventQuery(mainTable, imagesDomain, esDomain);
+    this.eventQuery();
 
-    new cdk.CfnOutput(this, 'api-url', { value: this.api.graphQlUrl });
-  }
+    /**
+     * Mutation: inviteParent
+     */
+    this.inviteParentMutation();
 
-  dictionaryQuery(dictionaryTable: ITable) {
-    const dictionaryFunction = this.getFunction('dictionary', 'api-dictionary', 'dictionary');
+    /**
+     * Mutation: acceptChildInvitation, declineChildInvitation
+     */
+    this.acceptChildInvitationMutation();
 
-    dictionaryTable.grantReadData(dictionaryFunction);
+    /**
+     * Mutation: verifyPhone, sendPhoneVerification
+     */
+    this.verifyPhoneMutation();
 
-    const dictionaryDS = this.api.addLambdaDataSource('dictionaryFunction', dictionaryFunction);
-
-    dictionaryDS.createResolver({
-      typeName: 'Query',
-      fieldName: 'countries',
-    });
-
-    dictionaryDS.createResolver({
-      typeName: 'Query',
-      fieldName: 'languages',
-    });
+    new cdk.CfnOutput(this, 'api-url', { value: this.api.graphqlUrl });
   }
 
   uploadUrlQuery() {
@@ -196,17 +189,17 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  signinMobileMutation(mainTable: ITable) {
+  signinMobileMutation() {
     const signinMobileFunction = this.getFunction(
       'signinMobile',
       'api-signinMobile',
       'signinMobile',
       {
-        MAIN_TABLE_NAME: mainTable.tableName,
+        MAIN_TABLE_NAME: this.mainTable.tableName,
       },
     );
 
-    mainTable.grantReadWriteData(signinMobileFunction);
+    this.mainTable.grantReadWriteData(signinMobileFunction);
 
     const dataSource = this.api.addLambdaDataSource('signinMobileFunction', signinMobileFunction);
 
@@ -221,15 +214,22 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  updateUserMutation(mainTable: ITable, imagesDomain: string) {
-    const updateUserFunction = this.getFunction('updateUser', 'api-updateUser', 'updateUser', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
-      ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
-    });
+  updateUserMutation() {
+    const updateUserFunction = this.getFunction(
+      'updateUser',
+      'api-updateUser',
+      'updateUser',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
+        ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
+      },
+      30,
+      256,
+    );
 
-    mainTable.grantReadWriteData(updateUserFunction);
+    this.mainTable.grantReadWriteData(updateUserFunction);
 
     const dataSource = this.api.addLambdaDataSource('updateUserFunction', updateUserFunction);
 
@@ -244,16 +244,23 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  createEventMutation(mainTable: ITable, imagesDomain: string) {
+  createEventMutation() {
     const { IMAGES_BUCKET_NAME } = process.env;
 
-    const createEventFunction = this.getFunction('createEvent', 'api-createEvent', 'createEvent', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      IMAGES_BUCKET: IMAGES_BUCKET_NAME,
-    }, 30, 256);
+    const createEventFunction = this.getFunction(
+      'createEvent',
+      'api-createEvent',
+      'createEvent',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        IMAGES_BUCKET: IMAGES_BUCKET_NAME,
+      },
+      30,
+      256,
+    );
 
-    mainTable.grantReadWriteData(createEventFunction);
+    this.mainTable.grantReadWriteData(createEventFunction);
 
     const s3Policy = new PolicyStatement({
       effect: Effect.ALLOW,
@@ -274,16 +281,26 @@ export class ApiStack extends cdk.Stack {
       typeName: 'Mutation',
       fieldName: 'createPost',
     });
-  }
 
-  feedQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
-    const feedFunction = this.getFunction('feed', 'api-feed', 'feed', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateEvent',
     });
 
-    mainTable.grantReadWriteData(feedFunction);
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updatePost',
+    });
+  }
+
+  feedQuery() {
+    const feedFunction = this.getFunction('feed', 'api-feed', 'feed', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+    });
+
+    this.mainTable.grantReadWriteData(feedFunction);
     this.allowES(feedFunction);
 
     const dataSource = this.api.addLambdaDataSource('feedFunction', feedFunction);
@@ -299,12 +316,19 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  syncContactsMutation(mainTable: ITable) {
-    const lambdaFunction = this.getFunction('syncContacts', 'api-syncContacts', 'syncContacts', {
-      MAIN_TABLE_NAME: mainTable.tableName
-    }, 120, 256);
+  syncContactsMutation() {
+    const lambdaFunction = this.getFunction(
+      'syncContacts',
+      'api-syncContacts',
+      'syncContacts',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+      },
+      120,
+      256,
+    );
 
-    mainTable.grantReadWriteData(lambdaFunction);
+    this.mainTable.grantReadWriteData(lambdaFunction);
 
     const lambdaDS = this.api.addLambdaDataSource('syncContactsFunction', lambdaFunction);
 
@@ -319,12 +343,18 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  addLikeMutation(mainTable: ITable) {
-    const lambdaFunction = this.getFunction('addLike', 'api-addLike', 'addLike', {
-      MAIN_TABLE_NAME: mainTable.tableName
-    }, 120 );
+  addLikeMutation() {
+    const lambdaFunction = this.getFunction(
+      'addLike',
+      'api-addLike',
+      'addLike',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+      },
+      120,
+    );
 
-    mainTable.grantReadWriteData(lambdaFunction);
+    this.mainTable.grantReadWriteData(lambdaFunction);
 
     const lambdaDS = this.api.addLambdaDataSource('addLikeFunction', lambdaFunction);
 
@@ -349,15 +379,24 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  eventAuthorField(mainTable: ITable, imagesDomain: string) {
-    const eventAuthorBatchFunction = this.getFunction('eventAuthorBatch', 'api-eventAuthorBatch', 'eventAuthorBatch', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-    }, 120 );
+  eventAuthorField() {
+    const eventAuthorBatchFunction = this.getFunction(
+      'eventAuthorBatch',
+      'api-eventAuthorBatch',
+      'eventAuthorBatch',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+      },
+      120,
+    );
 
-    mainTable.grantReadWriteData(eventAuthorBatchFunction);
+    this.mainTable.grantReadWriteData(eventAuthorBatchFunction);
 
-    const lambdaDS = this.api.addLambdaDataSource('eventAuthorBatchFunction', eventAuthorBatchFunction);
+    const lambdaDS = this.api.addLambdaDataSource(
+      'eventAuthorBatchFunction',
+      eventAuthorBatchFunction,
+    );
 
     lambdaDS.createResolver({
       typeName: 'Event',
@@ -386,14 +425,23 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  eventMyReactionField(mainTable: ITable) {
-    const eventMyReactionBatchFunction = this.getFunction('eventMyReactionBatch', 'api-eventMyReactionBatch', 'eventMyReactionBatch', {
-      MAIN_TABLE_NAME: mainTable.tableName
-    }, 120);
+  eventMyReactionField() {
+    const eventMyReactionBatchFunction = this.getFunction(
+      'eventMyReactionBatch',
+      'api-eventMyReactionBatch',
+      'eventMyReactionBatch',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+      },
+      120,
+    );
 
-    mainTable.grantReadWriteData(eventMyReactionBatchFunction);
+    this.mainTable.grantReadWriteData(eventMyReactionBatchFunction);
 
-    const lambdaDS = this.api.addLambdaDataSource('eventMyReactionBatchFunction', eventMyReactionBatchFunction);
+    const lambdaDS = this.api.addLambdaDataSource(
+      'eventMyReactionBatchFunction',
+      eventMyReactionBatchFunction,
+    );
 
     lambdaDS.createResolver({
       typeName: 'Event',
@@ -428,17 +476,27 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  eventParticipantsField(mainTable: ITable, imagesDomain: string, esDomain: string) {
-    const eventParticipantsBatchFunction = this.getFunction('eventParticipantsBatch', 'api-eventParticipantsBatch', 'eventParticipantsBatch', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
-    }, 120, 256);
+  eventParticipantsField() {
+    const eventParticipantsBatchFunction = this.getFunction(
+      'eventParticipantsBatch',
+      'api-eventParticipantsBatch',
+      'eventParticipantsBatch',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+      120,
+      256,
+    );
 
-    mainTable.grantReadWriteData(eventParticipantsBatchFunction);
+    this.mainTable.grantReadWriteData(eventParticipantsBatchFunction);
     this.allowES(eventParticipantsBatchFunction);
 
-    const lambdaDS = this.api.addLambdaDataSource('eventParticipantsBatchFunction', eventParticipantsBatchFunction);
+    const lambdaDS = this.api.addLambdaDataSource(
+      'eventParticipantsBatchFunction',
+      eventParticipantsBatchFunction,
+    );
 
     lambdaDS.createResolver({
       typeName: 'Event',
@@ -454,14 +512,14 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  myEventsQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+  myEventsQuery() {
     const myEventsFunction = this.getFunction('myEvents', 'api-myEvents', 'myEvents', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
     });
 
-    mainTable.grantReadWriteData(myEventsFunction);
+    this.mainTable.grantReadWriteData(myEventsFunction);
     this.allowES(myEventsFunction);
 
     const dataSource = this.api.addLambdaDataSource('myEventsFunction', myEventsFunction);
@@ -472,17 +530,25 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  upcomingEventsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
-    const upcomingEventsPrivateFunction = this.getFunction('upcomingEventsPrivate', 'api-upcomingEventsPrivate', 'upcomingEventsPrivate', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
-    });
+  upcomingEventsPrivateQuery() {
+    const upcomingEventsPrivateFunction = this.getFunction(
+      'upcomingEventsPrivate',
+      'api-upcomingEventsPrivate',
+      'upcomingEventsPrivate',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+    );
 
-    mainTable.grantReadWriteData(upcomingEventsPrivateFunction);
+    this.mainTable.grantReadWriteData(upcomingEventsPrivateFunction);
     this.allowES(upcomingEventsPrivateFunction);
 
-    const dataSource = this.api.addLambdaDataSource('upcomingEventsPrivateFunction', upcomingEventsPrivateFunction);
+    const dataSource = this.api.addLambdaDataSource(
+      'upcomingEventsPrivateFunction',
+      upcomingEventsPrivateFunction,
+    );
 
     dataSource.createResolver({
       typeName: 'Query',
@@ -490,14 +556,19 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  teamsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
-    const teamsPrivateFunction = this.getFunction('teamsPrivate', 'api-teamsPrivate', 'teamsPrivate', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
-    });
+  teamsPrivateQuery() {
+    const teamsPrivateFunction = this.getFunction(
+      'teamsPrivate',
+      'api-teamsPrivate',
+      'teamsPrivate',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+    );
 
-    mainTable.grantReadWriteData(teamsPrivateFunction);
+    this.mainTable.grantReadWriteData(teamsPrivateFunction);
     this.allowES(teamsPrivateFunction);
 
     const dataSource = this.api.addLambdaDataSource('teamsPrivateFunction', teamsPrivateFunction);
@@ -508,14 +579,19 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  clubsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
-    const clubsPrivateFunction = this.getFunction('clubsPrivate', 'api-clubsPrivate', 'clubsPrivate', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
-    });
+  clubsPrivateQuery() {
+    const clubsPrivateFunction = this.getFunction(
+      'clubsPrivate',
+      'api-clubsPrivate',
+      'clubsPrivate',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+    );
 
-    mainTable.grantReadWriteData(clubsPrivateFunction);
+    this.mainTable.grantReadWriteData(clubsPrivateFunction);
     this.allowES(clubsPrivateFunction);
 
     const dataSource = this.api.addLambdaDataSource('clubsPrivateFunction', clubsPrivateFunction);
@@ -526,17 +602,25 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  federationsPrivateQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
-    const federationsPrivateFunction = this.getFunction('federationsPrivate', 'api-federationsPrivate', 'federationsPrivate', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
-    });
+  federationsPrivateQuery() {
+    const federationsPrivateFunction = this.getFunction(
+      'federationsPrivate',
+      'api-federationsPrivate',
+      'federationsPrivate',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+    );
 
-    mainTable.grantReadWriteData(federationsPrivateFunction);
+    this.mainTable.grantReadWriteData(federationsPrivateFunction);
     this.allowES(federationsPrivateFunction);
 
-    const dataSource = this.api.addLambdaDataSource('federationsPrivateFunction', federationsPrivateFunction);
+    const dataSource = this.api.addLambdaDataSource(
+      'federationsPrivateFunction',
+      federationsPrivateFunction,
+    );
 
     dataSource.createResolver({
       typeName: 'Query',
@@ -544,18 +628,18 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
-  eventQuery(mainTable: ITable, imagesDomain: string, esDomain: string) {
+  eventQuery() {
     const eventFunction = this.getFunction('event', 'api-event', 'event', {
-      MAIN_TABLE_NAME: mainTable.tableName,
-      IMAGES_DOMAIN: imagesDomain,
-      ES_DOMAIN: esDomain,
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
     });
 
-    mainTable.grantReadWriteData(eventFunction);
+    this.mainTable.grantReadWriteData(eventFunction);
     this.allowES(eventFunction);
 
     const dataSource = this.api.addLambdaDataSource('eventFunction', eventFunction);
-    
+
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'event',
@@ -577,6 +661,97 @@ export class ApiStack extends cdk.Stack {
     });
   }
 
+  inviteParentMutation() {
+    const inviteParentFunction = this.getFunction(
+      'inviteParent',
+      'api-inviteParent',
+      'inviteParent',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+        SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
+        SES_REGION: 'eu-west-1',
+        INVITATION_URL: process.env.CHILD_INVITATION_URL,
+      },
+    );
+
+    this.mainTable.grantReadWriteData(inviteParentFunction);
+    this.allowES(inviteParentFunction);
+
+    const sesPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    sesPolicy.addActions('ses:SendEmail');
+    sesPolicy.addResources('*');
+    inviteParentFunction.addToRolePolicy(sesPolicy);
+
+    const dataSource = this.api.addLambdaDataSource('inviteParentFunction', inviteParentFunction);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'inviteParent',
+    });
+  }
+
+  acceptChildInvitationMutation() {
+    const acceptChildInvitationFunction = this.getFunction(
+      'acceptChildInvitation',
+      'api-acceptChildInvitation',
+      'acceptChildInvitation',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+    );
+
+    this.mainTable.grantReadWriteData(acceptChildInvitationFunction);
+    this.allowES(acceptChildInvitationFunction);
+
+    const dataSource = this.api.addLambdaDataSource(
+      'acceptChildInvitationFunction',
+      acceptChildInvitationFunction,
+    );
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'acceptChildInvitation',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'declineChildInvitation',
+    });
+  }
+
+  verifyPhoneMutation() {
+    const verifyPhoneFunction = this.getFunction('verifyPhone', 'api-verifyPhone', 'verifyPhone', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+    });
+
+    this.mainTable.grantReadWriteData(verifyPhoneFunction);
+
+    const snsPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    snsPolicy.addActions('sns:publish');
+    snsPolicy.addResources('*');
+    verifyPhoneFunction.addToRolePolicy(snsPolicy);
+
+    const dataSource = this.api.addLambdaDataSource('verifyPhoneFunction', verifyPhoneFunction);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'verifyPhone',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'sendPhoneVerification',
+    });
+  }
+
   allowES(lambdaFunction: lambda.Function) {
     const esPolicy = new PolicyStatement({
       effect: Effect.ALLOW,
@@ -589,11 +764,18 @@ export class ApiStack extends cdk.Stack {
   }
 
   getApiKeyExpiration(): string {
-    const date = new Date(2021, 6, 1)
+    const date = new Date(2021, 6, 1);
     return date.toISOString();
   }
 
-  getFunction(id: string, functionName: string, folderName: string, environment?: any, timeoutSeconds = 30, memorySize = 128) {
+  getFunction(
+    id: string,
+    functionName: string,
+    folderName: string,
+    environment?: any,
+    timeoutSeconds = 30,
+    memorySize = 128,
+  ) {
     return new lambda.Function(this, id, {
       functionName,
       code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName)),
@@ -603,7 +785,7 @@ export class ApiStack extends cdk.Stack {
       logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(timeoutSeconds),
-      memorySize
+      memorySize,
     });
   }
 }
