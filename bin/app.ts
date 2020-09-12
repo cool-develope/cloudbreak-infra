@@ -5,6 +5,7 @@ import { AcmStack } from '../lib/acm-stack';
 import { CognitoStack } from '../lib/cognito-stack';
 import { ApiDomainStack } from '../lib/api-domain-stack';
 import { ApiStack } from '../lib/api-stack';
+import { Api2Stack } from '../lib/api2-stack';
 import { WebSiteStack } from '../lib/website-stack';
 import { StorageStack } from '../lib/storage-stack';
 import { TableStack } from '../lib/table-stack';
@@ -34,6 +35,7 @@ new AcmStack(app, 'acm-us-stack', {
 const cognito = new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
   mainTableName: process.env.MAIN_TABLE_NAME || '',
+  imagesDomain: `images.${process.env.ZONE_NAME}`,
 });
 
 /**
@@ -57,14 +59,26 @@ tables.addDependency(elasticsearch);
  */
 const api = new ApiStack(app, 'api-stack', {
   userPool: cognito.userPool,
-  dictionaryTableName: 'Dictionary',
-  mainTableName: process.env.MAIN_TABLE_NAME || '',
+  dictionaryTable: tables.dictionaryTable,
+  mainTable: tables.mainTable,
   imagesDomain: `images.${process.env.ZONE_NAME}`,
   esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
 });
 
 api.addDependency(cognito);
 api.addDependency(elasticsearch);
+api.addDependency(tables);
+
+const api2 = new Api2Stack(app, 'api2-stack', {
+  dictionaryTable: tables.dictionaryTable,
+  mainTable: tables.mainTable,
+  imagesDomain: `images.${process.env.ZONE_NAME}`,
+  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
+  api: api.api,
+});
+
+api2.addDependency(elasticsearch);
+api2.addDependency(tables);
 
 /**
  * WebSite: https://admin.tifo-sport.com
