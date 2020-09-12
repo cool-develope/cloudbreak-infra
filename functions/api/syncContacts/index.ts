@@ -15,6 +15,11 @@ const syncContacts = async (pk: string, phoneContacts: PhoneContact[]) => {
    */
   const contacts = await findContacts(phoneContacts);
 
+  console.log('syncContacts', {
+    phoneContacts,
+    contacts,
+  });
+
   /**
    * Batch put
    */
@@ -152,5 +157,8 @@ export const handler: Handler = async (event): Promise<Contact[]> => {
   const isConsistentRead = field === FieldName.syncContacts;
   const contactResult = await getContacts(pk, isConsistentRead);
 
-  return contactResult.Items.map((item: DBContact) => getTypeContact(item));
+  const result = contactResult.Items.map((item: DBContact) => getTypeContact(item));
+  console.log('RESULT: ', result);
+
+  return result;
 };
