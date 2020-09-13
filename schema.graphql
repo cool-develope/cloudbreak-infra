@@ -192,7 +192,6 @@ input CreateTreezorUserInput {
   address1: String!
   state: String!
   postcode: String!
-  birthDate: AWSDate!
   birthCity: String!
   usCitizen: Boolean!
 }
