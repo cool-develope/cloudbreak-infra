@@ -148,8 +148,8 @@ const createEvent = async (
   userId: string,
   input: CreateEventInput,
 ): Promise<CreateEventPayload> => {
-  const pk = `event#${uuidv4()}`;
   const {
+    id,
     title,
     description = '',
     image,
@@ -162,9 +162,11 @@ const createEvent = async (
     target,
   } = input;
 
-  const metadata = {
-    ...getDefaultValues(userId, EventType.Event),
-    acceptedCount: 0, // for Event only
+  const pk = id ? `event#${id}` : `event#${uuidv4()}`;
+  const defaultValues = id ? null : getDefaultValues(userId, EventType.Event);
+
+  const metadata: any = {
+    ...defaultValues,
     title,
     description,
     image,
@@ -180,7 +182,12 @@ const createEvent = async (
     targetDiscipline: target?.discipline,
     targetTeam: target?.team,
     targetUserRole: target?.userRole,
+    modifiedAt: new Date().toISOString(),
   };
+
+  if (!id) {
+    metadata.acceptedCount = 0; // for Event only
+  }
 
   const { Attributes } = await updateItem(pk, 'metadata', metadata);
   const event = getTypeEvent(Attributes);
@@ -192,12 +199,14 @@ const createEvent = async (
 };
 
 const createPost = async (userId: string, input: CreatePostInput): Promise<CreatePostPayload> => {
-  const pk = `event#${uuidv4()}`;
-  const { title, description = '', image, attachment, target } = input;
+  const { id, title, description = '', image, attachment, target } = input;
   const attachmentEnriched = await getAttachmentEnriched(attachment);
 
+  const pk = id ? `event#${id}` : `event#${uuidv4()}`;
+  const defaultValues = id ? null : getDefaultValues(userId, EventType.Post);
+
   const metadata = {
-    ...getDefaultValues(userId, EventType.Post),
+    ...defaultValues,
     title,
     description,
     image,
@@ -208,6 +217,7 @@ const createPost = async (userId: string, input: CreatePostInput): Promise<Creat
     targetDiscipline: target?.discipline,
     targetTeam: target?.team,
     targetUserRole: target?.userRole,
+    modifiedAt: new Date().toISOString(),
   };
 
   const { Attributes } = await updateItem(pk, 'metadata', metadata);
@@ -228,13 +238,13 @@ export const handler: Handler = async (event) => {
 
   const field = fieldName as FieldName;
 
-  if (field === FieldName.createEvent) {
+  if (field === FieldName.createEvent || field === FieldName.updateEvent) {
     /**
      * Mutation createEvent:
      */
     const payload = await createEvent(sub, input);
     return payload;
-  } else if (field === FieldName.createPost) {
+  } else if (field === FieldName.createPost || field === FieldName.updatePost) {
     /**
      * Mutation createPost:
      */

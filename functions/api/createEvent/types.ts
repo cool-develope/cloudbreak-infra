@@ -1,6 +1,8 @@
 export enum FieldName {
   createEvent = 'createEvent',
   createPost = 'createPost',
+  updateEvent = 'updateEvent',
+  updatePost = 'updatePost',
 }
 
 export enum UserRole {
@@ -55,6 +57,7 @@ export interface File {
 }
 
 export interface CreateEventInput {
+  id?: string;
   title?: string;
   description?: string;
   image?: string;
@@ -68,6 +71,7 @@ export interface CreateEventInput {
 }
 
 export interface CreatePostInput {
+  id?: string;
   title?: string;
   description?: string;
   image?: string;
