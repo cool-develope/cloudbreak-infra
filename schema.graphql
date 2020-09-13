@@ -187,7 +187,14 @@ input VerifyPhoneInput {
 }
 
 input CreateTreezorUserInput {
-  usCitizen: Boolean
+  country: String!
+  city: String!
+  address1: String!
+  state: String!
+  postcode: String!
+  birthDate: AWSDate!
+  birthCity: String!
+  usCitizen: Boolean!
 }
 
 type SigninMobilePayload {
