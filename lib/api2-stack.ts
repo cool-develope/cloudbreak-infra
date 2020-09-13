@@ -2,12 +2,14 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { ITable } from '@aws-cdk/aws-dynamodb';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface Api2StackProps extends cdk.StackProps {
+  userPool: cognito.UserPool;
   dictionaryTable: dynamodb.Table;
   mainTable: dynamodb.Table;
   imagesDomain: string;
@@ -16,6 +18,7 @@ export interface Api2StackProps extends cdk.StackProps {
 }
 
 export class Api2Stack extends cdk.Stack {
+  private readonly userPool: cognito.UserPool;
   public readonly api: appsync.GraphqlApi;
   public readonly dictionaryTable: dynamodb.Table;
   public readonly mainTable: dynamodb.Table;
@@ -25,8 +28,9 @@ export class Api2Stack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: Api2StackProps) {
     super(scope, id, props);
 
-    const { dictionaryTable, mainTable, imagesDomain, esDomain, api } = props;
+    const { userPool, dictionaryTable, mainTable, imagesDomain, esDomain, api } = props;
 
+    this.userPool = userPool;
     this.api = api;
     this.dictionaryTable = dictionaryTable;
     this.mainTable = mainTable;
@@ -73,6 +77,7 @@ export class Api2Stack extends cdk.Stack {
         MAIN_TABLE_NAME: this.mainTable.tableName,
         IMAGES_DOMAIN: this.imagesDomain,
         ES_DOMAIN: this.esDomain,
+        COGNITO_USERPOOL_ID: this.userPool.userPoolId,
         TREEZOR_BASE_URL,
         TREEZOR_CLIENT_ID,
         TREEZOR_CLIENT_SECRET,

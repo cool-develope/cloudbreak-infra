@@ -70,6 +70,7 @@ api.addDependency(elasticsearch);
 api.addDependency(tables);
 
 const api2 = new Api2Stack(app, 'api2-stack', {
+  userPool: cognito.userPool,
   dictionaryTable: tables.dictionaryTable,
   mainTable: tables.mainTable,
   imagesDomain: `images.${process.env.ZONE_NAME}`,
@@ -77,6 +78,7 @@ const api2 = new Api2Stack(app, 'api2-stack', {
   api: api.api,
 });
 
+api2.addDependency(cognito);
 api2.addDependency(elasticsearch);
 api2.addDependency(tables);
 
