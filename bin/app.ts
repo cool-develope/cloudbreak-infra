@@ -130,5 +130,5 @@ new ApiDomainStack(app, 'api-domain-stack', {
  * EventBridge
  */
 new EventsStack(app, 'events-stack', {
-  mainTableName: process.env.MAIN_TABLE_NAME || '',
+  mainTable: tables.mainTable,
 });
