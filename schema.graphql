@@ -188,6 +188,10 @@ input VerifyPhoneInput {
   code: String!
 }
 
+input CreateTreezorUserInput {
+  usCitizen: Boolean
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -257,9 +261,14 @@ type DeclineEventPayload {
 type SendPhoneVerificationPayload {
   errors: [String]
 }
+
 type VerifyPhonePayload {
   errors: [String]
   verified: Boolean
+}
+
+type CreateTreezorUserPayload {
+  errors: [String]
 }
 
 enum Gender {
@@ -530,6 +539,8 @@ type Mutation {
 
   sendPhoneVerification(input: SendPhoneVerificationInput!): SendPhoneVerificationPayload
   verifyPhone(input: VerifyPhoneInput!): VerifyPhonePayload
+
+  createTreezorUser(input: CreateTreezorUserInput!): CreateTreezorUserPayload!
 }
 
 type Query {
