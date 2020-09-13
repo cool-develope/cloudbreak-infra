@@ -27,9 +27,16 @@ export interface UpdateUserInput {
   usCitizen?: boolean;
 }
 
+export interface UserChild {
+  firstName: String;
+  lastName: String;
+  photo: Image;
+}
+
 export interface User {
-  firstName?: string;
-  lastName?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
   country?: string;
   photo?: Image;
   phone?: string;
@@ -39,4 +46,13 @@ export interface User {
   birthCity?: string;
   gender?: Gender;
   usCitizen?: boolean;
+  children: UserChild[];
+  parent: UserChild | null;
+  pendingChildInvitations: ChildInvitation[];
+}
+
+export interface ChildInvitation {
+  invitationId: string;
+  createDate: string;
+  user: UserChild;
 }
