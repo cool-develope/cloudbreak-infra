@@ -18,8 +18,6 @@ export interface UpdateUserInput {
   lastName?: string;
   country?: string;
   photo?: string;
-  phone?: string;
-  phoneCountry?: string;
   birthDate?: string;
   birthCountry?: string;
   birthCity?: string;
