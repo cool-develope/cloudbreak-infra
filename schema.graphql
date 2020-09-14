@@ -273,7 +273,7 @@ type VerifyPhonePayload {
 
 type CreateTreezorUserPayload {
   errors: [String]
-  treezorUserId: number
+  treezorUserId: Int
 }
 
 enum Gender {
