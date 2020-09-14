@@ -1,0 +1,14 @@
+{
+  "name": "treezorWebhook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "Sergey Onufrienko <sergey@onufrienko.com>",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^2.6.1",
+    "onesignal-node": "^3.1.5"
+  }
+}
