@@ -29,6 +29,11 @@ new AcmStack(app, 'acm-us-stack', {
   },
 });
 
+const euCertificate = new AcmStack(app, 'acm-eu-stack', {
+  domainName: process.env.ZONE_NAME || '',
+  prefix: 'eu',
+});
+
 /**
  * Create Cognito
  */
