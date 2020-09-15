@@ -6,6 +6,7 @@ import { CognitoStack } from '../lib/cognito-stack';
 import { ApiDomainStack } from '../lib/api-domain-stack';
 import { ApiStack } from '../lib/api-stack';
 import { Api2Stack } from '../lib/api2-stack';
+import { ApiHttpStack } from '../lib/api-http-stack';
 import { WebSiteStack } from '../lib/website-stack';
 import { StorageStack } from '../lib/storage-stack';
 import { TableStack } from '../lib/table-stack';
@@ -86,6 +87,14 @@ const api2 = new Api2Stack(app, 'api2-stack', {
 api2.addDependency(cognito);
 api2.addDependency(elasticsearch);
 api2.addDependency(tables);
+
+const hapi = new ApiHttpStack(app, 'hapi-stack', {
+  mainTable: tables.mainTable,
+  zoneId: process.env.ZONE_ID || '',
+  zoneName: process.env.ZONE_NAME || '',
+  domain: `hapi.${process.env.ZONE_NAME}`,
+  certificateArn: process.env.EU_CERTIFICATE_ARN || '',
+});
 
 /**
  * WebSite: https://admin.tifo-sport.com
