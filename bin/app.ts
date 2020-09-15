@@ -118,6 +118,7 @@ new WebSiteStack(app, 'mobile-website-stack', {
   zoneName: process.env.ZONE_NAME || '',
   domain: `mobile.${process.env.ZONE_NAME}`,
   certificateArn: process.env.US_CERTIFICATE_ARN || '',
+  deployDirectories: ['./resources/s3/mobile'],
 });
 
 /**
@@ -129,6 +130,7 @@ new StorageStack(app, 'images-storage-stack', {
   zoneName: process.env.ZONE_NAME || '',
   domain: `images.${process.env.ZONE_NAME}`,
   certificateArn: process.env.US_CERTIFICATE_ARN || '',
+  deployDirectories: ['./resources/s3/images'],
 });
 
 /**

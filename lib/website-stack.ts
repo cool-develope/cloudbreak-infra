@@ -3,8 +3,10 @@ import * as s3 from '@aws-cdk/aws-s3';
 import * as cloudfront from '@aws-cdk/aws-cloudfront';
 import * as route53 from '@aws-cdk/aws-route53';
 import * as route53tg from '@aws-cdk/aws-route53-targets';
+import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import { Certificate, ICertificate } from '@aws-cdk/aws-certificatemanager';
 import { CloudFrontWebDistribution, OriginProtocolPolicy } from '@aws-cdk/aws-cloudfront';
+import { dirname } from 'path';
 
 export interface WebSiteStackProps extends cdk.StackProps {
   bucketName: string;
@@ -13,6 +15,7 @@ export interface WebSiteStackProps extends cdk.StackProps {
   zoneName: string;
   domain: string;
   certificateArn: string;
+  deployDirectories?: string[];
 }
 
 export class WebSiteStack extends cdk.Stack {
@@ -21,12 +24,24 @@ export class WebSiteStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: WebSiteStackProps) {
     super(scope, id, props);
 
-    const { bucketName, bucketRefererHeader, zoneId, zoneName, domain, certificateArn } = props;
+    const {
+      bucketName,
+      bucketRefererHeader,
+      zoneId,
+      zoneName,
+      domain,
+      certificateArn,
+      deployDirectories,
+    } = props;
 
     /**
      * Create S3 Bucket. Enable static Web Site
      */
     const bucket = this.createS3Bucket(bucketName, bucketRefererHeader);
+
+    if (deployDirectories) {
+      this.deployToS3(bucket, bucketName, deployDirectories);
+    }
 
     /**
      * Create CloudFront
@@ -43,6 +58,14 @@ export class WebSiteStack extends cdk.Stack {
      * Add record to Route53
      */
     this.createDomainRecord(zoneId, zoneName, domain, distribution);
+  }
+
+  deployToS3(bucket: s3.Bucket, bucketName: string, directories: string[]) {
+    new s3deploy.BucketDeployment(this, `${bucketName}-S3Deploy`, {
+      sources: directories.map((dir) => s3deploy.Source.asset(dir)),
+      destinationBucket: bucket,
+      prune: false,
+    });
   }
 
   createS3Bucket(bucketName: string, bucketRefererHeader: string) {
