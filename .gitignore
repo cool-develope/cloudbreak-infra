@@ -34,3 +34,5 @@ cdk.out
 .env
 .env.prod
 .env.dev
+.env.test
+.env.stage
