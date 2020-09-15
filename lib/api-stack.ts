@@ -763,9 +763,8 @@ export class ApiStack extends cdk.Stack {
     lambdaFunction.addToRolePolicy(esPolicy);
   }
 
-  getApiKeyExpiration(): string {
-    const date = new Date(2021, 6, 1);
-    return date.toISOString();
+  getApiKeyExpiration(): cdk.Expiration {
+    return cdk.Expiration.atDate(new Date(2021, 6, 1));
   }
 
   getFunction(
