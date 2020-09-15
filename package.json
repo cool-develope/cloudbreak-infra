@@ -35,6 +35,7 @@
     "@aws-cdk/aws-lambda-event-sources": "^1.63.0",
     "@aws-cdk/aws-route53": "^1.63.0",
     "@aws-cdk/aws-route53-targets": "^1.63.0",
+    "@aws-cdk/aws-s3-deployment": "^1.63.0",
     "@aws-cdk/core": "^1.63.0",
     "@types/aws-lambda": "^8.10.62",
     "dotenv": "^8.2.0",
