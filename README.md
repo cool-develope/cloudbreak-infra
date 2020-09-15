@@ -61,7 +61,5 @@ cdk deploy '*' --profile tifo-prod
   - tifo-sport.com
 - SES
   - no-reply@tifo-sport.com (eu-central-1)
-- AppSync
-  - API keys - increase Expires date
 - S3 mobile
   - upload signin.html with content-type
