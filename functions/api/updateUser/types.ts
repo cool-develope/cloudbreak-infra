@@ -8,6 +8,11 @@ export enum Gender {
   F,
 }
 
+export enum OrganizationType {
+  InternationalFederation = 'InternationalFederation',
+  Club = 'Club',
+}
+
 export interface Image {
   url: string;
 }
@@ -47,6 +52,9 @@ export interface User {
   children: UserChild[];
   parent: UserChild | null;
   pendingChildInvitations: ChildInvitation[];
+  organization: {
+    type: OrganizationType;
+  };
 }
 
 export interface ChildInvitation {

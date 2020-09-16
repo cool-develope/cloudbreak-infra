@@ -10,6 +10,7 @@ import {
   FieldName,
   UserChild,
   ChildInvitation,
+  OrganizationType,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -226,6 +227,9 @@ const getTypeUser = async (userData: any): Promise<User> => {
     children,
     parent,
     pendingChildInvitations,
+    organization: {
+      type: OrganizationType.Club,
+    },
   };
 };
 
