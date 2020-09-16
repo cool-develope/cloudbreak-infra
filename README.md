@@ -63,3 +63,26 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
   - Click "Add to Route53"
 - SNS
   - SenderID: Tifo
+
+## AWS CLI commands
+
+- Cognito
+
+  ```shell
+  aws cognito-idp list-user-pools\
+    --max-results 20\
+    --profile tifo-$TIFO_ENV
+
+  aws cognito-idp list-user-pool-clients\
+    --user-pool-id XXX-XXX \
+    --max-results 20\
+    --profile tifo-$TIFO_ENV
+  ```
+
+- ACM
+  ```shell
+  aws acm list-certificates\
+    --max-items 20\
+    --region us-east-1\
+    --profile tifo-$TIFO_ENV
+  ```
