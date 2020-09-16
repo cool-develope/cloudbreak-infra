@@ -330,6 +330,11 @@ enum RepeatType {
   Monthly
 }
 
+enum OrganizationType {
+  InternationalFederation
+  Club
+}
+
 type Image {
   url: String
 }
@@ -343,6 +348,10 @@ type Contact {
   fullName: String!
   photo: String
   email: String!
+}
+
+type Organization {
+  type: OrganizationType
 }
 
 type User {
@@ -361,6 +370,7 @@ type User {
   children: [UserChild]
   parent: UserChild
   pendingChildInvitations: [ChildInvitation]
+  organization: Organization
 }
 
 type UserPublic {
