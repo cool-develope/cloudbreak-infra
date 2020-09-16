@@ -1,58 +1,56 @@
 # Cloud Infrastructure of TIFO
 
-## Services
+## AWS Services
 
 - Lambda
 - Cognito
 - DynamoDB
+- DynamoDB Streams
+- Elasticsearch
 - AppSync
+- API Gateway HTTP
 - S3
+- SES
+- SNS
+- EventBridge
 - CloudFront
-  - api.tifo-sport.com
 - Route53
-  - api.tifo-sport.com
 - ACM
-  - tifo-sport.com
-  - \*.tifo-sport.com
 
 ## Architecture
 
 ## Commands
 
 - `npm run build` compile typescript to js
-- `npm run watch` watch for changes and compile
-- `npm run test` perform the jest unit tests
 - `cdk deploy` deploy this stack to your default AWS account/region
 - `cdk diff` compare deployed stack with current state
 - `cdk synth` emits the synthesized CloudFormation template
+- `cdk ls` lists all stacks in the app
 
 ## AWS CDK Bootsteap
 
 ```shell
-cdk bootstrap --profile tifo-dev
-cdk bootstrap --profile tifo-prod
+export TIFO_ENV=test
+npm run build && cdk synth
+cdk bootstrap --profile tifo-$TIFO_ENV
 ```
 
-## Deploy Dev env
+## Deployment
 
 ```shell
-export TIFO_ENV=dev
-npm run build
-cdk synth
-cdk deploy acm-us-stack  --profile tifo-dev
-// set usCertificateArn
-cdk deploy '*' --profile tifo-dev
-```
-
-## Deploy Prod env
-
-```shell
-export TIFO_ENV=prod
-npm run build
-cdk synth
-cdk deploy acm-us-stack  --profile tifo-prod
-// set usCertificateArn
-cdk deploy '*' --profile tifo-prod
+cdk deploy acm-us-stack --profile tifo-$TIFO_ENV
+cdk deploy acm-eu-stack --profile tifo-$TIFO_ENV
+cdk deploy es-stack --profile tifo-$TIFO_ENV
+cdk deploy table-stack --profile tifo-$TIFO_ENV
+cdk deploy admin-website-stack --profile tifo-$TIFO_ENV
+cdk deploy mobile-website-stack --profile tifo-$TIFO_ENV
+cdk deploy images-storage-stack --profile tifo-$TIFO_ENV
+cdk deploy cognito-stack --profile tifo-$TIFO_ENV
+cdk deploy events-stack --profile tifo-$TIFO_ENV
+cdk deploy hapi-stack --profile tifo-$TIFO_ENV
+cdk deploy api-stack --profile tifo-$TIFO_ENV
+cdk deploy api2-stack --profile tifo-$TIFO_ENV
+cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
 ```
 
 ## Manual installation
@@ -61,3 +59,7 @@ cdk deploy '*' --profile tifo-prod
   - tifo-sport.com
 - SES
   - no-reply@tifo-sport.com (eu-central-1)
+- ACM
+  - Click "Add to Route53"
+- SNS
+  - SenderID: Tifo
