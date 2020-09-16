@@ -348,6 +348,12 @@ type Contact {
   fullName: String!
   photo: String
   email: String!
+  treezor: TreezorUser!
+}
+
+type TreezorUser {
+  userId: Int
+  walletId: Int
 }
 
 type Organization {
