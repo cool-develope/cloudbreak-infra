@@ -33,11 +33,29 @@ export class CognitoStack extends cdk.Stack {
       },
       autoVerify: { email: true },
       customAttributes: {
-        trzUserId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzScopes: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzChildren: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        /**
+         * Old dev deploy
+         */
+        'trzUserId': new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
+        'trzScopes': new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
+        trzChildren: new cognito.StringAttribute({
+          maxLen: 1000,
+          mutable: true,
+        }),
         trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
         trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+
+        /**
+         * New deploy
+         */
+        // trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
+        // trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
+        // trzChildren: new cognito.StringAttribute({
+        //   maxLen: 1000,
+        //   mutable: true,
+        // }),
+        // trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        // trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
       },
     });
 
