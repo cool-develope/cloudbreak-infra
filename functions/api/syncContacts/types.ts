@@ -3,12 +3,24 @@ export enum FieldName {
   contacts = 'contacts',
 }
 
+export interface Image {
+  url: string;
+}
+
 export interface DBContact {
-  pk?: string;
-  sk?: string;
-  fullName: string;
-  photo: string;
+  pk: string;
+  sk: string;
   email: string;
+}
+
+export interface FindResultItem {
+  userId: string;
+  email: string;
+}
+
+export interface TreezorUser {
+  userId: number;
+  walletId: number;
 }
 
 export interface PhoneContact {
@@ -19,6 +31,7 @@ export interface PhoneContact {
 
 export interface Contact {
   fullName: string;
-  photo: string;
+  photo: Image;
   email: string;
+  treezor: TreezorUser;
 }

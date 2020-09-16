@@ -3,10 +3,10 @@ import * as AWS from 'aws-sdk';
 import { Handler } from 'aws-lambda';
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
-import { FieldName, PhoneContact, Contact, DBContact } from './types';
+import { FieldName, PhoneContact, Contact, DBContact, FindResultItem } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
-const { MAIN_TABLE_NAME = '' } = process.env;
+const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN, ES_DOMAIN } = process.env;
 const CONTACT_SK_PREFIX = 'contact#';
 
 const syncContacts = async (pk: string, phoneContacts: PhoneContact[]) => {
@@ -26,17 +26,15 @@ const syncContacts = async (pk: string, phoneContacts: PhoneContact[]) => {
   await batchPut(pk, contacts);
 };
 
-const batchPut = async (pk: string, contacts: DBContact[]) => {
+const batchPut = async (pk: string, contacts: FindResultItem[]) => {
   /**
    * Create Put request for each contact
    */
-  const putRequests = contacts.map(({ email = '', fullName = '', photo = '' }) => ({
+  const putRequests = contacts.map(({ email, userId }) => ({
     PutRequest: {
       Item: {
         pk,
-        sk: `${CONTACT_SK_PREFIX}${email}`,
-        fullName,
-        photo,
+        sk: `${CONTACT_SK_PREFIX}${userId}`,
         email,
       },
     },
@@ -63,7 +61,53 @@ const batchPut = async (pk: string, contacts: DBContact[]) => {
   await Promise.all(arrayOfWrite);
 };
 
-const findContacts = async (phoneContacts: PhoneContact[]) => {
+const getUniqItemsFromArray = (arr: { pk: string; sk: string }[]) => {
+  // TODO
+  return arr;
+};
+
+const batchGet = async (
+  arrayOfKeys: { pk: string; sk: string }[],
+  idField: string,
+  getType: (data: any) => any = (data) => data,
+): Promise<Map<string, any>> => {
+  const keys = getUniqItemsFromArray(arrayOfKeys);
+
+  /**
+   * Split items by batch max size (25)
+   */
+  const batchLimit = 25;
+  const batchParams = [];
+  while (keys.length) {
+    const portionOfPutRequests = keys.splice(0, batchLimit);
+    batchParams.push({
+      RequestItems: {
+        [MAIN_TABLE_NAME]: {
+          Keys: portionOfPutRequests,
+        },
+      },
+    });
+  }
+
+  /**
+   * Run all batchWrite in parallel by portions
+   */
+  const arrayOfGet = batchParams.map((params) => db.batchGet(params).promise());
+  const res = await Promise.all(arrayOfGet);
+
+  const result = new Map();
+
+  const arrayOfItems = res.map((resItem) => resItem.Responses[MAIN_TABLE_NAME]);
+  for (const items of arrayOfItems) {
+    for (const item of items) {
+      result.set(item[idField], getType(item));
+    }
+  }
+
+  return result;
+};
+
+const findContacts = async (phoneContacts: PhoneContact[]): Promise<FindResultItem[]> => {
   const arrayOfParams = [];
 
   /**
@@ -93,14 +137,14 @@ const findContacts = async (phoneContacts: PhoneContact[]) => {
   /**
    * Compare results with phoneContacts
    */
-  const contacts = [];
+  const contacts: FindResultItem[] = [];
   for (const result of results) {
     for (const item of result.Items) {
       const { pk, email } = item;
       const contact = phoneContacts.find((contact) => contact.email.includes(email));
 
       if (contact) {
-        contacts.push({ ...contact, email });
+        contacts.push({ email, userId: pk.replace('user#', '') });
       }
     }
   }
@@ -111,7 +155,7 @@ const findContacts = async (phoneContacts: PhoneContact[]) => {
   return contacts;
 };
 
-const getContacts = (pk: string, isConsistentRead: boolean) => {
+const getContacts = (pk: string, isConsistentRead: boolean): Promise<{ Items: DBContact[] }> => {
   const params = {
     TableName: MAIN_TABLE_NAME,
     KeyConditionExpression: 'pk = :pk and begins_with(sk, :sk)',
@@ -125,10 +169,18 @@ const getContacts = (pk: string, isConsistentRead: boolean) => {
   return db.query(params).promise();
 };
 
-const getTypeContact = ({ fullName, photo, email }: DBContact): Contact => ({
-  fullName,
-  photo,
-  email,
+const getTypeImage = (image: string = '') => ({
+  url: image ? `https://${IMAGES_DOMAIN}/${image}` : '',
+});
+
+const getTypeContact = (user: any): Contact => ({
+  fullName: `${user.firstName} ${user.lastName}`,
+  photo: getTypeImage(user.photo),
+  email: user.email,
+  treezor: {
+    userId: user.treezorUserId || null,
+    walletId: user.treezorWalletId || null,
+  },
 });
 
 export const handler: Handler = async (event): Promise<Contact[]> => {
@@ -155,10 +207,21 @@ export const handler: Handler = async (event): Promise<Contact[]> => {
   }
 
   const isConsistentRead = field === FieldName.syncContacts;
-  const contactResult = await getContacts(pk, isConsistentRead);
+  const { Items: contacts } = await getContacts(pk, isConsistentRead);
 
-  const result = contactResult.Items.map((item: DBContact) => getTypeContact(item));
+  const userKeys = contacts.map(({ sk }) => ({
+    pk: `user#${sk.replace(CONTACT_SK_PREFIX, '')}`,
+    sk: 'metadata',
+  }));
+
+  const users = await batchGet(userKeys, 'pk');
+
+  const result = contacts.map((item: DBContact) => {
+    const userId = item.sk.replace(CONTACT_SK_PREFIX, '');
+    const userPk = `user#${userId}`;
+    return getTypeContact(users.get(userPk));
+  });
+
   console.log('RESULT: ', result);
-
   return result;
 };
