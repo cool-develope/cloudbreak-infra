@@ -323,12 +323,15 @@ export class ApiStack extends cdk.Stack {
       'syncContacts',
       {
         MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
       },
       120,
       256,
     );
 
     this.mainTable.grantReadWriteData(lambdaFunction);
+    this.allowES(lambdaFunction);
 
     const lambdaDS = this.api.addLambdaDataSource('syncContactsFunction', lambdaFunction);
 
