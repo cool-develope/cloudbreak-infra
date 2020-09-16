@@ -195,6 +195,12 @@ input CreateTreezorUserInput {
   usCitizen: Boolean!
 }
 
+input SendMoneyRequestInput {
+  email: String!
+  amount: Float!
+  note: String
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -273,6 +279,10 @@ type VerifyPhonePayload {
 type CreateTreezorUserPayload {
   errors: [String]
   treezorUserId: Int
+}
+
+type SendMoneyRequestPayload {
+  errors: [String]
 }
 
 enum Gender {
@@ -561,6 +571,8 @@ type Mutation {
   verifyPhone(input: VerifyPhoneInput!): VerifyPhonePayload
 
   createTreezorUser(input: CreateTreezorUserInput!): CreateTreezorUserPayload!
+
+  sendMoneyRequest(input: SendMoneyRequestInput!): SendMoneyRequestPayload!
 }
 
 type Query {
