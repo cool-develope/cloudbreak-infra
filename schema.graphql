@@ -118,7 +118,6 @@ input UpdatePostInput {
 
 input PhoneContact {
   fullName: String!
-  photo: String
   email: [String]!
 }
 
