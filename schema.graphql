@@ -346,7 +346,7 @@ type File {
 
 type Contact {
   fullName: String!
-  photo: String
+  photo: Image!
   email: String!
   treezor: TreezorUser!
 }
