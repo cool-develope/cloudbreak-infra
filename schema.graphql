@@ -53,6 +53,7 @@ input UpdateUserInput {
   lastName: String
   country: String
   photo: String
+  selfie: String
   birthDate: AWSDate
   birthCountry: String
   birthCity: String
