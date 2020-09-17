@@ -51,6 +51,11 @@ export class Api2Stack extends cdk.Stack {
      * Mutation: sendMoneyRequest
      */
     this.sendMoneyRequestMutation();
+
+    /**
+     * Query: cardTypes
+     */
+    this.cardTypesQuery();
   }
 
   dictionaryQuery() {
@@ -129,6 +134,22 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Mutation',
       fieldName: 'sendMoneyRequest',
+    });
+  }
+
+  cardTypesQuery() {
+    const fn = this.getFunction('cardTypes', 'api-cardTypes', 'cardTypes', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+
+    const dataSource = this.api.addLambdaDataSource('cardTypesFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'cardTypes',
     });
   }
 
