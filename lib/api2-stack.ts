@@ -46,6 +46,11 @@ export class Api2Stack extends cdk.Stack {
      * Mutation: createTreezorUser
      */
     this.createTreezorUserMutation();
+
+    /**
+     * Mutation: sendMoneyRequest
+     */
+    this.sendMoneyRequestMutation();
   }
 
   dictionaryQuery() {
@@ -102,6 +107,28 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Mutation',
       fieldName: 'createTreezorUser',
+    });
+  }
+
+  sendMoneyRequestMutation() {
+    const { ONESIGNAL_API_KEY, ONESIGNAL_APP_ID } = process.env;
+
+    const fn = this.getFunction('sendMoneyRequest', 'api-sendMoneyRequest', 'sendMoneyRequest', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+      ONESIGNAL_APP_ID,
+      ONESIGNAL_API_KEY,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('sendMoneyRequestFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'sendMoneyRequest',
     });
   }
 
