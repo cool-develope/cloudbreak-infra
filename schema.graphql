@@ -506,6 +506,14 @@ type TeamEventTarget {
   name: String
 }
 
+type CardType {
+  id: ID!
+  name: String
+  description: String
+  limitMonth: Int
+  limitWeek: Int
+}
+
 type MyEventsConnection {
   items: [Event]
   totalCount: Int
@@ -633,6 +641,8 @@ type Query {
   Lookup a user contacts
   """
   contacts: [Contact]!
+
+  cardTypes: [CardType]!
 
   teamsPrivate(filter: TeamsPrivateFilterInput, limit: Int, from: Int): TeamsPrivateConnection!
   clubsPrivate(filter: ClubsPrivateFilterInput, limit: Int, from: Int): ClubsPrivateConnection!
