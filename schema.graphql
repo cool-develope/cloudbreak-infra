@@ -216,6 +216,21 @@ input CreateClubPrivateInput {
   federations: [String]
 }
 
+input UpdateClubPrivateInput {
+  clubId: ID!
+  name: String!
+  description: String
+  cover: String
+  logo: String
+  code: String
+  email: String
+  phone: String
+  city: String
+  address: String
+  discipline: [Discipline]
+  federations: [String]
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -303,6 +318,10 @@ type SendMoneyRequestPayload {
 type CreateClubPrivatePayload {
   errors: [String]
   clubId: String
+}
+
+type UpdateClubPrivatePayload {
+  errors: [String]
 }
 
 enum Gender {
@@ -603,6 +622,8 @@ type Mutation {
   sendMoneyRequest(input: SendMoneyRequestInput!): SendMoneyRequestPayload!
 
   createClubPrivate(input: CreateClubPrivateInput!): CreateClubPrivatePayload!
+  updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
+  
 }
 
 type Query {
