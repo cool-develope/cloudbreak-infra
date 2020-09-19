@@ -626,6 +626,7 @@ type Mutation {
   
   sendTeamInvitation(input: SendTeamInvitationInput!): SendTeamInvitationPayload!
   acceptTeamInvitationPrivate(input: AcceptTeamInvitationPrivateInput!): AcceptTeamInvitationPrivatePayload
+  declineTeamInvitationPrivate(input: DeclineTeamInvitationPrivateInput!): DeclineTeamInvitationPrivatePayload
 }
 
 type Query {
