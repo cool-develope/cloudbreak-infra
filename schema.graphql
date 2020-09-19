@@ -202,6 +202,20 @@ input SendMoneyRequestInput {
   note: String
 }
 
+input CreateClubPrivateInput {
+  name: String!
+  description: String
+  cover: String
+  logo: String
+  code: String
+  email: String
+  phone: String
+  city: String
+  address: String
+  discipline: [Discipline]
+  federations: [String]
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -284,6 +298,11 @@ type CreateTreezorUserPayload {
 
 type SendMoneyRequestPayload {
   errors: [String]
+}
+
+type CreateClubPrivatePayload {
+  errors: [String]
+  clubId: String
 }
 
 enum Gender {
@@ -582,6 +601,8 @@ type Mutation {
   createTreezorUser(input: CreateTreezorUserInput!): CreateTreezorUserPayload!
 
   sendMoneyRequest(input: SendMoneyRequestInput!): SendMoneyRequestPayload!
+
+  createClubPrivate(input: CreateClubPrivateInput!): CreateClubPrivatePayload!
 }
 
 type Query {
