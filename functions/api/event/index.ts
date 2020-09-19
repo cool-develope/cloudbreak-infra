@@ -146,7 +146,7 @@ export const handler: Handler = async (event) => {
 
   if (!Item) {
     // Event not found
-  } else if (field === FieldName.event || FieldName.eventPrivate) {
+  } else if (field === FieldName.event || field === FieldName.eventPrivate) {
     result = getTypeEvent(Item);
   } else if (field === FieldName.post || field === FieldName.postPrivate) {
     result = getTypePost(Item);
