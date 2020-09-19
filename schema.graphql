@@ -625,6 +625,7 @@ type Mutation {
   updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
   
   sendTeamInvitation(input: SendTeamInvitationInput!): SendTeamInvitationPayload!
+  acceptTeamInvitationPrivate(input: AcceptTeamInvitationPrivateInput!): AcceptTeamInvitationPrivatePayload
 }
 
 type Query {
