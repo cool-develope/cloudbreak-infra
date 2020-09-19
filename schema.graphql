@@ -231,6 +231,19 @@ input UpdateClubPrivateInput {
   federations: [String]
 }
 
+input SendTeamInvitationInput {
+  teamId: String!
+  role: TeamMemberType!
+}
+
+input AcceptTeamInvitationPrivateInput {
+  invitationId: ID!
+}
+
+input DeclineTeamInvitationPrivateInput {
+  invitationId: ID!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
