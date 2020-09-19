@@ -324,6 +324,18 @@ type UpdateClubPrivatePayload {
   errors: [String]
 }
 
+type SendTeamInvitationPayload {
+  errors: [String]
+}
+
+type AcceptTeamInvitationPrivatePayload {
+  errors: [String]
+}
+
+type DeclineTeamInvitationPrivatePayload {
+  errors: [String]
+}
+
 enum Gender {
   M
   F
