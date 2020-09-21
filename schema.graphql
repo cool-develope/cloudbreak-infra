@@ -792,4 +792,6 @@ type Query {
     limit: Int
     from: Int
   ): FederationsPrivateConnection!
+
+  club(clubId: ID!): Club
 }
