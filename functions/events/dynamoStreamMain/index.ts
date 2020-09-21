@@ -16,6 +16,53 @@ interface Item {
 const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
 const es = new Client({ node: ES_DOMAIN });
 
+const clubMetadataHandler = async (items: Item[]) => {
+  const body = [];
+  for (const item of items) {
+    const {
+      eventName,
+      keys: { pk, sk },
+      data,
+    } = item;
+    const _id = pk.replace('club#', '');
+    delete data.pk;
+    delete data.sk;
+    delete data.modifiedAt;
+
+    if (eventName === 'INSERT') {
+      body.push({
+        index: { _id },
+      });
+      body.push({
+        ...data,
+      });
+    } else if (eventName === 'MODIFY') {
+      body.push({
+        update: { _id },
+      });
+      body.push({
+        doc: {
+          ...data,
+        },
+      });
+    } else if (eventName === 'REMOVE') {
+      body.push({
+        delete: { _id },
+      });
+    }
+  }
+
+  if (body.length) {
+    const result = await es.bulk({
+      index: 'clubs',
+      refresh: true,
+      body,
+    });
+
+    console.log(JSON.stringify(result, null, 2));
+  }
+};
+
 const eventMetadataHandler = async (items: Item[]) => {
   const body = [];
   for (const item of items) {
@@ -106,6 +153,7 @@ const eventUserHandler = async (items: Item[]) => {
 export const handler: DynamoDBStreamHandler = async (event, context, callback: any) => {
   const eventMetadataItems: any[] = [];
   const eventUserItems: any[] = [];
+  const clubMetadataItems: any[] = [];
 
   for (const record of event.Records) {
     const { eventName, dynamodb: { NewImage, OldImage, Keys } = {} } = record;
@@ -122,6 +170,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
     if (keys.pk.startsWith('event#') && keys.sk.startsWith('user#')) {
       eventUserItems.push({ eventName, keys, data, oldData });
     }
+
+    if (keys.pk.startsWith('club#') && keys.sk === 'metadata') {
+      clubMetadataItems.push({ eventName, keys, data, oldData });
+    }
   }
 
   if (eventMetadataItems.length) {
@@ -130,6 +182,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
 
   if (eventUserItems.length) {
     eventUserHandler(eventUserItems);
+  }
+
+  if(clubMetadataItems.length){
+    clubMetadataHandler(clubMetadataItems);
   }
 
   callback(null, `Successfully processed ${event.Records.length} records.`);
