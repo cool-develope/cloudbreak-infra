@@ -12,6 +12,7 @@ import { StorageStack } from '../lib/storage-stack';
 import { TableStack } from '../lib/table-stack';
 import { EventsStack } from '../lib/events-stack';
 import { ElasticsearchStack } from '../lib/es-stack';
+import { LayersStack } from '../lib/layers-stack';
 import * as dotenv from 'dotenv';
 
 dotenv.config({
@@ -19,6 +20,8 @@ dotenv.config({
 });
 
 const app = new cdk.App();
+
+const layers = new LayersStack(app, 'layers-stack');
 
 /**
  * Register certificates in US for CloudFront
@@ -82,6 +85,8 @@ const api2 = new Api2Stack(app, 'api2-stack', {
   imagesDomain: `images.${process.env.ZONE_NAME}`,
   esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
   api: api.api,
+  commonModulesLayerArn: process.env.LAYER_COMMON_MODULES_ARN || '',
+  commonCodeLayerArn: process.env.LAYER_COMMON_CODE_ARN || '',
 });
 
 api2.addDependency(cognito);
