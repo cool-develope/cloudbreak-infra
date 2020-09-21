@@ -141,9 +141,9 @@ export const handler: Handler = async (event) => {
       userPoolId: COGNITO_USERPOOL_ID,
       sub,
       trzUserId: String(treezorUserId),
-      trzChildren: '',
-      trzWalletsId: '',
-      trzCardsId: '',
+      trzChildren: 'none',
+      trzWalletsId: '0',
+      trzCardsId: '0',
     });
   } else {
     errors.push('Error');
