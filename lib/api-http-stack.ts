@@ -4,9 +4,11 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as apigateway from '@aws-cdk/aws-apigatewayv2';
 import * as route53 from '@aws-cdk/aws-route53';
+import * as cognito from '@aws-cdk/aws-cognito';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { HttpMethod, LambdaProxyIntegration, HttpApi, DomainName } from '@aws-cdk/aws-apigatewayv2';
+import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface ApiHttpStackProps extends cdk.StackProps {
   mainTable: dynamodb.Table;
@@ -14,17 +16,36 @@ export interface ApiHttpStackProps extends cdk.StackProps {
   zoneName: string;
   domain: string;
   certificateArn: string;
+  userPool: cognito.UserPool;
+  imagesDomain: string;
+  esDomain: string;
 }
 
 export class ApiHttpStack extends cdk.Stack {
   public readonly api: apigateway.HttpApi;
   private readonly mainTable: dynamodb.Table;
+  private readonly imagesDomain: string;
+  private readonly esDomain: string;
+  private readonly userPool: cognito.UserPool;
 
   constructor(scope: cdk.Construct, id: string, props: ApiHttpStackProps) {
     super(scope, id, props);
 
-    const { mainTable, zoneId, zoneName, domain, certificateArn } = props;
+    const {
+      mainTable,
+      zoneId,
+      zoneName,
+      domain,
+      certificateArn,
+      userPool,
+      imagesDomain,
+      esDomain,
+    } = props;
+
     this.mainTable = mainTable;
+    this.userPool = userPool;
+    this.imagesDomain = imagesDomain;
+    this.esDomain = esDomain;
 
     const certificate = Certificate.fromCertificateArn(this, 'http-api-cert', certificateArn);
     const domainName = new DomainName(this, 'HttpApiDomain', {
@@ -54,16 +75,40 @@ export class ApiHttpStack extends cdk.Stack {
   }
 
   addTreezorWebhook() {
+    const {
+      TREEZOR_BASE_URL,
+      TREEZOR_CLIENT_ID,
+      TREEZOR_CLIENT_SECRET,
+      ONESIGNAL_API_KEY,
+      ONESIGNAL_APP_ID,
+    } = process.env;
+
     const fn = this.getFunction(
       'treezorWebhook',
       {
         MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+        COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+        TREEZOR_BASE_URL,
+        TREEZOR_CLIENT_ID,
+        TREEZOR_CLIENT_SECRET,
+        ONESIGNAL_APP_ID,
+        ONESIGNAL_API_KEY,
       },
       120,
       256,
     );
 
     this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const cognitoPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    cognitoPolicy.addActions('cognito-idp:AdminUpdateUserAttributes');
+    cognitoPolicy.addResources('*');
+    fn.addToRolePolicy(cognitoPolicy);
 
     const fnIntegration = new LambdaProxyIntegration({
       handler: fn,
@@ -87,6 +132,17 @@ export class ApiHttpStack extends cdk.Stack {
       recordName: domain,
       domainName: apiDomain,
     });
+  }
+
+  allowES(lambdaFunction: lambda.Function) {
+    const esPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+
+    esPolicy.addActions('es:ESHttpGet', 'es:ESHttpHead');
+    esPolicy.addResources('*');
+
+    lambdaFunction.addToRolePolicy(esPolicy);
   }
 
   getFunction(functionName: string, environment?: any, timeoutSeconds = 30, memorySize = 128) {
