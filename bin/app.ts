@@ -99,6 +99,9 @@ const hapi = new ApiHttpStack(app, 'hapi-stack', {
   zoneName: process.env.ZONE_NAME || '',
   domain: `hapi.${process.env.ZONE_NAME}`,
   certificateArn: process.env.EU_CERTIFICATE_ARN || '',
+  userPool: cognito.userPool,
+  imagesDomain: `images.${process.env.ZONE_NAME}`,
+  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
 });
 
 /**
