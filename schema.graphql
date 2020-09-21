@@ -222,7 +222,7 @@ input CreateClubPrivateInput {
 }
 
 input UpdateClubPrivateInput {
-  clubId: ID!
+  id: ID!
   name: String!
   description: String
   cover: String
