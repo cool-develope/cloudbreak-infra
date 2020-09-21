@@ -16,7 +16,11 @@
     "inlineSourceMap": false,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types"],
+    "baseUrl": ".",
+    "paths": {
+      "@common-code/*": ["layers/common-code/nodejs/*"],
+    }
   },
   "exclude": ["cdk.out"]
 }
