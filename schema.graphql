@@ -149,6 +149,11 @@ input FeedPrivateFilterInput {
   endDateBefore: AWSDateTime
 }
 
+input ClubsFilterInput {
+  search: String
+  discipline: [Discipline]
+}
+
 input TeamsPrivateFilterInput {
   search: String
 }
@@ -683,6 +688,11 @@ type UserConnection {
   items: [UserPublic]
 }
 
+type ClubsConnection {
+  items: [Club]
+  totalCount: Int
+}
+
 union FeedItem = Event | Post
 
 type Mutation {
@@ -794,4 +804,5 @@ type Query {
   ): FederationsPrivateConnection!
 
   club(clubId: ID!): Club
+  clubs(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
 }
