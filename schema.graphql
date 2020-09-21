@@ -403,6 +403,7 @@ enum UploadType {
   EventImage
   PostImage
   PostAttachment
+  Club
 }
 
 enum RepeatType {
