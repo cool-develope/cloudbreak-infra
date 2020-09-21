@@ -12,6 +12,7 @@ enum UploadType {
   EventImage = 'EventImage',
   PostImage = 'PostImage',
   PostAttachment = 'PostAttachment',
+  Club = 'Club',
 }
 
 interface UploadUrlPayload {
@@ -28,6 +29,8 @@ const getS3Key = (type: UploadType, sub: string, fileName: string) => {
       return `event/i/${uuidv4()}/${fileName}`;
     case UploadType.PostAttachment:
       return `event/f/${uuidv4()}/${fileName}`;
+    case UploadType.Club:
+      return `club/i/${uuidv4()}/${fileName}`;
   }
 };
 
