@@ -330,11 +330,12 @@ type SendMoneyRequestPayload {
 
 type CreateClubPrivatePayload {
   errors: [String]
-  clubId: String
+  club: Club
 }
 
 type UpdateClubPrivatePayload {
   errors: [String]
+  club: Club
 }
 
 type SendTeamInvitationPayload {
@@ -411,6 +412,12 @@ enum OrganizationType {
 enum TeamMemberType {
   Member
   Coach
+}
+
+enum TeamInvitationStatus {
+  Pending
+  Accepted
+  Declined
 }
 
 type Image {
@@ -506,6 +513,65 @@ type Post {
   author: Author
   target: EventTarget
   myReaction: PostReaction
+}
+
+type Club {
+  id: ID!
+  name: String
+  description: String
+  cover: Image
+  logo: Image
+  code: String
+  email: String
+  phone: String
+  city: String
+  address: String
+  discipline: [Discipline]
+  teams: TeamShortConnection
+  coaches: UserShortConnection
+  members: UserShortConnection
+  federations: FederationShortConnection
+  me: MeInClub
+  upcomingEventsCount: Int
+}
+
+type MeInClub {
+  role: TeamMemberType
+  status: TeamInvitationStatus
+  friends: UserShortConnection
+}
+
+type FederationShortConnection {
+  items: [FederationShort]
+  totalCount: Int
+}
+
+type FederationShort {
+  id: ID!
+  name: String
+  logo: Image
+}
+
+type TeamShortConnection {
+  items: [TeamShort]
+  totalCount: Int
+}
+
+type TeamShort {
+  id: ID!
+  name: String
+  logo: Image
+}
+
+type UserShortConnection {
+  items: [UserShort]
+  totalCount: Int
+}
+
+type UserShort {
+  id: ID!
+  name: String
+  logo: Image
 }
 
 type PostReaction {
