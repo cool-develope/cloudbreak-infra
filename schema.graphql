@@ -423,6 +423,7 @@ enum TeamMemberType {
 }
 
 enum TeamInvitationStatus {
+  None
   Pending
   Accepted
   Declined
