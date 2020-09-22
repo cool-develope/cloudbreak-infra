@@ -808,5 +808,6 @@ type Query {
   ): FederationsPrivateConnection!
 
   club(clubId: ID!): Club
+  
   clubs(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
 }

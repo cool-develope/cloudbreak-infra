@@ -200,7 +200,9 @@ export class Api2Stack extends cdk.Stack {
   ) {
     return new lambda.Function(this, id, {
       functionName,
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName)),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName), {
+        exclude: ['*.ts'],
+      }),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment,
