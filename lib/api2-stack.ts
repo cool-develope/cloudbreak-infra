@@ -14,28 +14,54 @@ export interface Api2StackProps extends cdk.StackProps {
   mainTable: dynamodb.Table;
   imagesDomain: string;
   esDomain: string;
-  api: appsync.GraphqlApi;
+  graphqlApiId: string;
+  commonModulesLayerArn: string;
+  commonCodeLayerArn: string;
 }
 
 export class Api2Stack extends cdk.Stack {
-  private readonly userPool: cognito.UserPool;
-  public readonly api: appsync.GraphqlApi;
+  public readonly api: appsync.IGraphqlApi;
   public readonly dictionaryTable: dynamodb.Table;
   public readonly mainTable: dynamodb.Table;
   public readonly imagesDomain: string;
   public readonly esDomain: string;
+  private readonly userPool: cognito.UserPool;
+  private readonly commonModulesLayer: lambda.ILayerVersion;
+  private readonly commonCodeLayer: lambda.ILayerVersion;
 
   constructor(scope: cdk.Construct, id: string, props: Api2StackProps) {
     super(scope, id, props);
 
-    const { userPool, dictionaryTable, mainTable, imagesDomain, esDomain, api } = props;
+    const {
+      userPool,
+      dictionaryTable,
+      mainTable,
+      imagesDomain,
+      esDomain,
+      graphqlApiId,
+      commonModulesLayerArn,
+      commonCodeLayerArn,
+    } = props;
 
     this.userPool = userPool;
-    this.api = api;
     this.dictionaryTable = dictionaryTable;
     this.mainTable = mainTable;
     this.imagesDomain = imagesDomain;
     this.esDomain = esDomain;
+
+    this.api = appsync.GraphqlApi.fromGraphqlApiAttributes(this, 'api2-appsync', { graphqlApiId });
+
+    this.commonModulesLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'api2-layers-common-modules',
+      commonModulesLayerArn,
+    );
+
+    this.commonCodeLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'api2-layers-common-code',
+      commonCodeLayerArn,
+    );
 
     /**
      * Query: countries, languages
@@ -182,6 +208,7 @@ export class Api2Stack extends cdk.Stack {
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(timeoutSeconds),
       memorySize,
+      layers: [this.commonModulesLayer],
     });
   }
 }
