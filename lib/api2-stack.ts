@@ -82,6 +82,12 @@ export class Api2Stack extends cdk.Stack {
      * Query: cardTypes
      */
     this.cardTypesQuery();
+
+    /**
+     * Mutation: createClubPrivate, updateClubPrivate
+     * Query: club, clubs
+     */
+    this.clubQuery();
   }
 
   dictionaryQuery() {
@@ -176,6 +182,39 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'cardTypes',
+    });
+  }
+
+  clubQuery() {
+    const fn = this.getFunction('club', 'api-club', 'club', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('clubFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createClubPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateClubPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'club',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'clubs',
     });
   }
 
