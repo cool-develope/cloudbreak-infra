@@ -84,7 +84,7 @@ const api2 = new Api2Stack(app, 'api2-stack', {
   mainTable: tables.mainTable,
   imagesDomain: `images.${process.env.ZONE_NAME}`,
   esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
-  api: api.api,
+  graphqlApiId: process.env.APPSYNC_ID || '',
   commonModulesLayerArn: process.env.LAYER_COMMON_MODULES_ARN || '',
   commonCodeLayerArn: process.env.LAYER_COMMON_CODE_ARN || '',
 });
