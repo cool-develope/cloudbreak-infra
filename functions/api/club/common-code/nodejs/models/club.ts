@@ -125,20 +125,44 @@ class ClubModel {
       address,
       discipline,
       teams: {
-        items: [],
-        totalCount: 0,
+        items: [
+          {
+            id: '111',
+            name: 'Team Name',
+            logo: this.getTypeImage('club/i/logo1.jpg'),
+          },
+        ],
+        totalCount: 1,
       },
       coaches: {
-        items: [],
-        totalCount: 0,
+        items: [
+          {
+            id: '111',
+            name: 'Coach Name',
+            logo: this.getTypeImage('club/i/photo-coach.jpeg'),
+          },
+        ],
+        totalCount: 1,
       },
       members: {
-        items: [],
-        totalCount: 0,
+        items: [
+          {
+            id: '111',
+            name: 'Member Name',
+            logo: this.getTypeImage('club/i/photo-member.jpg'),
+          },
+        ],
+        totalCount: 1,
       },
       federations: {
-        items: [],
-        totalCount: 0,
+        items: [
+          {
+            id: '111',
+            name: 'Federation Name',
+            logo: this.getTypeImage('club/i/logo2.jpg'),
+          },
+        ],
+        totalCount: 1,
       },
       me: {
         role: TeamMemberType.Member,
