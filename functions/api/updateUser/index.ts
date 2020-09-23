@@ -200,6 +200,10 @@ const getTypeUser = async (userData: any): Promise<User> => {
     birthCity,
     gender,
     usCitizen,
+    city,
+    postcode,
+    address1,
+    address2,
   } = userData;
 
   // @ts-ignore
@@ -224,6 +228,10 @@ const getTypeUser = async (userData: any): Promise<User> => {
     birthCity,
     gender,
     usCitizen,
+    city,
+    postcode,
+    address1,
+    address2,
     children,
     parent,
     pendingChildInvitations,
@@ -256,7 +264,7 @@ const sendPushNotifications = (player_ids?: [string]) => {
   return client.createNotification(notification);
 };
 
-const updateUser = async (pk: string, input: any) => {
+const updateUser = async (pk: string, input: UpdateUserInput) => {
   const { Attributes: userData } = await updateItem(pk, 'metadata', input);
   const user = await getTypeUser(userData);
   return user;

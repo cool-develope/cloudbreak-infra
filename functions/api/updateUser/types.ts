@@ -28,6 +28,10 @@ export interface UpdateUserInput {
   birthCity?: string;
   gender?: Gender;
   usCitizen?: boolean;
+  city?: string;
+  postcode?: string;
+  address1?: string;
+  address2?: string;
 }
 
 export interface UserChild {
@@ -49,6 +53,10 @@ export interface User {
   birthCity?: string;
   gender?: Gender;
   usCitizen?: boolean;
+  city?: string;
+  postcode?: string;
+  address1?: string;
+  address2?: string;
   children: UserChild[];
   parent: UserChild | null;
   pendingChildInvitations: ChildInvitation[];
