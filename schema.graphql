@@ -496,6 +496,13 @@ enum TeamInvitationStatus {
   Declined
 }
 
+enum KycReview {
+  NONE
+  PENDING
+  VALIDATED
+  REFUSED
+}
+
 type Image {
   url: String
 }
