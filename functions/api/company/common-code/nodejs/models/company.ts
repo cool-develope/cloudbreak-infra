@@ -4,7 +4,7 @@ import {
   UpdateCompanyPrivatePayload,
   Company,
   CompanyRecord,
-} from '../types/Company';
+} from '../types/comp';
 
 class CompanyModel {
   private readonly db: any;
@@ -88,6 +88,10 @@ class CompanyModel {
     const {
       Item: { companyId },
     } = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
+
+    if (!companyId) {
+      return null;
+    }
 
     const { Item } = await this.dynamoHelper.getItem(`company#${companyId}`, 'metadata');
     return this.getTypeCompany(Item);

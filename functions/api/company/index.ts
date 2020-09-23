@@ -4,7 +4,7 @@ import { Handler } from 'aws-lambda';
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 import { CompanyModel } from './common-code/nodejs/models';
-import { FieldName, FunctionEvent } from './common-code/nodejs/types/company';
+import { FieldName, FunctionEvent } from './common-code/nodejs/types/comp';
 
 const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN = '' } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
