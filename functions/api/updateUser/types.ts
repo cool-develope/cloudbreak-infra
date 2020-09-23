@@ -13,6 +13,18 @@ export enum OrganizationType {
   Club = 'Club',
 }
 
+export enum OrganizationRole {
+  Owner = 'Owner',
+  Coach = 'Coach',
+}
+
+export enum KycReview {
+  NONE = 'NONE',
+  PENDING = 'PENDING',
+  VALIDATED = 'VALIDATED',
+  REFUSED = 'REFUSED',
+}
+
 export interface Image {
   url: string;
 }
@@ -62,7 +74,9 @@ export interface User {
   pendingChildInvitations: ChildInvitation[];
   organization: {
     type: OrganizationType;
+    role: OrganizationRole;
   };
+  kycReview: KycReview;
 }
 
 export interface ChildInvitation {
