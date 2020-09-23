@@ -1,4 +1,3 @@
-import { userInfo } from 'os';
 import DynamoHelper from '../dynamoHelper';
 import {
   UpdateClubPrivateInput,
