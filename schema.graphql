@@ -242,6 +242,49 @@ input UpdateClubPrivateInput {
   federations: [String]
 }
 
+input CreateCompanyPrivateInput {
+  name: String!
+  country: String
+  legalForm: String
+  legalSector: String
+  regDate: AWSDate
+  regNumber: String
+  vatNumber: String
+  goals: String
+  address: AddressInput
+  addressOffice: AddressInput
+  representativeFiles: [String]
+  owners: [CompanyOwnerInput]
+}
+
+input UpdateCompanyPrivateInput {
+  name: String!
+  country: String
+  legalForm: String
+  legalSector: String
+  regDate: AWSDate
+  regNumber: String
+  vatNumber: String
+  goals: String
+  address: AddressInput
+  addressOffice: AddressInput
+  representativeFiles: [String]
+  owners: [CompanyOwnerInput]
+}
+
+input AddressInput {
+  city: String!
+  postcode: String!
+  address1: String!
+  address2: String
+}
+
+input CompanyOwnerInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+
 input SendTeamInvitationInput {
   teamId: String!
   role: TeamMemberType!
@@ -347,6 +390,16 @@ type CreateClubPrivatePayload {
 type UpdateClubPrivatePayload {
   errors: [String]
   club: Club
+}
+
+type CreateCompanyPrivatePayload {
+  errors: [String]
+  company: Company
+}
+
+type UpdateCompanyPrivatePayload {
+  errors: [String]
+  company: Company
 }
 
 type SendTeamInvitationPayload {
@@ -530,6 +583,35 @@ type Post {
   author: Author
   target: EventTarget
   myReaction: PostReaction
+}
+
+type Company {
+  id: ID!
+  name: String
+  country: String
+  legalForm: String
+  legalSector: String
+  regDate: AWSDate
+  regNumber: String
+  vatNumber: String
+  goals: String
+  address: Address
+  addressOffice: Address
+  representativeFiles: [String]
+  owners: [CompanyOwner]
+}
+
+type Address {
+  city: String
+  postcode: String
+  address1: String
+  address2: String
+}
+
+type CompanyOwner {
+  firstName: String
+  lastName: String
+  email: String!
 }
 
 type Club {
@@ -743,8 +825,9 @@ type Mutation {
   updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
   
   sendTeamInvitation(input: SendTeamInvitationInput!): SendTeamInvitationPayload!
-  acceptTeamInvitationPrivate(input: AcceptTeamInvitationPrivateInput!): AcceptTeamInvitationPrivatePayload
-  declineTeamInvitationPrivate(input: DeclineTeamInvitationPrivateInput!): DeclineTeamInvitationPrivatePayload
+
+  createCompanyPrivate(input: CreateCompanyPrivateInput!): CreateCompanyPrivatePayload!
+  updateCompanyPrivate(input: UpdateCompanyPrivateInput!): UpdateCompanyPrivatePayload!
 }
 
 type Query {
@@ -816,6 +899,7 @@ type Query {
   ): FederationsPrivateConnection!
 
   club(clubId: ID!): Club
-  
   clubs(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
+
+  companyPrivate: Company
 }
