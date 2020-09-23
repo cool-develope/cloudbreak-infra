@@ -43,6 +43,7 @@ const euCertificate = new AcmStack(app, 'acm-eu-stack', {
  */
 const cognito = new CognitoStack(app, 'cognito-stack', {
   signinUrl: process.env.SIGNIN_URL || '',
+  signinWebUrl: process.env.SIGNIN_WEB_URL || '',
   mainTableName: process.env.MAIN_TABLE_NAME || '',
   imagesDomain: `images.${process.env.ZONE_NAME}`,
 });

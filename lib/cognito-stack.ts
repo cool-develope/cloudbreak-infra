@@ -10,6 +10,7 @@ import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface CognitoStackProps extends cdk.StackProps {
   signinUrl: string;
+  signinWebUrl: string;
   mainTableName: string;
   imagesDomain: string;
 }
@@ -20,7 +21,7 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { signinUrl, mainTableName, imagesDomain } = props;
+    const { signinUrl, signinWebUrl, mainTableName, imagesDomain } = props;
     const mainTable = dynamodb.Table.fromTableName(this, 'events-table-main', mainTableName);
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
@@ -36,8 +37,8 @@ export class CognitoStack extends cdk.Stack {
         /**
          * Old dev deploy
          */
-        'trzUserId': new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
-        'trzScopes': new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
+        trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
+        trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
         trzChildren: new cognito.StringAttribute({
           maxLen: 1000,
           mutable: true,
@@ -69,7 +70,7 @@ export class CognitoStack extends cdk.Stack {
     /**
      * Add triggers
      */
-    this.addTriggerCreateAuthChallenge(signinUrl, imagesDomain);
+    this.addTriggerCreateAuthChallenge(signinUrl, signinWebUrl, imagesDomain);
     this.addTriggerDefineAuthChallenge();
     this.addTriggerPreSignup();
     this.addTriggerVerifyAuthChallenge();
@@ -91,7 +92,7 @@ export class CognitoStack extends cdk.Stack {
     return userPoolClient;
   }
 
-  addTriggerCreateAuthChallenge(signinUrl: string, imagesDomain: string) {
+  addTriggerCreateAuthChallenge(signinUrl: string, signinWebUrl: string, imagesDomain: string) {
     const triggerFunction = this.getFunction(
       'cognitoCreateAuthChallenge',
       'cognito-createAuthChallenge',
@@ -100,6 +101,7 @@ export class CognitoStack extends cdk.Stack {
         SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
         SES_REGION: 'eu-west-1',
         SIGNIN_URL: signinUrl,
+        SIGNIN_WEB_URL: signinWebUrl,
         IMAGES_DOMAIN: imagesDomain,
       },
     );

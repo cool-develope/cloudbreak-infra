@@ -3,7 +3,7 @@ import * as AWS from 'aws-sdk';
 import * as fs from 'fs';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
-const { SIGNIN_URL, SES_FROM_ADDRESS, SES_REGION, IMAGES_DOMAIN } = process.env;
+const { SIGNIN_URL, SIGNIN_WEB_URL, SES_FROM_ADDRESS, SES_REGION, IMAGES_DOMAIN } = process.env;
 AWS.config.update({ region: SES_REGION });
 const ses = new AWS.SES();
 const EMAIL_TEMPLATE = './signin.html';
@@ -28,7 +28,7 @@ const randomDigits = (len: number): string =>
 
 const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
   const signinUrl = `${SIGNIN_URL}?code=${secretLoginCode}`;
-  const signinUrlWeb = `http://tifo-web-experiments.s3-website.eu-central-1.amazonaws.com/signin?code=${secretLoginCode}`;
+  const signinUrlWeb = `${SIGNIN_WEB_URL}?code=${secretLoginCode}`;
 
   const html = getEmailHtml(EMAIL_TEMPLATE, {
     domain: `https://${IMAGES_DOMAIN}`,
@@ -59,7 +59,10 @@ const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
   await ses.sendEmail(params).promise();
 };
 
-export const handler: CognitoUserPoolTriggerHandler = async (event) => {
+export const handler: CognitoUserPoolTriggerHandler = async (event, context) => {
+  console.log(JSON.stringify(event, null, 4));
+  console.log(JSON.stringify(context, null, 4));
+
   let secretLoginCode: string;
   if (!event.request.session || !event.request.session.length) {
     // This is a new auth session
