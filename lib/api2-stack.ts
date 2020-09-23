@@ -69,7 +69,7 @@ export class Api2Stack extends cdk.Stack {
     this.dictionaryQuery();
 
     /**
-     * Mutation: createTreezorUser
+     * Mutation: createTreezorUser, createTreezorCompany
      */
     this.createTreezorUserMutation();
 
@@ -150,6 +150,11 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Mutation',
       fieldName: 'createTreezorUser',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createTreezorCompany',
     });
   }
 
