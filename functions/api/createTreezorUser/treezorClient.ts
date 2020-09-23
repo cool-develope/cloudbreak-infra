@@ -146,7 +146,7 @@ class TreezorClient {
     params.append('grant_type', 'client_credentials');
     params.append('client_id', this.clientId);
     params.append('client_secret', this.clientSecret);
-    params.append('scope', 'read_write');
+    params.append('scope', 'read_write admin');
 
     try {
       const res = await fetch(`${this.baseUrl}/oauth/token`, {
