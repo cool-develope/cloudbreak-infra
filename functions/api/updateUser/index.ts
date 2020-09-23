@@ -11,6 +11,8 @@ import {
   UserChild,
   ChildInvitation,
   OrganizationType,
+  KycReview,
+  OrganizationRole,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -204,6 +206,8 @@ const getTypeUser = async (userData: any): Promise<User> => {
     postcode,
     address1,
     address2,
+    companyId,
+    kycReview = KycReview.NONE,
   } = userData;
 
   // @ts-ignore
@@ -214,6 +218,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
   ]);
 
   const [{ value: children }, { value: parent }, { value: pendingChildInvitations }] = result;
+  const role: OrganizationRole = companyId ? OrganizationRole.Owner : OrganizationRole.Coach;
 
   return {
     email,
@@ -237,7 +242,9 @@ const getTypeUser = async (userData: any): Promise<User> => {
     pendingChildInvitations,
     organization: {
       type: OrganizationType.Club,
+      role,
     },
+    kycReview,
   };
 };
 
