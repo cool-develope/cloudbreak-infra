@@ -526,6 +526,7 @@ type TreezorUser {
 
 type Organization {
   type: OrganizationType
+  role: OrganizationRole
 }
 
 type User {
