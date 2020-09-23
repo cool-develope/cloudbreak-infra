@@ -550,6 +550,7 @@ type User {
   parent: UserChild
   pendingChildInvitations: [ChildInvitation]
   organization: Organization
+  kycReview: KycReview
 }
 
 type UserPublic {
