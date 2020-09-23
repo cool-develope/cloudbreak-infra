@@ -4,6 +4,44 @@ import { Handler } from 'aws-lambda';
 import DynamoHelper from './dynamoHelper';
 import TreezorClient, { TreezorUserType, TreezorUser } from './treezorClient';
 
+enum FieldName {
+  createTreezorUser = 'createTreezorUser',
+  createTreezorCompany = 'createTreezorCompany',
+}
+
+interface CompanyRecord {
+  pk?: string;
+  sk?: string;
+  name?: string;
+  country?: string;
+  legalForm?: string;
+  regDate?: string;
+  regNumber?: string;
+  vatNumber?: string;
+  legalSector?: string;
+  goals?: string;
+  address?: Address;
+  addressOffice?: Address | null;
+  representativeFiles?: string[];
+  owners?: CompanyOwner[] | null;
+  ownerUserId?: string;
+  createdAt?: string;
+  modifiedAt?: string;
+}
+
+interface Address {
+  city: string;
+  postcode: string;
+  address1: string;
+  address2: string;
+}
+
+interface CompanyOwner {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 const {
   MAIN_TABLE_NAME = '',
   IMAGES_DOMAIN,
@@ -69,62 +107,84 @@ const updateUser = async (pk: string, input: any) => {
 };
 
 const getUser = async (pk: string) => {
-  const { Item } = await dynamoHelper.getItem(pk, 'metadata');
+  const { Item } = await dynamoHelper.getItem(pk, 'metadata', true);
   Item.id = Item.pk.replace('user#', '');
   return Item;
 };
 
-export const handler: Handler = async (event) => {
-  const {
-    arguments: {
-      input: { country, city, address1, state, postcode, birthCity, usCitizen },
-    },
-    identity: { sub },
-  } = event;
-
-  const pk = `user#${sub}`;
-  const user = await getUser(pk);
-  const errors: string[] = [];
-  let treezorUserId: number | null = null;
-
-  console.log('user', user);
-
-  /**
-   * 1. Create Treezor Connect User
-   */
-  const treezorNewUserData: TreezorUser = {
+const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
+  const treezorUser: TreezorUser = {
     userTypeId: TreezorUserType.NaturalPerson,
     phone: user.phone,
     firstname: user.firstName,
     lastname: user.lastName,
     // birthday: user.birthDate,
     email: `${Date.now()}@test.com`,
-    country,
-    city,
-    address1,
-    state,
-    postcode,
-    placeOfBirth: birthCity,
-    specifiedUSPerson: usCitizen ? 1 : 0,
+    country: user.country,
+    city: user.city,
+    address1: user.address1,
+    address2: user.address2,
+    state: user.stateName,
+    postcode: user.postcode,
+    placeOfBirth: user.birthCity,
+    specifiedUSPerson: user.usCitizen ? 1 : 0,
   };
 
   if (user.parentUserId) {
     const parentUser = await getUser(`user#${user.parentUserId}`);
     if (parentUser?.treezorUserId) {
-      treezorNewUserData.parentUserId = parentUser.treezorUserId;
+      treezorUser.parentUserId = parentUser.treezorUserId;
     }
   }
 
-  const treezorUser = await treezorClient.createUser(treezorNewUserData);
+  return treezorUser;
+};
 
-  if (treezorUser) {
-    console.log('Treezor User', treezorUser);
-    console.log('Treezor User', treezorUser?.firstname);
+const getTreezorCompanyData = async (user: any, company: CompanyRecord): Promise<TreezorUser> => {
+  const treezorUser: TreezorUser = {
+    userTypeId: TreezorUserType.BusinessEntity,
+    phone: user.phone,
+    firstname: user.firstName,
+    lastname: user.lastName,
+    // birthday: user.birthDate,
+    email: `${Date.now()}@test.com`,
+    country: user.country,
+    city: user.city,
+    address1: user.address1,
+    address2: user.address2,
+    state: user.stateName,
+    postcode: user.postcode,
+    placeOfBirth: user.birthCity,
+    specifiedUSPerson: user.usCitizen ? 1 : 0,
+    birthCountry: user.birthCountry,
+    legalName: company.name,
+    legalRegistrationNumber: company.regNumber,
+    legalRegistrationDate: company.regDate,
+    legalTvaNumber: company.vatNumber,
+    legalForm: company.legalForm,
+    legalSector: company.legalSector,
+  };
 
-    treezorUserId = treezorUser?.userId || null;
+  return treezorUser;
+};
+
+export const handler: Handler = async (event) => {
+  const {
+    arguments: { input },
+    identity: { sub },
+    info: { fieldName },
+  } = event;
+
+  const field = fieldName as FieldName;
+  const pk = `user#${sub}`;
+  const errors: string[] = [];
+  let treezorUserId: number | null = null;
+  let treezorNewUserData: TreezorUser | null = null;
+
+  if (field === FieldName.createTreezorUser) {
+    const { country, city, address1, state, postcode, birthCity, usCitizen } = input;
 
     await updateUser(pk, {
-      treezorUserId: treezorUserId,
       country,
       city,
       address1,
@@ -134,6 +194,34 @@ export const handler: Handler = async (event) => {
       usCitizen,
     });
 
+    const user = await getUser(pk);
+    treezorNewUserData = await getTreezorUserData(user);
+  } else if (field === FieldName.createTreezorCompany) {
+    const user = await getUser(pk);
+    const { companyId } = user;
+    if (!companyId) {
+      throw Error('The user should have a company');
+    }
+
+    const { Item: company } = await dynamoHelper.getItem(`company#${companyId}`, 'metadata');
+    treezorNewUserData = await getTreezorCompanyData(user, company);
+  }
+
+  /**
+   * 1. Create Treezor Connect User
+   */
+  if (!treezorNewUserData) {
+    throw Error('User data is empty');
+  }
+
+  console.log('Treezor user data', treezorNewUserData);
+  const treezorUser = await treezorClient.createUser(treezorNewUserData);
+
+  if (treezorUser) {
+    console.log('Treezor response', treezorUser);
+
+    treezorUserId = treezorUser?.userId || null;
+    await updateUser(pk, { treezorUserId });
     /**
      * 2. Update Cognito User
      */
