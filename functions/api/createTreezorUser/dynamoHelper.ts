@@ -52,10 +52,11 @@ class DynamoHelper {
     return this.db.update(params).promise();
   }
 
-  getItem(pk: string, sk: string) {
+  getItem(pk: string, sk: string, isConsistentRead: boolean = false) {
     const params = {
       TableName: this.tableName,
       Key: { pk, sk },
+      ConsistentRead: isConsistentRead,
     };
 
     return this.db.get(params).promise();
