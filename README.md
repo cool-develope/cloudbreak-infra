@@ -40,6 +40,7 @@ cdk bootstrap --profile tifo-$TIFO_ENV
 ```shell
 cdk deploy acm-us-stack --profile tifo-$TIFO_ENV
 cdk deploy acm-eu-stack --profile tifo-$TIFO_ENV
+cdk deploy layers-stack --profile tifo-$TIFO_ENV
 cdk deploy es-stack --profile tifo-$TIFO_ENV
 cdk deploy table-stack --profile tifo-$TIFO_ENV
 cdk deploy admin-website-stack --profile tifo-$TIFO_ENV
