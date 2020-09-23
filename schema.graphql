@@ -59,6 +59,10 @@ input UpdateUserInput {
   birthCity: String
   gender: Gender
   usCitizen: Boolean
+  city: String
+  postcode: String
+  address1: String
+  address2: String
 }
 
 input InviteParentInput {
@@ -467,6 +471,10 @@ type User {
   birthCity: String
   gender: Gender
   usCitizen: Boolean
+  city: String
+  postcode: String
+  address1: String
+  address2: String
   children: [UserChild]
   parent: UserChild
   pendingChildInvitations: [ChildInvitation]
