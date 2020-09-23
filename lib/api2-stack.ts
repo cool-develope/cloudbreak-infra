@@ -88,6 +88,12 @@ export class Api2Stack extends cdk.Stack {
      * Query: club, clubs
      */
     this.clubQuery();
+
+    /**
+     * Mutation: createCompanyPrivate, updateCompanyPrivate
+     * Query: companyPrivate
+     */
+    this.companyQuery();
   }
 
   dictionaryQuery() {
@@ -215,6 +221,31 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'clubs',
+    });
+  }
+
+  companyQuery() {
+    const fn = this.getFunction('company', 'api-company', 'company', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    const dataSource = this.api.addLambdaDataSource('companyFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createCompanyPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateCompanyPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'companyPrivate',
     });
   }
 
