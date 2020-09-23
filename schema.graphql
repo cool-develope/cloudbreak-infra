@@ -378,6 +378,11 @@ type CreateTreezorUserPayload {
   treezorUserId: Int
 }
 
+type CreateTreezorCompanyPayload {
+  errors: [String]
+  treezorUserId: Int
+}
+
 type SendMoneyRequestPayload {
   errors: [String]
 }
@@ -818,6 +823,7 @@ type Mutation {
   verifyPhone(input: VerifyPhoneInput!): VerifyPhonePayload
 
   createTreezorUser(input: CreateTreezorUserInput!): CreateTreezorUserPayload!
+  createTreezorCompany: CreateTreezorCompanyPayload!
 
   sendMoneyRequest(input: SendMoneyRequestInput!): SendMoneyRequestPayload!
 
