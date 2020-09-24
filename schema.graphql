@@ -466,6 +466,7 @@ enum UploadType {
   PostImage
   PostAttachment
   Club
+  Company
 }
 
 enum RepeatType {
