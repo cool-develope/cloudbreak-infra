@@ -24,6 +24,40 @@ export class CognitoStack extends cdk.Stack {
     const { signinUrl, signinWebUrl, mainTableName, imagesDomain } = props;
     const mainTable = dynamodb.Table.fromTableName(this, 'events-table-main', mainTableName);
 
+    /**
+     * TODO: Fix it some time
+     */
+    let customAttributes = null;
+    if (process.env.TIFO_ENV === 'dev') {
+      /**
+       * Old dev deploy
+       */
+      customAttributes = {
+        trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
+        trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
+        trzChildren: new cognito.StringAttribute({
+          maxLen: 1000,
+          mutable: true,
+        }),
+        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+      };
+    } else {
+      /**
+       * New deploy
+       */
+      customAttributes = {
+        trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
+        trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
+        trzChildren: new cognito.StringAttribute({
+          maxLen: 1000,
+          mutable: true,
+        }),
+        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+      };
+    }
+
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
       selfSignUpEnabled: true,
@@ -33,31 +67,7 @@ export class CognitoStack extends cdk.Stack {
         email: true,
       },
       autoVerify: { email: true },
-      customAttributes: {
-        /**
-         * Old dev deploy
-         */
-        trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
-        trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
-        trzChildren: new cognito.StringAttribute({
-          maxLen: 1000,
-          mutable: true,
-        }),
-        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-
-        /**
-         * New deploy
-         */
-        // trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
-        // trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
-        // trzChildren: new cognito.StringAttribute({
-        //   maxLen: 1000,
-        //   mutable: true,
-        // }),
-        // trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        // trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-      },
+      customAttributes,
     });
 
     new cdk.CfnOutput(this, 'user-pool-id', { value: this.userPool.userPoolId });
