@@ -16,10 +16,11 @@ export interface Event {
   viewsCount: number;
   acceptedCount: number;
   author?: {
+    id?: string;
     firstName?: string;
     lastName?: string;
     photo?: Image;
-  }
+  };
 }
 
 export interface MyEventsConnection {

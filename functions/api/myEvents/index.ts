@@ -98,7 +98,9 @@ const getEsTypeEvent = ({
   likesCount,
   viewsCount,
   acceptedCount,
-  author: {},
+  author: {
+    id: ownerUserId,
+  },
 });
 
 const getEsTypeMyEventsConnection = (items: any[], totalCount: number): MyEventsConnection => ({
