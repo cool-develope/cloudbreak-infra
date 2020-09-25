@@ -5,7 +5,7 @@ import { Handler } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 
 const s3 = new AWS.S3();
-const { IMAGES_BUCKET } = process.env;
+const { IMAGES_BUCKET_NAME, DOCS_BUCKET_NAME } = process.env;
 
 enum UploadType {
   UserPhoto = 'UserPhoto',
@@ -14,6 +14,16 @@ enum UploadType {
   PostAttachment = 'PostAttachment',
   Club = 'Club',
   Company = 'Company',
+}
+
+interface Event {
+  arguments: {
+    type: UploadType;
+    fileName: string;
+  };
+  identity: {
+    sub: string;
+  };
 }
 
 interface UploadUrlPayload {
@@ -32,20 +42,22 @@ const getS3Key = (type: UploadType, sub: string, fileName: string) => {
       return `event/f/${uuidv4()}/${fileName}`;
     case UploadType.Club:
       return `club/i/${uuidv4()}/${fileName}`;
+    case UploadType.Company:
+      return `user/${sub}/company/${fileName}`;
   }
 };
 
-export const handler: Handler = async (event): Promise<UploadUrlPayload> => {
+export const handler: Handler = async (event: Event): Promise<UploadUrlPayload> => {
   const {
     arguments: { type, fileName },
     identity: { sub },
   } = event;
 
-  const key = getS3Key(type as UploadType, sub, fileName);
+  const key = getS3Key(type, sub, fileName);
   let uploadUrl = '';
 
   const params = {
-    Bucket: IMAGES_BUCKET,
+    Bucket: type === UploadType.Company ? DOCS_BUCKET_NAME : IMAGES_BUCKET_NAME,
     Expires: 60, // 1 min
     Key: key,
   };
