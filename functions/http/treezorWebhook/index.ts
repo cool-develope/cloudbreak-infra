@@ -47,6 +47,20 @@ enum WebhookEvent {
   wallet_cancel = 'wallet.cancel',
 }
 
+enum KycReview {
+  NONE = '0',
+  PENDING = '1',
+  VALIDATED = '2',
+  REFUSED = '3',
+}
+
+const KYC_REVIEW_NAMES = new Map<string, string>([
+  ['0', 'NONE'],
+  ['1', 'PENDING'],
+  ['2', 'VALIDATED'],
+  ['3', 'REFUSED'],
+]);
+
 interface Webhood {
   webhook: WebhookEvent;
   webhook_id: string;
@@ -241,12 +255,33 @@ const createWallet = async (treezorUserId: string) => {
   });
 };
 
+const updateKycReview = async ({
+  userId: treezorUserId,
+  kycReview,
+}: {
+  userId: string;
+  kycReview: KycReview;
+}) => {
+  const kycReviewName = KYC_REVIEW_NAMES.get(kycReview);
+  const user = await getUser(treezorUserId);
+  await updateItem(user.pk, 'metadata', {
+    kycReview: kycReviewName,
+    modifiedAt: new Date().toISOString(),
+  });
+};
+
 const processWebhook = async (h: Webhood) => {
   switch (h.webhook) {
     case WebhookEvent.user_create:
       await createWallet(h.object_payload.users[0].userId);
       break;
     case WebhookEvent.wallet_create:
+      break;
+    case WebhookEvent.user_kycrequest:
+      await updateKycReview(h.object_payload.users[0]);
+      break;
+    case WebhookEvent.user_kycreview:
+      await updateKycReview(h.object_payload.users[0]);
       break;
   }
 };
