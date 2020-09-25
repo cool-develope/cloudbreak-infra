@@ -9,6 +9,7 @@ import { Api2Stack } from '../lib/api2-stack';
 import { ApiHttpStack } from '../lib/api-http-stack';
 import { WebSiteStack } from '../lib/website-stack';
 import { StorageStack } from '../lib/storage-stack';
+import { PrivateStorageStack } from '../lib/private-storage-stack';
 import { TableStack } from '../lib/table-stack';
 import { EventsStack } from '../lib/events-stack';
 import { ElasticsearchStack } from '../lib/es-stack';
@@ -140,6 +141,10 @@ new StorageStack(app, 'images-storage-stack', {
   domain: `images.${process.env.ZONE_NAME}`,
   certificateArn: process.env.US_CERTIFICATE_ARN || '',
   deployDirectories: ['./resources/s3/images'],
+});
+
+new PrivateStorageStack(app, 'private-storage-stack', {
+  bucketName: process.env.DOCS_BUCKET_NAME || '',
 });
 
 /**
