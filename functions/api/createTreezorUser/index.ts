@@ -123,10 +123,11 @@ const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
     country: user.country,
     city: user.city,
     address1: user.address1,
-    address2: user.address2,
+    address2: user.address2 || '',
     state: user.stateName,
     postcode: user.postcode,
     placeOfBirth: user.birthCity,
+    birthCountry: user.birthCountry,
     specifiedUSPerson: user.usCitizen ? 1 : 0,
   };
 
@@ -151,7 +152,7 @@ const getTreezorCompanyData = async (user: any, company: CompanyRecord): Promise
     country: user.country,
     city: user.city,
     address1: user.address1,
-    address2: user.address2,
+    address2: user.address2 || '',
     state: user.stateName,
     postcode: user.postcode,
     placeOfBirth: user.birthCity,
