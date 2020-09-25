@@ -13,6 +13,7 @@ enum UploadType {
   PostImage = 'PostImage',
   PostAttachment = 'PostAttachment',
   Club = 'Club',
+  Company = 'Company',
 }
 
 interface UploadUrlPayload {
