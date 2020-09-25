@@ -46,6 +46,7 @@ cdk deploy table-stack --profile tifo-$TIFO_ENV
 cdk deploy admin-website-stack --profile tifo-$TIFO_ENV
 cdk deploy mobile-website-stack --profile tifo-$TIFO_ENV
 cdk deploy images-storage-stack --profile tifo-$TIFO_ENV
+cdk deploy private-storage-stack --profile tifo-$TIFO_ENV
 cdk deploy cognito-stack --profile tifo-$TIFO_ENV
 cdk deploy events-stack --profile tifo-$TIFO_ENV
 cdk deploy hapi-stack --profile tifo-$TIFO_ENV
