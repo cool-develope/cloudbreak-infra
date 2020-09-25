@@ -167,10 +167,11 @@ export class ApiStack extends cdk.Stack {
   }
 
   uploadUrlQuery() {
-    const { IMAGES_BUCKET_NAME } = process.env;
+    const { IMAGES_BUCKET_NAME, DOCS_BUCKET_NAME } = process.env;
 
     const lambdaFunction = this.getFunction('uploadUrl', 'api-uploadUrl', 'uploadUrl', {
-      IMAGES_BUCKET: IMAGES_BUCKET_NAME,
+      IMAGES_BUCKET_NAME,
+      DOCS_BUCKET_NAME,
     });
 
     const s3Policy = new PolicyStatement({
@@ -178,8 +179,16 @@ export class ApiStack extends cdk.Stack {
     });
     s3Policy.addActions('s3:PutObject');
     s3Policy.addResources(`arn:aws:s3:::${IMAGES_BUCKET_NAME}/*`);
+    s3Policy.addResources(`arn:aws:s3:::${DOCS_BUCKET_NAME}/*`);
 
     lambdaFunction.addToRolePolicy(s3Policy);
+
+    const kmsPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    kmsPolicy.addActions('kms:GenerateDataKey');
+    kmsPolicy.addResources('*');
+    lambdaFunction.addToRolePolicy(kmsPolicy);
 
     const lambdaDS = this.api.addLambdaDataSource('uploadUrlFunction', lambdaFunction);
 
