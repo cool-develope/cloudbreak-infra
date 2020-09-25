@@ -215,7 +215,12 @@ export const handler: Handler = async (event) => {
     throw Error('User data is empty');
   }
 
+  treezorNewUserData.incomeRange = '0-18';
+  // treezorNewUserData.legalNetIncomeRange = '0-18';
+  treezorNewUserData.title = 'M';
+  treezorNewUserData.nationality = treezorNewUserData.country;
   console.log('Treezor user data', treezorNewUserData);
+
   const treezorUser = await treezorClient.createUser(treezorNewUserData);
 
   if (treezorUser) {
