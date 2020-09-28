@@ -242,6 +242,19 @@ input UpdateClubPrivateInput {
   federations: [String]
 }
 
+input CreateTeamPrivateInput {
+  clubId: String!
+  name: String!
+  description: String
+  cover: String
+  logo: String
+  parentTeamId: String
+  address: String
+  email: String
+  phone: String
+  discipline: [Discipline]
+  federations: [String]
+}
 input CreateCompanyPrivateInput {
   name: String!
   country: String
@@ -397,6 +410,10 @@ type UpdateClubPrivatePayload {
   club: Club
 }
 
+type CreateTeamPrivatePayload {
+  errors: [String]
+  team: Team
+}
 type CreateCompanyPrivatePayload {
   errors: [String]
   company: Company
@@ -682,6 +699,21 @@ type TeamShort {
   logo: Image
 }
 
+type Team {
+  id: ID!
+  clubId: String
+  name: String
+  description: String
+  cover: Image
+  logo: Image
+  parentTeam: Team
+  address: String
+  email: String
+  phone: String
+  discipline: [Discipline]
+  federations: FederationShortConnection
+}
+
 type UserShortConnection {
   items: [UserShort]
   totalCount: Int
@@ -844,7 +876,8 @@ type Mutation {
 
   createClubPrivate(input: CreateClubPrivateInput!): CreateClubPrivatePayload!
   updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
-  
+
+  createTeamPrivate(input: CreateTeamPrivateInput!): CreateTeamPrivatePayload!
   sendTeamInvitation(input: SendTeamInvitationInput!): SendTeamInvitationPayload!
 
   createCompanyPrivate(input: CreateCompanyPrivateInput!): CreateCompanyPrivatePayload!
