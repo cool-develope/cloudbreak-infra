@@ -255,6 +255,22 @@ input CreateTeamPrivateInput {
   discipline: [Discipline]
   federations: [String]
 }
+
+input UpdateTeamPrivateInput {
+  id: ID!
+  clubId: String!
+  name: String
+  description: String
+  cover: String
+  logo: String
+  parentTeamId: String
+  address: String
+  email: String
+  phone: String
+  discipline: [Discipline]
+  federations: [String]
+}
+
 input CreateCompanyPrivateInput {
   name: String!
   country: String
@@ -414,6 +430,12 @@ type CreateTeamPrivatePayload {
   errors: [String]
   team: Team
 }
+
+type UpdateTeamPrivatePayload {
+  errors: [String]
+  team: Team
+}
+
 type CreateCompanyPrivatePayload {
   errors: [String]
   company: Company
@@ -567,6 +589,9 @@ type User {
   children: [UserChild]
   parent: UserChild
   pendingChildInvitations: [ChildInvitation]
+  """
+  Only for business users
+  """
   organization: Organization
   kycReview: KycReview
 }
@@ -878,6 +903,8 @@ type Mutation {
   updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
 
   createTeamPrivate(input: CreateTeamPrivateInput!): CreateTeamPrivatePayload!
+  updateTeamPrivate(input: UpdateTeamPrivateInput!): UpdateTeamPrivatePayload!
+
   sendTeamInvitation(input: SendTeamInvitationInput!): SendTeamInvitationPayload!
 
   createCompanyPrivate(input: CreateCompanyPrivateInput!): CreateCompanyPrivatePayload!
