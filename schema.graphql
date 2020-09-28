@@ -969,6 +969,7 @@ type Query {
 
   cardTypes: [CardType]!
 
+  team(clubId: String!, teamId: ID!): Team
   teamsPrivate(filter: TeamsPrivateFilterInput, limit: Int, from: Int): TeamsPrivateConnection!
   clubsPrivate(filter: ClubsPrivateFilterInput, limit: Int, from: Int): ClubsPrivateConnection!
   federationsPrivate(
