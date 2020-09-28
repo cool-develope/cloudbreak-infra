@@ -162,6 +162,8 @@ input ClubsFilterInput {
 
 input TeamsPrivateFilterInput {
   search: String
+  discipline: [Discipline]
+  clubIds: [String]
 }
 
 input ClubsPrivateFilterInput {
@@ -766,11 +768,6 @@ type Author {
   photo: Image
 }
 
-type TeamItemPrivate {
-  id: ID!
-  name: String
-}
-
 type ClubItemPrivate {
   id: ID!
   name: String
@@ -844,7 +841,8 @@ type FeedPrivateConnection {
 }
 
 type TeamsPrivateConnection {
-  items: [TeamItemPrivate]
+  items: [Team]
+  totalCount: Int
 }
 
 type ClubsPrivateConnection {
