@@ -254,7 +254,7 @@ input CreateTeamPrivateInput {
   address: String
   email: String
   phone: String
-  discipline: [Discipline]
+  discipline: Discipline
   federations: [String]
 }
 
@@ -269,7 +269,7 @@ input UpdateTeamPrivateInput {
   address: String
   email: String
   phone: String
-  discipline: [Discipline]
+  discipline: Discipline
   federations: [String]
 }
 
@@ -737,7 +737,7 @@ type Team {
   address: String
   email: String
   phone: String
-  discipline: [Discipline]
+  discipline: Discipline
   federations: FederationShortConnection
 }
 
