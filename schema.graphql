@@ -690,7 +690,7 @@ type Club {
   city: String
   address: String
   discipline: [Discipline]
-  teams: TeamShortConnection
+  teams: TeamsPrivateConnection
   coaches: UserShortConnection
   members: UserShortConnection
   federations: FederationShortConnection
@@ -710,17 +710,6 @@ type FederationShortConnection {
 }
 
 type FederationShort {
-  id: ID!
-  name: String
-  logo: Image
-}
-
-type TeamShortConnection {
-  items: [TeamShort]
-  totalCount: Int
-}
-
-type TeamShort {
   id: ID!
   name: String
   logo: Image
