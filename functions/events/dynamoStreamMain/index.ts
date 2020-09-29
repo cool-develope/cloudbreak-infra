@@ -13,8 +13,17 @@ interface Item {
   oldData: any;
 }
 
+interface Keys {
+  pk: string;
+  sk: string;
+}
+
 const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
 const es = new Client({ node: ES_DOMAIN });
+
+const teamPattern = new RegExp('^team#[a-z0-9-]+$');
+const teamUserPattern = new RegExp('^team#[a-z0-9-]+user#[a-z0-9-]+$');
+const teamInvitationPattern = new RegExp('^team#[a-z0-9-]+invitation#[a-z0-9-]+$');
 
 const clubMetadataHandler = async (items: Item[]) => {
   const body = [];
@@ -44,6 +53,7 @@ const clubMetadataHandler = async (items: Item[]) => {
         doc: {
           ...data,
         },
+        doc_as_upsert: true,
       });
     } else if (eventName === 'REMOVE') {
       body.push({
@@ -55,6 +65,58 @@ const clubMetadataHandler = async (items: Item[]) => {
   if (body.length) {
     const result = await es.bulk({
       index: 'clubs',
+      refresh: true,
+      body,
+    });
+
+    console.log(JSON.stringify(result, null, 2));
+  }
+};
+
+const teamsHandler = async (items: Item[]) => {
+  const body = [];
+  for (const item of items) {
+    const {
+      eventName,
+      keys: { pk, sk },
+      data,
+    } = item;
+    const clubId = pk.replace('club#', '');
+    const teamId = sk.replace('team#', '');
+
+    const _id = teamId;
+    delete data.pk;
+    delete data.sk;
+    delete data.modifiedAt;
+    data.clubId = clubId;
+
+    if (eventName === 'INSERT') {
+      body.push({
+        index: { _id },
+      });
+      body.push({
+        ...data,
+      });
+    } else if (eventName === 'MODIFY') {
+      body.push({
+        update: { _id },
+      });
+      body.push({
+        doc: {
+          ...data,
+        },
+        doc_as_upsert: true,
+      });
+    } else if (eventName === 'REMOVE') {
+      body.push({
+        delete: { _id },
+      });
+    }
+  }
+
+  if (body.length) {
+    const result = await es.bulk({
+      index: 'teams',
       refresh: true,
       body,
     });
@@ -91,6 +153,7 @@ const eventMetadataHandler = async (items: Item[]) => {
         doc: {
           ...data,
         },
+        doc_as_upsert: true,
       });
     } else if (eventName === 'REMOVE') {
       body.push({
@@ -154,10 +217,11 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
   const eventMetadataItems: any[] = [];
   const eventUserItems: any[] = [];
   const clubMetadataItems: any[] = [];
+  const teams: any[] = [];
 
   for (const record of event.Records) {
     const { eventName, dynamodb: { NewImage, OldImage, Keys } = {} } = record;
-    const keys = AWS.DynamoDB.Converter.unmarshall(Keys);
+    const keys: Keys = AWS.DynamoDB.Converter.unmarshall(Keys);
     const data = AWS.DynamoDB.Converter.unmarshall(NewImage);
     const oldData = AWS.DynamoDB.Converter.unmarshall(OldImage);
 
@@ -174,6 +238,18 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
     if (keys.pk.startsWith('club#') && keys.sk === 'metadata') {
       clubMetadataItems.push({ eventName, keys, data, oldData });
     }
+
+    if (keys.pk.startsWith('club#') && keys.sk.startsWith('team#')) {
+      if (teamPattern.test(keys.sk)) {
+        teams.push({ eventName, keys, data, oldData });
+      }
+
+      if (teamUserPattern.test(keys.sk)) {
+      }
+
+      if (teamInvitationPattern.test(keys.sk)) {
+      }
+    }
   }
 
   if (eventMetadataItems.length) {
@@ -184,8 +260,12 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
     eventUserHandler(eventUserItems);
   }
 
-  if(clubMetadataItems.length){
+  if (clubMetadataItems.length) {
     clubMetadataHandler(clubMetadataItems);
+  }
+
+  if (teams.length) {
+    teamsHandler(teams);
   }
 
   callback(null, `Successfully processed ${event.Records.length} records.`);
