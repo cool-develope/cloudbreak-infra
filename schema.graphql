@@ -84,7 +84,7 @@ input CreateEventInput {
   startDate: AWSDateTime!
   endDate: AWSDateTime!
   address: String
-  discipline: Discipline
+  discipline: [Discipline]
   price: Float!
   repeatType: RepeatType
   target: EventTargetInput!
@@ -98,7 +98,7 @@ input UpdateEventInput {
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
-  discipline: Discipline
+  discipline: [Discipline]
   price: Float
   repeatType: RepeatType
   target: EventTargetInput
@@ -626,7 +626,7 @@ type Event {
   startDate: AWSDateTime
   endDate: AWSDateTime
   address: String
-  discipline: String
+  discipline: [String]
   price: Float
   likesCount: Int
   viewsCount: Int
