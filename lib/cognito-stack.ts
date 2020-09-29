@@ -42,6 +42,20 @@ export class CognitoStack extends cdk.Stack {
         trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
         trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
       };
+    } else if (process.env.TIFO_ENV === 'test') {
+      /**
+       * TEST env
+       */
+      customAttributes = {
+        trzUserId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        trzScopes: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        trzChildren: new cognito.StringAttribute({
+          maxLen: 1000,
+          mutable: true,
+        }),
+        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+      };
     } else {
       /**
        * New deploy
