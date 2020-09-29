@@ -5,6 +5,7 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { ITable } from '@aws-cdk/aws-dynamodb';
+import { MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
@@ -94,6 +95,12 @@ export class Api2Stack extends cdk.Stack {
      * Query: companyPrivate
      */
     this.companyQuery();
+
+    /**
+     * Mutation: createTeamPrivate, updateTeamPrivate
+     * Query: team
+     */
+    this.team();
   }
 
   dictionaryQuery() {
@@ -232,7 +239,7 @@ export class Api2Stack extends cdk.Stack {
   companyQuery() {
     const fn = this.getFunction('company', 'api-company', 'company', {
       MAIN_TABLE_NAME: this.mainTable.tableName,
-      IMAGES_DOMAIN: this.imagesDomain
+      IMAGES_DOMAIN: this.imagesDomain,
     });
 
     this.mainTable.grantReadWriteData(fn);
@@ -251,6 +258,73 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'companyPrivate',
+    });
+  }
+
+  team() {
+    const fn = this.getFunction('team', 'api-team', 'team', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('teamFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createTeamPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateTeamPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'team',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'teamsPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Team',
+      fieldName: 'parentTeam',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "parentTeam",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Club',
+      fieldName: 'teams',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "clubTeams",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
 
