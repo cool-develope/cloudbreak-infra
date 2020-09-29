@@ -63,7 +63,7 @@ export interface Event {
   startDate: string;
   endDate: string;
   address: string;
-  discipline: string;
+  discipline: string[];
   price: number;
   likesCount: number;
   viewsCount: number;
@@ -96,10 +96,7 @@ export interface FeedFilterInput {
   search?: String;
   myContent?: Boolean;
   eventType?: [EventType] | EventType;
-  federation?: [String];
-  club?: [String];
-  team?: [String];
-  discipline?: [Discipline];
+  discipline?: string[];
   createDateAfter?: string;
   createDateBefore?: string;
   startDateAfter?: string;
@@ -119,7 +116,7 @@ export interface EventRecord {
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: Discipline;
+  discipline?: string[];
   price?: number;
   likesCount: number;
   viewsCount: number;
@@ -132,7 +129,7 @@ export interface EventRecord {
   targetCountry?: string;
   targetFederation?: string[];
   targetClub?: string[];
-  targetDiscipline?: Discipline[];
+  targetDiscipline?: string[];
   targetTeam?: string[];
   targetUserRole?: UserRole[];
 }
