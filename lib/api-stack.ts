@@ -129,11 +129,6 @@ export class ApiStack extends cdk.Stack {
     this.upcomingEventsPrivateQuery();
 
     /**
-     * Query: teamsPrivate
-     */
-    this.teamsPrivateQuery();
-
-    /**
      * Query: clubsPrivate
      */
     this.clubsPrivateQuery();
@@ -565,29 +560,6 @@ export class ApiStack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'upcomingEventsPrivate',
-    });
-  }
-
-  teamsPrivateQuery() {
-    const teamsPrivateFunction = this.getFunction(
-      'teamsPrivate',
-      'api-teamsPrivate',
-      'teamsPrivate',
-      {
-        MAIN_TABLE_NAME: this.mainTable.tableName,
-        IMAGES_DOMAIN: this.imagesDomain,
-        ES_DOMAIN: this.esDomain,
-      },
-    );
-
-    this.mainTable.grantReadWriteData(teamsPrivateFunction);
-    this.allowES(teamsPrivateFunction);
-
-    const dataSource = this.api.addLambdaDataSource('teamsPrivateFunction', teamsPrivateFunction);
-
-    dataSource.createResolver({
-      typeName: 'Query',
-      fieldName: 'teamsPrivate',
     });
   }
 
