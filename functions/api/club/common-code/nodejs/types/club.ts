@@ -75,7 +75,7 @@ export interface Club {
   city: string;
   address: string;
   discipline: string[];
-  teams: TeamShortConnection | null;
+  teams: null;
   coaches: UserShortConnection | null;
   members: UserShortConnection | null;
   federations: FederationShortConnection | null;
@@ -95,17 +95,6 @@ export interface FederationShortConnection {
 }
 
 export interface FederationShort {
-  id: string;
-  name: string;
-  logo: Image;
-}
-
-export interface TeamShortConnection {
-  items: TeamShort[];
-  totalCount: number;
-}
-
-export interface TeamShort {
   id: string;
   name: string;
   logo: Image;

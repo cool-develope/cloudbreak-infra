@@ -124,16 +124,7 @@ class ClubModel {
       city,
       address,
       discipline,
-      teams: {
-        items: [
-          {
-            id: '111',
-            name: 'Team Name',
-            logo: this.getTypeImage('club/i/logo1.jpg'),
-          },
-        ],
-        totalCount: 1,
-      },
+      teams: null,
       coaches: {
         items: [
           {
