@@ -85,6 +85,7 @@ export interface Post {
   author: {
     id: string;
   };
+  createDate: string;
 }
 
 export interface FeedConnection {
@@ -93,9 +94,14 @@ export interface FeedConnection {
 }
 
 export interface FeedFilterInput {
-  search?: String;
+  search?: string;
   myContent?: Boolean;
   eventType?: [EventType] | EventType;
+  federation?: [string];
+  club?: [string];
+  team?: [string];
+  clubId?: string;
+  teamId?: string;
   discipline?: string[];
   createDateAfter?: string;
   createDateBefore?: string;
