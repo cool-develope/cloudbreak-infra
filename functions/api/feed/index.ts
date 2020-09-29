@@ -219,6 +219,7 @@ const getEsTypePost = ({
   likesCount,
   viewsCount,
   ownerUserId,
+  createdAt
 }: any): Post => ({
   __typename: EventType.Post,
   id,
@@ -231,6 +232,7 @@ const getEsTypePost = ({
   author: {
     id: ownerUserId,
   },
+  createDate: createdAt,
 });
 
 const getEsFeedConnection = (items: any[], totalCount: number): FeedConnection => ({
@@ -240,7 +242,7 @@ const getEsFeedConnection = (items: any[], totalCount: number): FeedConnection =
   totalCount,
 });
 
-const getTypeImage = (image: string = '') => ({
+const getTypeImage = (image: string = ''): Image => ({
   url: image ? `https://${IMAGES_DOMAIN}/${image}` : '',
 });
 
