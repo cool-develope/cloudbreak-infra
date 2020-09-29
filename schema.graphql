@@ -649,6 +649,7 @@ type Post {
   author: Author
   target: EventTarget
   myReaction: PostReaction
+  createDate: AWSDateTime
 }
 
 type Company {
