@@ -38,7 +38,7 @@ const getItem = (pk: string, sk: string) => {
   return db.get(params).promise();
 };
 
-const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: '' }));
+const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: 'Todo soon' }));
 
 const getTypeEventTarget = (metadata: EventRecord): EventTarget => ({
   country: metadata.targetCountry || '',
