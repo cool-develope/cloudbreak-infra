@@ -27,12 +27,34 @@ const prepareEsItems = (items: any[] = []) =>
     ..._source,
   }));
 
-const getFeedQuery = (filter: any = {}, sub: string) => {
-  const query = null;
+const getFeedQuery = (filter: FeedFilterInput = {}, sub: string) => {
+  if (!filter) {
+    return null;
+  }
+
+  const { eventType, clubId, teamId } = filter;
+
+  const filterByClub = getQueryByMatch('targetClub', clubId);
+  const filterByTeam = getQueryByMatch('targetTeam', teamId);
+  const filterByEventType =
+    eventType && Array.isArray(eventType) && eventType.length === 1
+      ? getQueryByMatch('eventType', eventType[0])
+      : null;
+
+  const must = [filterByClub, filterByTeam, filterByEventType].filter((f) => !!f);
+
+  const query = must.length
+    ? {
+        bool: {
+          must,
+        },
+      }
+    : null;
+
   return query;
 };
 
-const getQueryByDate = (field: string, gte: string, lte: string) =>
+const getQueryByDate = (field: string, gte?: string, lte?: string) =>
   !gte && !lte
     ? null
     : {
@@ -64,7 +86,7 @@ const getQueryBySearch = (search: string) =>
         },
       };
 
-const getQueryByMatch = (field: string, value: string) =>
+const getQueryByMatch = (field: string, value?: string) =>
   !value
     ? null
     : {
@@ -73,9 +95,22 @@ const getQueryByMatch = (field: string, value: string) =>
         },
       };
 
-const getFeedPrivateQuery = (filter: any = {}, sub: string) => {
+const getQueryByDiscipline = (discipline?: string[]) =>
+  discipline && discipline.length
+    ? {
+        bool: {
+          should: discipline.map((value) => ({
+            match: {
+              discipline: value,
+            },
+          })),
+        },
+      }
+    : null;
+
+const getFeedPrivateQuery = (filter: FeedFilterInput = {}, sub: string) => {
   const {
-    search,
+    search = '',
     myContent,
     eventType,
     federation,
@@ -95,6 +130,7 @@ const getFeedPrivateQuery = (filter: any = {}, sub: string) => {
   const filterByCreatedAt = getQueryByDate('createdAt', createDateAfter, createDateBefore);
   const filterBySearch = getQueryBySearch(search);
   const filterByOwnerUserID = myContent ? getQueryByMatch('ownerUserId', sub) : null;
+  const filterByDiscipline = getQueryByDiscipline(discipline);
   const filterByEventType =
     Array.isArray(eventType) && eventType.length === 1
       ? getQueryByMatch('eventType', eventType[0])
@@ -220,6 +256,8 @@ export const handler: Handler = async (event) => {
     identity: { sub },
     info: { fieldName },
   } = event;
+
+  console.log('Filter', filter);
 
   const field = fieldName as FieldName;
   let esResult: any = null;
