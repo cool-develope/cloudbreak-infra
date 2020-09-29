@@ -64,7 +64,7 @@ export interface CreateEventInput {
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: Discipline;
+  discipline?: string[];
   price?: number;
   repeatType?: RepeatType;
   target?: EventTargetInput;
@@ -83,7 +83,7 @@ export interface EventTargetInput {
   country?: string;
   federation?: string[];
   club?: string[];
-  discipline?: Discipline[];
+  discipline?: string[];
   team?: string[];
   userRole?: string[];
 }
@@ -124,7 +124,7 @@ export interface EventForAdmin {
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: Discipline;
+  discipline?: Discipline[];
   price?: number;
   likesCount?: number;
   viewsCount?: number;
@@ -156,7 +156,7 @@ export interface EventRecord {
   startDate?: string;
   endDate?: string;
   address?: string;
-  discipline?: Discipline;
+  discipline?: Discipline[];
   price?: number;
   likesCount: number;
   viewsCount: number;

@@ -86,7 +86,7 @@ const getAttachmentEnriched = async (
     .filter((v: AttachmentItemRecord) => !!v);
 };
 
-const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: '' }));
+const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: 'Todo name' }));
 
 const getTypeEventTarget = (metadata: EventRecord): EventTarget => ({
   country: metadata.targetCountry || '',
@@ -105,7 +105,7 @@ const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
   startDate: metadata.startDate,
   endDate: metadata.endDate,
   address: metadata.address,
-  discipline: metadata.discipline,
+  discipline: metadata.discipline || [],
   price: metadata.price,
   likesCount: metadata.likesCount,
   viewsCount: metadata.viewsCount,
@@ -123,6 +123,7 @@ const getTypePost = (metadata: EventRecord): PostForAdmin => ({
   likesCount: metadata.likesCount,
   viewsCount: metadata.viewsCount,
   target: getTypeEventTarget(metadata),
+  createDate: metadata.createdAt,
 });
 
 const getTypeImage = (image: string = ''): Image => ({
@@ -156,7 +157,7 @@ const createEvent = async (
     startDate,
     endDate,
     address = '',
-    discipline = '',
+    discipline = [],
     price,
     repeatType = RepeatType.None,
     target,
