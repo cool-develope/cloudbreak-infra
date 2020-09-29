@@ -149,7 +149,7 @@ const getEsTypeEvent = ({
   startDate,
   endDate,
   address,
-  discipline,
+  discipline = [],
   price,
   likesCount,
   viewsCount,
