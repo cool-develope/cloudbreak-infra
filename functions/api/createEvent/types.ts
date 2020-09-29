@@ -142,6 +142,7 @@ export interface PostForAdmin {
   likesCount?: number;
   viewsCount?: number;
   target?: EventTarget;
+  createDate: string;
 }
 
 export interface EventRecord {
