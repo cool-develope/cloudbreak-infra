@@ -130,7 +130,7 @@ const search = async ({ query, limit, from }: { query: any; limit: number; from:
         from,
         size: limit,
         ...queryFilter,
-        sort: [{ createdAt: 'asc' }, { _id: 'asc' }],
+        sort: [{ createdAt: 'desc' }, { _id: 'asc' }],
       },
     });
 
