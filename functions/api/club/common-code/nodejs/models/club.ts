@@ -111,6 +111,8 @@ class ClubModel {
     city = '',
     address = '',
     discipline = [],
+    ciCount = 0,
+    miCount = 0,
   }: ClubRecord): Club {
     return {
       id: pk.replace('club#', ''),
@@ -164,8 +166,8 @@ class ClubModel {
         },
       },
       upcomingEventsCount: 1,
-      coacheInvitationsCount: 0,
-      memberInvitationsCount: 0,
+      coacheInvitationsCount: ciCount || 0,
+      memberInvitationsCount: miCount || 0,
     };
   }
 
@@ -179,6 +181,8 @@ class ClubModel {
     return {
       ownerUserId: userId,
       createdAt: new Date().toISOString(),
+      ciCount: 0,
+      miCount: 0,
     };
   }
 
