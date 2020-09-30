@@ -699,6 +699,8 @@ type Club {
   federations: FederationShortConnection
   me: MeInClub
   upcomingEventsCount: Int
+  coacheInvitationsCount: Int
+  memberInvitationsCount: Int
 }
 
 type MeInClub {
@@ -731,6 +733,12 @@ type Team {
   phone: String
   discipline: Discipline
   federations: FederationShortConnection
+  coaches: UserShortConnection
+  members: UserShortConnection
+  me: MeInClub
+  upcomingEventsCount: Int
+  coacheInvitationsCount: Int
+  memberInvitationsCount: Int
 }
 
 type UserShortConnection {
