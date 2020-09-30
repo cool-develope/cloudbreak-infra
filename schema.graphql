@@ -326,10 +326,14 @@ input SendTeamInvitationInput {
 
 input AcceptTeamInvitationPrivateInput {
   invitationId: ID!
+  clubId: String!
+  teamId: String!
 }
 
 input DeclineTeamInvitationPrivateInput {
   invitationId: ID!
+  clubId: String!
+  teamId: String!
 }
 
 type SigninMobilePayload {
