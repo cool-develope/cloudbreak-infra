@@ -22,8 +22,8 @@ const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
 const es = new Client({ node: ES_DOMAIN });
 
 const teamPattern = new RegExp('^team#[a-z0-9-]+$');
-const teamUserPattern = new RegExp('^team#[a-z0-9-]+user#[a-z0-9-]+$');
-const teamInvitationPattern = new RegExp('^team#[a-z0-9-]+invitation#[a-z0-9-]+$');
+// const teamUserPattern = new RegExp('^team#[a-z0-9-]+user#[a-z0-9-]+$');
+// const teamInvitationPattern = new RegExp('^team#[a-z0-9-]+invitation#[a-z0-9-]+$');
 
 const clubMetadataHandler = async (items: Item[]) => {
   const body = [];
@@ -242,12 +242,6 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
     if (keys.pk.startsWith('club#') && keys.sk.startsWith('team#')) {
       if (teamPattern.test(keys.sk)) {
         teams.push({ eventName, keys, data, oldData });
-      }
-
-      if (teamUserPattern.test(keys.sk)) {
-      }
-
-      if (teamInvitationPattern.test(keys.sk)) {
       }
     }
   }
