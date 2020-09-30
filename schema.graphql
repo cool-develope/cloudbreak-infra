@@ -603,6 +603,14 @@ type User {
   """
   organization: Organization
   kycReview: KycReview
+  teams: [TeamMember]
+}
+
+type TeamMember {
+  clubId: String!
+  teamId: String!
+  role: TeamMemberType!
+  status: TeamInvitationStatus!
 }
 
 type UserPublic {
