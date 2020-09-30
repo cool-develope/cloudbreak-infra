@@ -165,6 +165,8 @@ class TeamModel {
     phone = '',
     discipline = '',
     federations,
+    ciCount = 0,
+    miCount = 0,
   }: TeamRecord): Team {
     return {
       id: sk.replace('team#', ''),
@@ -220,8 +222,8 @@ class TeamModel {
         },
       },
       upcomingEventsCount: 0,
-      coacheInvitationsCount: 0,
-      memberInvitationsCount: 0,
+      coacheInvitationsCount: ciCount || 0,
+      memberInvitationsCount: miCount || 0,
     };
   }
 
@@ -235,6 +237,8 @@ class TeamModel {
     return {
       ownerUserId: userId,
       createdAt: new Date().toISOString(),
+      ciCount: 0,
+      miCount: 0,
     };
   }
 
