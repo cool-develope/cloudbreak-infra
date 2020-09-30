@@ -225,10 +225,10 @@ input CreateClubPrivateInput {
   code: String
   email: String
   phone: String
+  country: String
   city: String
   address: String
   discipline: [Discipline]
-  federations: [String]
 }
 
 input UpdateClubPrivateInput {
@@ -240,10 +240,10 @@ input UpdateClubPrivateInput {
   code: String
   email: String
   phone: String
+  country: String
   city: String
   address: String
   discipline: [Discipline]
-  federations: [String]
 }
 
 input CreateTeamPrivateInput {
@@ -695,13 +695,13 @@ type Club {
   code: String
   email: String
   phone: String
+  country: String
   city: String
   address: String
   discipline: [Discipline]
   teams: TeamsPrivateConnection
   coaches: UserShortConnection
   members: UserShortConnection
-  federations: FederationShortConnection
   me: MeInClub
   upcomingEventsCount: Int
   coacheInvitationsCount: Int
