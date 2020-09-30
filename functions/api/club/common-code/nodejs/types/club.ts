@@ -54,10 +54,10 @@ export interface ClubRecord {
   code?: string;
   email?: string;
   phone?: string;
+  country?: string;
   city?: string;
   address?: string;
   discipline?: string[];
-  federations?: string[];
   ownerUserId?: string;
   createdAt?: string;
   modifiedAt?: string;
@@ -74,13 +74,13 @@ export interface Club {
   code: string;
   email: string;
   phone: string;
+  country: string;
   city: string;
   address: string;
   discipline: string[];
   teams: null;
   coaches: UserShortConnection | null;
   members: UserShortConnection | null;
-  federations: FederationShortConnection | null;
   me: MeInClub | null;
   upcomingEventsCount: number;
   coacheInvitationsCount: number;
@@ -124,10 +124,10 @@ export interface UpdateClubPrivateInput {
   code?: string;
   email?: string;
   phone?: string;
+  country?: string;
   city?: string;
   address?: string;
   discipline?: string[];
-  federations?: string[];
 }
 
 export interface UpdateClubPrivatePayload {

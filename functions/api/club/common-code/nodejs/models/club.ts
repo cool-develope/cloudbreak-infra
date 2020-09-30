@@ -42,10 +42,10 @@ class ClubModel {
       code,
       email,
       phone,
+      country,
       city,
       address,
       discipline,
-      federations,
     } = input;
 
     const pk = id ? `club#${id}` : `club#${this.uuidv4()}`;
@@ -60,10 +60,10 @@ class ClubModel {
       code,
       email,
       phone,
+      country,
       city,
       address,
       discipline,
-      federations,
       modifiedAt: new Date().toISOString(),
     };
 
@@ -108,6 +108,7 @@ class ClubModel {
     code = '',
     email = '',
     phone = '',
+    country = '',
     city = '',
     address = '',
     discipline = [],
@@ -123,6 +124,7 @@ class ClubModel {
       code,
       email,
       phone,
+      country,
       city,
       address,
       discipline,
@@ -143,16 +145,6 @@ class ClubModel {
             id: '111',
             name: 'Member Name',
             logo: this.getTypeImage('club/i/photo-member.jpg'),
-          },
-        ],
-        totalCount: 1,
-      },
-      federations: {
-        items: [
-          {
-            id: '111',
-            name: 'Federation Name',
-            logo: this.getTypeImage('club/i/logo2.jpg'),
           },
         ],
         totalCount: 1,
