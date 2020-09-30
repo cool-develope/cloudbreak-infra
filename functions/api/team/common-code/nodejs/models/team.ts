@@ -211,6 +211,17 @@ class TeamModel {
         ],
         totalCount: 1,
       },
+      me: {
+        role: TeamMemberType.Member,
+        status: TeamInvitationStatus.None,
+        friends: {
+          items: [],
+          totalCount: 0,
+        },
+      },
+      upcomingEventsCount: 0,
+      coacheInvitationsCount: 0,
+      memberInvitationsCount: 0,
     };
   }
 

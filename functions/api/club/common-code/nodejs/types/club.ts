@@ -81,6 +81,8 @@ export interface Club {
   federations: FederationShortConnection | null;
   me: MeInClub | null;
   upcomingEventsCount: number;
+  coacheInvitationsCount: number;
+  memberInvitationsCount: number;
 }
 
 export interface MeInClub {

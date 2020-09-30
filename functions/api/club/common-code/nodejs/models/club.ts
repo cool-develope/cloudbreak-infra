@@ -164,6 +164,8 @@ class ClubModel {
         },
       },
       upcomingEventsCount: 1,
+      coacheInvitationsCount: 0,
+      memberInvitationsCount: 0,
     };
   }
 
