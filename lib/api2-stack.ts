@@ -101,6 +101,11 @@ export class Api2Stack extends cdk.Stack {
      * Query: team
      */
     this.team();
+
+    /**
+     * Mutation: sendTeamInvitation, acceptTeamInvitationPrivate, declineTeamInvitationPrivate
+     */
+    this.teamInvitation();
   }
 
   dictionaryQuery() {
@@ -325,6 +330,34 @@ export class Api2Stack extends cdk.Stack {
 }
 `),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+  }
+
+  teamInvitation() {
+    const fn = this.getFunction('teamInvitation', 'api-teamInvitation', 'teamInvitation', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('teamInvitationFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'sendTeamInvitation',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'acceptTeamInvitationPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'declineTeamInvitationPrivate',
     });
   }
 
