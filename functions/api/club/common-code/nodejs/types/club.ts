@@ -79,18 +79,12 @@ export interface Club {
   address: string;
   discipline: string[];
   teams: null;
-  coaches: UserShortConnection | null;
-  members: UserShortConnection | null;
-  me: MeInClub | null;
+  coaches: UserShortConnection;
+  members: UserShortConnection;
+  friends: UserShortConnection;
   upcomingEventsCount: number;
   coacheInvitationsCount: number;
   memberInvitationsCount: number;
-}
-
-export interface MeInClub {
-  role: TeamMemberType;
-  status: TeamInvitationStatus;
-  friends: UserShortConnection;
 }
 
 export interface FederationShortConnection {
