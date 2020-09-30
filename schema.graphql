@@ -702,16 +702,10 @@ type Club {
   teams: TeamsPrivateConnection
   coaches: UserShortConnection
   members: UserShortConnection
-  me: MeInClub
+  friends: UserShortConnection
   upcomingEventsCount: Int
   coacheInvitationsCount: Int
   memberInvitationsCount: Int
-}
-
-type MeInClub {
-  role: TeamMemberType
-  status: TeamInvitationStatus
-  friends: UserShortConnection
 }
 
 type FederationShortConnection {
@@ -740,7 +734,7 @@ type Team {
   federations: FederationShortConnection
   coaches: UserShortConnection
   members: UserShortConnection
-  me: MeInClub
+  friends: UserShortConnection
   upcomingEventsCount: Int
   coacheInvitationsCount: Int
   memberInvitationsCount: Int
