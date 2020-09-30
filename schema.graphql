@@ -319,6 +319,7 @@ input CompanyOwnerInput {
 }
 
 input SendTeamInvitationInput {
+  clubId: String!
   teamId: String!
   role: TeamMemberType!
 }
@@ -904,6 +905,12 @@ type Mutation {
   updateTeamPrivate(input: UpdateTeamPrivateInput!): UpdateTeamPrivatePayload!
 
   sendTeamInvitation(input: SendTeamInvitationInput!): SendTeamInvitationPayload!
+  acceptTeamInvitationPrivate(
+    input: AcceptTeamInvitationPrivateInput!
+  ): AcceptTeamInvitationPrivatePayload
+  declineTeamInvitationPrivate(
+    input: DeclineTeamInvitationPrivateInput!
+  ): DeclineTeamInvitationPrivatePayload
 
   createCompanyPrivate(input: CreateCompanyPrivateInput!): CreateCompanyPrivatePayload!
   updateCompanyPrivate(input: UpdateCompanyPrivateInput!): UpdateCompanyPrivatePayload!
