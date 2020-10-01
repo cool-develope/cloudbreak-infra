@@ -183,26 +183,9 @@ class TeamModel {
       email,
       phone,
       discipline,
-      coaches: {
-        items: [
-          {
-            id: '111',
-            name: 'Coach Name',
-            logo: this.getTypeImage('club/i/photo-coach.jpeg'),
-          },
-        ],
-        totalCount: 1,
-      },
-      members: {
-        items: [
-          {
-            id: '111',
-            name: 'Member Name',
-            logo: this.getTypeImage('club/i/photo-member.jpg'),
-          },
-        ],
-        totalCount: 1,
-      },
+      coaches: null,
+      members:  null,
+      friends: null,
       federations: {
         items: [
           {
@@ -212,14 +195,6 @@ class TeamModel {
           },
         ],
         totalCount: 1,
-      },
-      me: {
-        role: TeamMemberType.Member,
-        status: TeamInvitationStatus.None,
-        friends: {
-          items: [],
-          totalCount: 0,
-        },
       },
       upcomingEventsCount: 0,
       coacheInvitationsCount: ciCount || 0,
