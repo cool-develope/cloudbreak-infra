@@ -81,7 +81,7 @@ export interface Team {
   federations: FederationShortConnection | null;
   coaches: UserShortConnection | null;
   members: UserShortConnection | null;
-  me: MeInClub | null;
+  friends: UserShortConnection | null;
   upcomingEventsCount: number;
   coacheInvitationsCount: number;
   memberInvitationsCount: number;
