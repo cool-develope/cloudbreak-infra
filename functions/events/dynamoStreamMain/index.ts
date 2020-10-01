@@ -1,10 +1,10 @@
 // @ts-ignore
 import * as AWS from 'aws-sdk';
-import { DynamoDBStreamHandler } from 'aws-lambda';
+import { DynamoDBStreamHandler, StreamRecord } from 'aws-lambda';
 import { Client, ApiResponse, RequestParams } from '@elastic/elasticsearch';
 
 interface Item {
-  eventName?: 'INSERT' | 'MODIFY' | 'REMOVE';
+  eventName: EventName;
   keys: {
     pk: string;
     sk: string;
@@ -13,9 +13,23 @@ interface Item {
   oldData: any;
 }
 
+enum EventName {
+  INSERT = 'INSERT',
+  MODIFY = 'MODIFY',
+  REMOVE = 'REMOVE',
+}
+
 interface Keys {
   pk: string;
   sk: string;
+}
+
+interface TeamUserRecord {
+  pk: string;
+  sk: string;
+  role: string;
+  createdAt: string;
+  clubId: string;
 }
 
 const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
@@ -38,14 +52,14 @@ const clubMetadataHandler = async (items: Item[]) => {
     delete data.sk;
     delete data.modifiedAt;
 
-    if (eventName === 'INSERT') {
+    if (eventName === EventName.INSERT) {
       body.push({
         index: { _id },
       });
       body.push({
         ...data,
       });
-    } else if (eventName === 'MODIFY') {
+    } else if (eventName === EventName.MODIFY) {
       body.push({
         update: { _id },
       });
@@ -55,7 +69,7 @@ const clubMetadataHandler = async (items: Item[]) => {
         },
         doc_as_upsert: true,
       });
-    } else if (eventName === 'REMOVE') {
+    } else if (eventName === EventName.REMOVE) {
       body.push({
         delete: { _id },
       });
@@ -90,14 +104,14 @@ const teamsHandler = async (items: Item[]) => {
     delete data.modifiedAt;
     data.clubId = clubId;
 
-    if (eventName === 'INSERT') {
+    if (eventName === EventName.INSERT) {
       body.push({
         index: { _id },
       });
       body.push({
         ...data,
       });
-    } else if (eventName === 'MODIFY') {
+    } else if (eventName === EventName.MODIFY) {
       body.push({
         update: { _id },
       });
@@ -107,7 +121,7 @@ const teamsHandler = async (items: Item[]) => {
         },
         doc_as_upsert: true,
       });
-    } else if (eventName === 'REMOVE') {
+    } else if (eventName === EventName.REMOVE) {
       body.push({
         delete: { _id },
       });
@@ -138,14 +152,14 @@ const eventMetadataHandler = async (items: Item[]) => {
     delete data.sk;
     delete data.modifiedAt;
 
-    if (eventName === 'INSERT') {
+    if (eventName === EventName.INSERT) {
       body.push({
         index: { _id: eventId },
       });
       body.push({
         ...data,
       });
-    } else if (eventName === 'MODIFY') {
+    } else if (eventName === EventName.MODIFY) {
       body.push({
         update: { _id: eventId },
       });
@@ -155,7 +169,7 @@ const eventMetadataHandler = async (items: Item[]) => {
         },
         doc_as_upsert: true,
       });
-    } else if (eventName === 'REMOVE') {
+    } else if (eventName === EventName.REMOVE) {
       body.push({
         delete: { _id: eventId },
       });
@@ -214,13 +228,19 @@ const eventUserHandler = async (items: Item[]) => {
 };
 
 export const handler: DynamoDBStreamHandler = async (event, context, callback: any) => {
-  const eventMetadataItems: any[] = [];
-  const eventUserItems: any[] = [];
-  const clubMetadataItems: any[] = [];
-  const teams: any[] = [];
+  const eventMetadataItems: Item[] = [];
+  const eventUserItems: Item[] = [];
+  const clubMetadataItems: Item[] = [];
+  const teams: Item[] = [];
+  const users: Item[] = [];
+  const userTeams: Item[] = [];
 
   for (const record of event.Records) {
-    const { eventName, dynamodb: { NewImage, OldImage, Keys } = {} } = record;
+    const { eventName, dynamodb: { NewImage, OldImage, Keys } = {} } = record as {
+      eventName: EventName;
+      dynamodb: StreamRecord;
+    };
+
     const keys: Keys = AWS.DynamoDB.Converter.unmarshall(Keys);
     const data = AWS.DynamoDB.Converter.unmarshall(NewImage);
     const oldData = AWS.DynamoDB.Converter.unmarshall(OldImage);
