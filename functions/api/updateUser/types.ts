@@ -13,6 +13,18 @@ export enum OrganizationType {
   Club = 'Club',
 }
 
+export enum TeamMemberType {
+  Member = 'Member',
+  Coach = 'Coach',
+}
+
+export enum TeamInvitationStatus {
+  None = 'None',
+  Pending = 'Pending',
+  Accepted = 'Accepted',
+  Declined = 'Declined',
+}
+
 export enum OrganizationRole {
   Owner = 'Owner',
   Coach = 'Coach',
@@ -77,10 +89,35 @@ export interface User {
     role: OrganizationRole;
   };
   kycReview: KycReview;
+  teams: TeamMember[];
+}
+
+export interface TeamMember {
+  clubId: string;
+  teamId: string;
+  role: TeamMemberType;
+  status: TeamInvitationStatus;
 }
 
 export interface ChildInvitation {
   invitationId: string;
   createDate: string;
   user: UserChild;
+}
+
+export interface TeamInvitationRecord {
+  pk: string;
+  sk: string;
+  role: TeamMemberType;
+  createdAt: string;
+  clubId: string;
+  status: TeamInvitationStatus;
+}
+
+export interface TeamUserRecord {
+  pk: string;
+  sk: string;
+  role: TeamMemberType;
+  createdAt: string;
+  clubId: string;
 }

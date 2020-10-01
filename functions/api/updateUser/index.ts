@@ -13,6 +13,11 @@ import {
   OrganizationType,
   KycReview,
   OrganizationRole,
+  TeamMember,
+  TeamUserRecord,
+  TeamInvitationRecord,
+  TeamMemberType,
+  TeamInvitationStatus,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -85,6 +90,20 @@ const getExpressionAttributeValues = (attributes = {}) => {
   return obj;
 };
 
+const queryItemsByIndex = (sk: string, pk: string, indexName: string) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    IndexName: indexName,
+    KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
+    ExpressionAttributeValues: {
+      ':sk': sk,
+      ':pk': pk,
+    },
+  };
+
+  return db.query(params).promise();
+};
+
 const queryItems = (pk: string, sk: string) => {
   const params = {
     TableName: MAIN_TABLE_NAME,
@@ -151,6 +170,32 @@ const getChildren = async ({ children }: { children: any }): Promise<UserChild[]
   return childrenData;
 };
 
+const getTeams = async (userId: string): Promise<TeamMember[]> => {
+  const [{ Items: teamUsers }, { Items: teamInvitations }] = await Promise.all([
+    queryItemsByIndex(`user#${userId}`, 'team#', 'GSI1'),
+    queryItemsByIndex(`invitation#${userId}`, 'team#', 'GSI1'),
+  ]);
+
+  const teams: TeamMember[] = [
+    ...teamUsers.map((item: TeamUserRecord) => ({
+      clubId: item.clubId,
+      teamId: item.pk.replace('team#', ''),
+      role: item.role,
+      status: TeamInvitationStatus.Accepted,
+    })),
+    ...teamInvitations
+      .filter((item: TeamInvitationRecord) => item.status === TeamInvitationStatus.Pending)
+      .map((item: TeamInvitationRecord) => ({
+        clubId: item.clubId,
+        teamId: item.pk.replace('team#', ''),
+        role: item.role,
+        status: item.status,
+      })),
+  ];
+
+  return teams;
+};
+
 const getParent = async ({ parentUserId }: any): Promise<UserChild | null> => {
   if (parentUserId) {
     const { Item } = await getItem(`user#${parentUserId}`, 'metadata');
@@ -210,14 +255,23 @@ const getTypeUser = async (userData: any): Promise<User> => {
     kycReview = KycReview.NONE,
   } = userData;
 
+  const userId = pk.replace('user#', '');
+
   // @ts-ignore
   const result = await Promise.allSettled([
     getChildren(userData),
     getParent(userData),
     getPendingChildInvitations(userData),
+    getTeams(userId),
   ]);
 
-  const [{ value: children }, { value: parent }, { value: pendingChildInvitations }] = result;
+  const [
+    { value: children },
+    { value: parent },
+    { value: pendingChildInvitations },
+    { value: teams = [] },
+  ] = result;
+
   const role: OrganizationRole = companyId ? OrganizationRole.Owner : OrganizationRole.Coach;
 
   return {
@@ -245,6 +299,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
       role,
     },
     kycReview,
+    teams,
   };
 };
 
