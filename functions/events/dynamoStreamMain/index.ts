@@ -87,6 +87,55 @@ const clubMetadataHandler = async (items: Item[]) => {
   }
 };
 
+const usersHandler = async (items: Item[]) => {
+  const body = [];
+  for (const item of items) {
+    const {
+      eventName,
+      keys: { pk, sk },
+      data,
+    } = item;
+
+    const _id = pk.replace('user#', '');
+    delete data.pk;
+    delete data.sk;
+    delete data.modifiedAt;
+
+    if (eventName === EventName.INSERT) {
+      body.push({
+        index: { _id },
+      });
+      body.push({
+        ...data,
+      });
+    } else if (eventName === EventName.MODIFY) {
+      body.push({
+        update: { _id },
+      });
+      body.push({
+        doc: {
+          ...data,
+        },
+        doc_as_upsert: true,
+      });
+    } else if (eventName === EventName.REMOVE) {
+      body.push({
+        delete: { _id },
+      });
+    }
+  }
+
+  if (body.length) {
+    const result = await es.bulk({
+      index: 'users',
+      refresh: true,
+      body,
+    });
+
+    console.log(JSON.stringify(result, null, 2));
+  }
+};
+
 const teamsHandler = async (items: Item[]) => {
   const body = [];
   for (const item of items) {
@@ -259,6 +308,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
       clubMetadataItems.push({ eventName, keys, data, oldData });
     }
 
+    if (keys.pk.startsWith('user#') && keys.sk === 'metadata') {
+      users.push({ eventName, keys, data, oldData });
+    }
+
     if (keys.pk.startsWith('club#') && keys.sk.startsWith('team#')) {
       if (teamPattern.test(keys.sk)) {
         teams.push({ eventName, keys, data, oldData });
@@ -280,6 +333,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
 
   if (teams.length) {
     teamsHandler(teams);
+  }
+
+  if (users.length) {
+    usersHandler(users);
   }
 
   callback(null, `Successfully processed ${event.Records.length} records.`);
