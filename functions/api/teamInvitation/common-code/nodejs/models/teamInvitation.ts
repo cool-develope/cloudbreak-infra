@@ -68,6 +68,7 @@ class TeamInvitationModel {
         role: role,
         createdAt: new Date().toISOString(),
         status: TeamInvitationStatus.Pending,
+        clubId,
       };
       await this.dynamoHelper.updateItem(pk, sk, invitation);
       await this.incrementInvitationsCount(clubId, teamId, role);

@@ -49,6 +49,7 @@ export interface FunctionEvent {
 export interface TeamInvitationRecord {
   role: TeamMemberType;
   createdAt: string;
+  clubId: string;
   status: TeamInvitationStatus;
 }
 
