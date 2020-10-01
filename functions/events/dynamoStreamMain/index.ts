@@ -276,6 +276,61 @@ const eventUserHandler = async (items: Item[]) => {
   }
 };
 
+const userTeamsHandler = async (items: Item[]) => {
+  const body = [];
+  for (const item of items) {
+    const {
+      eventName,
+      keys: { pk, sk },
+      data,
+    } = item;
+    const teamId = pk.replace('team#', '');
+    const userId = sk.replace('user#', '');
+    const { clubId, role } = data as TeamUserRecord;
+    let source: string | null = null;
+
+    if (eventName === EventName.INSERT) {
+      source =
+        'if (ctx._source.teams == null) { ctx._source.teams = []; } ctx._source.teams.add(params.team);';
+    } else if (eventName === EventName.REMOVE) {
+      source =
+        'if (ctx._source.teams == null) { ctx._source.teams = []; } ctx._source.teams.remove(params.team);';
+    } else if (eventName === EventName.MODIFY) {
+      // TODO: get all teams and set it here
+      source = 'ctx._source.teams = []; ctx._source.teams.add(params.team);';
+    }
+
+    if (source) {
+      body.push({
+        update: { _id: userId },
+      });
+      body.push({
+        script: {
+          source,
+          lang: 'painless',
+          params: {
+            team: {
+              clubId,
+              teamId,
+              role,
+            },
+          },
+        },
+      });
+    }
+  }
+
+  if (body.length) {
+    const result = await es.bulk({
+      index: 'users',
+      refresh: true,
+      body,
+    });
+
+    console.log(JSON.stringify(result, null, 2));
+  }
+};
+
 export const handler: DynamoDBStreamHandler = async (event, context, callback: any) => {
   const eventMetadataItems: Item[] = [];
   const eventUserItems: Item[] = [];
@@ -312,6 +367,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
       users.push({ eventName, keys, data, oldData });
     }
 
+    if (keys.pk.startsWith('team#') && keys.sk.startsWith('user#')) {
+      userTeams.push({ eventName, keys, data, oldData });
+    }
+
     if (keys.pk.startsWith('club#') && keys.sk.startsWith('team#')) {
       if (teamPattern.test(keys.sk)) {
         teams.push({ eventName, keys, data, oldData });
@@ -337,6 +396,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
 
   if (users.length) {
     usersHandler(users);
+  }
+
+  if (userTeams.length) {
+    userTeamsHandler(userTeams);
   }
 
   callback(null, `Successfully processed ${event.Records.length} records.`);
