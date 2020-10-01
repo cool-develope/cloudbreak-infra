@@ -79,9 +79,9 @@ export interface Club {
   address: string;
   discipline: string[];
   teams: null;
-  coaches: UserShortConnection;
-  members: UserShortConnection;
-  friends: UserShortConnection;
+  coaches: UserShortConnection | null;
+  members: UserShortConnection | null;
+  friends: UserShortConnection | null;
   upcomingEventsCount: number;
   coacheInvitationsCount: number;
   memberInvitationsCount: number;

@@ -129,30 +129,9 @@ class ClubModel {
       address,
       discipline,
       teams: null,
-      coaches: {
-        items: [
-          {
-            id: '111',
-            name: 'Coach Name',
-            logo: this.getTypeImage('club/i/photo-coach.jpeg'),
-          },
-        ],
-        totalCount: 1,
-      },
-      members: {
-        items: [
-          {
-            id: '111',
-            name: 'Member Name',
-            logo: this.getTypeImage('club/i/photo-member.jpg'),
-          },
-        ],
-        totalCount: 1,
-      },
-      friends: {
-        items: [],
-        totalCount: 0,
-      },
+      coaches: null,
+      members: null,
+      friends: null,
       upcomingEventsCount: 1,
       coacheInvitationsCount: ciCount || 0,
       memberInvitationsCount: miCount || 0,
