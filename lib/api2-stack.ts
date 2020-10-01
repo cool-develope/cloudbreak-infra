@@ -106,6 +106,8 @@ export class Api2Stack extends cdk.Stack {
      * Mutation: sendTeamInvitation, acceptTeamInvitationPrivate, declineTeamInvitationPrivate
      */
     this.teamInvitation();
+
+    this.user();
   }
 
   dictionaryQuery() {
@@ -370,6 +372,87 @@ export class Api2Stack extends cdk.Stack {
     esPolicy.addResources('*');
 
     lambdaFunction.addToRolePolicy(esPolicy);
+  }
+
+  getBatchInvokeTemplate(fieldName: string) {
+    return `
+   {
+     "version" : "2017-02-28",
+     "operation": "BatchInvoke",
+     "payload": {
+       "fieldName": "${fieldName}",
+       "source": $utils.toJson($context.source),
+       "identity": $util.toJson($context.identity)
+     }
+   }
+   `;
+  }
+
+  user() {
+    const fn = this.getFunction('user', 'api-user', 'user', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('userFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Club',
+      fieldName: 'coaches',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('clubCoaches'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Club',
+      fieldName: 'members',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('clubMembers'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Club',
+      fieldName: 'friends',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('clubFriends'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Team',
+      fieldName: 'coaches',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('teamCoaches'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Team',
+      fieldName: 'members',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('teamMembers'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Team',
+      fieldName: 'friends',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('teamFriends'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
   }
 
   getFunction(
