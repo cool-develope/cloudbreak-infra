@@ -984,6 +984,9 @@ type Query {
 
   team(clubId: String!, teamId: ID!): Team
   teamsPrivate(filter: TeamsPrivateFilterInput, limit: Int, from: Int): TeamsPrivateConnection!
+  """
+  Deprecated
+  """
   clubsPrivate(filter: ClubsPrivateFilterInput, limit: Int, from: Int): ClubsPrivateConnection!
   federationsPrivate(
     filter: FederationsPrivateFilterInput
