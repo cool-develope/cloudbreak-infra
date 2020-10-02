@@ -105,19 +105,11 @@ export interface ChildInvitation {
   user: UserChild;
 }
 
-export interface TeamInvitationRecord {
-  pk: string;
-  sk: string;
-  role: TeamMemberType;
-  createdAt: string;
-  clubId: string;
-  status: TeamInvitationStatus;
-}
-
 export interface TeamUserRecord {
   pk: string;
   sk: string;
   role: TeamMemberType;
   createdAt: string;
   clubId: string;
+  status: TeamInvitationStatus;
 }

@@ -15,7 +15,6 @@ import {
   OrganizationRole,
   TeamMember,
   TeamUserRecord,
-  TeamInvitationRecord,
   TeamMemberType,
   TeamInvitationStatus,
 } from './types';
@@ -171,27 +170,13 @@ const getChildren = async ({ children }: { children: any }): Promise<UserChild[]
 };
 
 const getTeams = async (userId: string): Promise<TeamMember[]> => {
-  const [{ Items: teamUsers }, { Items: teamInvitations }] = await Promise.all([
-    queryItemsByIndex(`user#${userId}`, 'team#', 'GSI1'),
-    queryItemsByIndex(`invitation#${userId}`, 'team#', 'GSI1'),
-  ]);
-
-  const teams: TeamMember[] = [
-    ...teamUsers.map((item: TeamUserRecord) => ({
-      clubId: item.clubId,
-      teamId: item.pk.replace('team#', ''),
-      role: item.role,
-      status: TeamInvitationStatus.Accepted,
-    })),
-    ...teamInvitations
-      .filter((item: TeamInvitationRecord) => item.status === TeamInvitationStatus.Pending)
-      .map((item: TeamInvitationRecord) => ({
-        clubId: item.clubId,
-        teamId: item.pk.replace('team#', ''),
-        role: item.role,
-        status: item.status,
-      })),
-  ];
+  const { Items } = await queryItemsByIndex(`user#${userId}`, 'team#', 'GSI1');
+  const teams: TeamMember[] = Items.map(({ pk, clubId, role, status }: TeamUserRecord) => ({
+    teamId: pk.replace('team#', ''),
+    clubId,
+    role,
+    status,
+  }));
 
   return teams;
 };
