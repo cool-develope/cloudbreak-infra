@@ -2,7 +2,6 @@ import { error } from 'console';
 import DynamoHelper from '../dynamoHelper';
 import {
   TeamUserRecord,
-  TeamInvitationRecord,
   TeamMemberType,
   TeamInvitationStatus,
   SendTeamInvitationInput,
@@ -26,6 +25,11 @@ class TeamInvitationModel {
     this.imagesDomain = imagesDomain;
     this.dynamoHelper = new DynamoHelper(this.db, this.tableName);
     this.uuidv4 = uuidv4;
+  }
+
+  async getTeamUser(pk: string, sk: string): Promise<TeamUserRecord | null> {
+    const { Item } = await this.dynamoHelper.getItem(pk, sk);
+    return Item;
   }
 
   async incrementInvitationsCount(
@@ -55,22 +59,20 @@ class TeamInvitationModel {
      */
 
     const pk = `team#${teamId}`;
-    const sk = `invitation#${userId}`;
-    const {
-      Item: oldInvitation,
-    }: { Item: TeamInvitationRecord | null } = await this.dynamoHelper.getItem(pk, sk);
-    const exists = !!oldInvitation;
+    const sk = `user#${userId}`;
+    const teamUser = await this.getTeamUser(pk, sk);
+    const teamUserExists = !!teamUser;
 
-    if (exists) {
+    if (teamUserExists) {
       errors.push('Invitation already exists');
     } else {
-      const invitation: TeamInvitationRecord = {
-        role: role,
+      const data: TeamUserRecord = {
+        role,
         createdAt: new Date().toISOString(),
         status: TeamInvitationStatus.Pending,
         clubId,
       };
-      await this.dynamoHelper.updateItem(pk, sk, invitation);
+      await this.dynamoHelper.updateItem(pk, sk, data);
       await this.incrementInvitationsCount(clubId, teamId, role);
     }
 
@@ -80,36 +82,25 @@ class TeamInvitationModel {
   }
 
   async acceptInvitation(
-    userId: string,
+    sub: string,
     input: AcceptTeamInvitationPrivateInput,
   ): Promise<SendTeamInvitationPayload> {
     const errors: string[] = [];
-    const { invitationId, clubId, teamId } = input;
+    const { userId, clubId, teamId } = input;
     const pk = `team#${teamId}`;
-    const sk = `invitation#${invitationId}`;
-    const userSK = `user#${invitationId}`;
+    const sk = `user#${userId}`;
+    const teamUser = await this.getTeamUser(pk, sk);
 
-    const {
-      Item: oldInvitation,
-    }: { Item: TeamInvitationRecord | null } = await this.dynamoHelper.getItem(pk, sk);
-
-    if (!oldInvitation) {
+    if (!teamUser) {
       errors.push('Invitation not found');
-    } else if (oldInvitation.status === TeamInvitationStatus.Accepted) {
+    } else if (teamUser.status === TeamInvitationStatus.Accepted) {
       errors.push('Invitation already accepted');
     } else {
-      const userData: TeamUserRecord = {
-        role: oldInvitation.role,
-        createdAt: new Date().toISOString(),
-        clubId,
-      };
-      await this.dynamoHelper.updateItem(pk, userSK, userData);
-
-      const invitationData = {
+      const data = {
         status: TeamInvitationStatus.Accepted,
       };
-      await this.dynamoHelper.updateItem(pk, sk, invitationData);
-      await this.incrementInvitationsCount(clubId, teamId, oldInvitation.role, true);
+      await this.dynamoHelper.updateItem(pk, sk, data);
+      await this.incrementInvitationsCount(clubId, teamId, teamUser.role, true);
     }
 
     return {
@@ -118,29 +109,25 @@ class TeamInvitationModel {
   }
 
   async declineInvitation(
-    userId: string,
+    sub: string,
     input: DeclineTeamInvitationPrivateInput,
   ): Promise<SendTeamInvitationPayload> {
     const errors: string[] = [];
-    const { invitationId, clubId, teamId } = input;
+    const { userId, clubId, teamId } = input;
     const pk = `team#${teamId}`;
-    const sk = `invitation#${invitationId}`;
+    const sk = `user#${userId}`;
+    const teamUser = await this.getTeamUser(pk, sk);
 
-    const {
-      Item: oldInvitation,
-    }: { Item: TeamInvitationRecord | null } = await this.dynamoHelper.getItem(pk, sk);
-
-    if (!oldInvitation) {
+    if (!teamUser) {
       errors.push('Invitation not found');
-    } else if (oldInvitation.status === TeamInvitationStatus.Declined) {
+    } else if (teamUser.status === TeamInvitationStatus.Declined) {
       errors.push('Invitation already declined');
     } else {
-      const invitation = {
+      const data = {
         status: TeamInvitationStatus.Declined,
       };
-
-      await this.dynamoHelper.updateItem(pk, sk, invitation);
-      await this.incrementInvitationsCount(clubId, teamId, oldInvitation.role, true);
+      await this.dynamoHelper.updateItem(pk, sk, data);
+      await this.incrementInvitationsCount(clubId, teamId, teamUser.role, true);
     }
 
     return {
