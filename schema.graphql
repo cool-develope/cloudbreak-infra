@@ -173,6 +173,7 @@ input UsersPrivateFilterInput {
   clubIds: [String]
   teamIds: [String]
   role: TeamMemberType
+  status: TeamInvitationStatus
 }
 
 input ClubsPrivateFilterInput {
