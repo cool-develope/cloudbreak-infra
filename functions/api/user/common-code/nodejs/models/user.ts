@@ -111,12 +111,12 @@ class UserModel {
 
   async getTeamMemberDetails(
     userId: string,
-    teams: { clubId: string; teamId: string; role: TeamMemberType }[],
+    teams: { clubId: string; teamId: string; role: TeamMemberType; status: TeamInvitationStatus }[],
   ): Promise<TeamMemberDetails[]> {
     const result: TeamMemberDetails[] = [];
 
     if (teams && teams.length) {
-      for await (const { clubId, teamId, role } of teams) {
+      for await (const { clubId, teamId, role, status } of teams) {
         const [teamShort, clubShort] = await Promise.all([
           this.getTeamShort(clubId, teamId),
           this.getClubShort(clubId),
@@ -126,6 +126,7 @@ class UserModel {
           club: clubShort,
           team: teamShort,
           role,
+          status,
         });
       }
     }
