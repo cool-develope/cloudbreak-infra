@@ -23,13 +23,13 @@ export interface SendTeamInvitationInput {
 }
 
 export interface AcceptTeamInvitationPrivateInput {
-  invitationId: string;
+  userId: string;
   clubId: string;
   teamId: string;
 }
 
 export interface DeclineTeamInvitationPrivateInput {
-  invitationId: string;
+  userId: string;
   clubId: string;
   teamId: string;
 }
@@ -46,15 +46,9 @@ export interface FunctionEvent {
   info: { fieldName: string };
 }
 
-export interface TeamInvitationRecord {
-  role: TeamMemberType;
-  createdAt: string;
-  clubId: string;
-  status: TeamInvitationStatus;
-}
-
 export interface TeamUserRecord {
   role: TeamMemberType;
   createdAt: string;
   clubId: string;
+  status: TeamInvitationStatus;
 }
