@@ -252,7 +252,13 @@ class UserModel {
   }
 
   getEsQueryTeams(clubId: string, teamId: string, role: string) {
-    const must = [];
+    const must: any = [
+      {
+        match: {
+          'teams.status': TeamInvitationStatus.Accepted,
+        },
+      },
+    ];
 
     if (clubId) {
       must.push({
