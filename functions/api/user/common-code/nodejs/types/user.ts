@@ -46,6 +46,7 @@ export interface UsersFilter {
   clubIds?: string[];
   teamIds?: string[];
   role?: TeamMemberType;
+  status?: TeamInvitationStatus;
 }
 
 export interface FunctionEvent {
@@ -127,9 +128,10 @@ export interface UsersPrivateConnection {
 }
 
 export interface TeamMemberDetails {
-  club: TeamShort | null;
-  team: TeamShort | null;
+  club: TeamShort;
+  team: TeamShort;
   role: TeamMemberType;
+  status: TeamInvitationStatus;
 }
 
 export interface TeamShort {
