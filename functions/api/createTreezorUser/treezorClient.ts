@@ -109,7 +109,9 @@ class TreezorClient {
     return params;
   }
 
-  async createUser(userData: TreezorUser): Promise<TreezorUser | null> {
+  async createUser(
+    userData: TreezorUser,
+  ): Promise<{ user: TreezorUser | null; error: string | null }> {
     const treezorToken = await this.getTreezorToken();
     const params = this.objToURLSearchParams(userData);
 
@@ -124,21 +126,30 @@ class TreezorClient {
 
       if (result && result.users && result.users.length) {
         const treezorUser = result.users[0] as TreezorUser;
-        return treezorUser;
+        return {
+          user: treezorUser,
+          error: null,
+        };
       } else {
         console.log('EMPTY createUser', {
           userData,
           result: JSON.stringify(result, null, 2),
         });
+        return {
+          user: null,
+          error: result.errors.map((e: any) => e.message).join('. '),
+        };
       }
     } catch (err) {
       console.log('ERROR createUser', {
         params,
         err: JSON.stringify(err, null, 2),
       });
+      return {
+        user: null,
+        error: err.message,
+      };
     }
-
-    return null;
   }
 
   private async getTreezorToken(): Promise<string | null> {
