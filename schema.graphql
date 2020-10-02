@@ -168,6 +168,13 @@ input TeamsPrivateFilterInput {
   clubIds: [String]
 }
 
+input UsersPrivateFilterInput {
+  search: String
+  clubIds: [String]
+  teamIds: [String]
+  role: TeamMemberType
+}
+
 input ClubsPrivateFilterInput {
   search: String
 }
@@ -613,6 +620,35 @@ type TeamMember {
   status: TeamInvitationStatus!
 }
 
+type TeamMemberDetails {
+  club: ClubShort
+  team: TeamShort
+  role: TeamMemberType!
+}
+
+type UserPrivate {
+  id: ID!
+  email: String
+  firstName: String
+  lastName: String
+  country: String
+  photo: Image
+  phone: String
+  phoneCountry: String
+  birthDate: AWSDate
+  birthCountry: String
+  birthCity: String
+  gender: Gender
+  usCitizen: Boolean
+  city: String
+  postcode: String
+  address1: String
+  address2: String
+  createDate: AWSDateTime
+  parent: UserChild
+  teams: [TeamMemberDetails]
+}
+
 type UserPublic {
   firstName: String
   lastName: String
@@ -748,6 +784,18 @@ type Team {
   memberInvitationsCount: Int
 }
 
+type TeamShort {
+  id: String
+  name: String
+  logo: Image
+}
+
+type ClubShort {
+  id: String
+  name: String
+  logo: Image
+}
+
 type UserShortConnection {
   items: [UserShort]
   totalCount: Int
@@ -854,6 +902,11 @@ type TeamsPrivateConnection {
 
 type ClubsPrivateConnection {
   items: [ClubItemPrivate]
+}
+
+type UsersPrivateConnection {
+  items: [UserPrivate]
+  totalCount: Int
 }
 
 type FederationsPrivateConnection {
@@ -998,4 +1051,6 @@ type Query {
   clubs(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
 
   companyPrivate: Company
+
+  usersPrivate(filter: UsersPrivateFilterInput, limit: Int, from: Int): UsersPrivateConnection!
 }
