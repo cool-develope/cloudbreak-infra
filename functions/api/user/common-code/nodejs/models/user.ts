@@ -1,3 +1,5 @@
+import { UserProps } from '@aws-cdk/aws-iam';
+import { TeamMember } from 'functions/api/updateUser/types';
 import DynamoHelper from '../dynamoHelper';
 import {
   Image,
@@ -5,9 +7,14 @@ import {
   TeamMemberType,
   TeamInvitationStatus,
   FunctionEventBatch,
+  UsersFilter,
   FieldName,
   UserShort,
   UserShortConnection,
+  UsersPrivateConnection,
+  UserPrivate,
+  TeamMemberDetails,
+  TeamShort,
 } from '../types/user';
 
 class UserModel {
@@ -38,7 +45,7 @@ class UserModel {
     ) {
       const role = field === FieldName.clubCoaches ? TeamMemberType.Coach : TeamMemberType.Member;
       const arrayOfPromises = event.map(({ source: { id: clubId } }) =>
-        this.list(sub, { clubId, role }),
+        this.listShort(sub, { clubId, role }),
       );
 
       return await Promise.all(arrayOfPromises);
@@ -49,7 +56,7 @@ class UserModel {
     ) {
       const role = field === FieldName.teamCoaches ? TeamMemberType.Coach : TeamMemberType.Member;
       const arrayOfPromises = event.map(({ source: { id: teamId } }) =>
-        this.list(sub, { teamId, role }),
+        this.listShort(sub, { teamId, role }),
       );
 
       return await Promise.all(arrayOfPromises);
@@ -58,13 +65,13 @@ class UserModel {
     throw Error('Not supported query');
   }
 
-  async list(
+  async listShort(
     userId: string,
     filter: any = {},
     limit: number = 10,
     from: number = 0,
   ): Promise<UserShortConnection> {
-    const query = this.getEsQuery(userId, filter);
+    const query = this.getEsQueryListShort(userId, filter);
     const esResult = await this.esSearch({ query, limit, from });
 
     const totalCount = esResult.body?.hits.total.value || 0;
@@ -76,6 +83,78 @@ class UserModel {
     };
   }
 
+  async list(
+    userId: string,
+    filter: UsersFilter = {},
+    limit: number = 10,
+    from: number = 0,
+  ): Promise<UsersPrivateConnection> {
+    const query = this.getEsQueryList(userId, filter);
+    const esResult = await this.esSearch({ query, limit, from });
+
+    const totalCount = esResult.body?.hits.total.value || 0;
+    const esItems = this.prepareEsItems(esResult.body?.hits.hits);
+
+    const arrayOfPromises = esItems.map((item) => this.getTypeUserPrivate(item));
+    const items = await Promise.all(arrayOfPromises);
+
+    return {
+      items,
+      totalCount,
+    };
+  }
+
+  async getById(userId: string): Promise<UserPrivate> {
+    const esUser = await this.esGet(userId);
+    return await this.getTypeUserPrivate(esUser);
+  }
+
+  async getTeamMemberDetails(
+    userId: string,
+    teams: { clubId: string; teamId: string; role: TeamMemberType }[],
+  ): Promise<TeamMemberDetails[]> {
+    const result: TeamMemberDetails[] = [];
+
+    if (teams && teams.length) {
+      for await (const { clubId, teamId, role } of teams) {
+        const [teamShort, clubShort] = await Promise.all([
+          this.getTeamShort(clubId, teamId),
+          this.getClubShort(clubId),
+        ]);
+
+        result.push({
+          club: clubShort,
+          team: teamShort,
+          role,
+        });
+      }
+    }
+
+    return result;
+  }
+
+  async getTeamShort(clubId: string, teamId: string): Promise<TeamShort> {
+    const {
+      Item: { name, logo },
+    } = await this.dynamoHelper.getItem(`club#${clubId}`, `team#${teamId}`);
+    return {
+      id: teamId,
+      name,
+      logo: this.getTypeImage(logo),
+    };
+  }
+
+  async getClubShort(clubId: string): Promise<TeamShort> {
+    const {
+      Item: { name, logo },
+    } = await this.dynamoHelper.getItem(`club#${clubId}`, 'metadata');
+    return {
+      id: clubId,
+      name,
+      logo: this.getTypeImage(logo),
+    };
+  }
+
   getTypeUserShort({ id, firstName, lastName, photo }: EsUserRecord): UserShort {
     return {
       id,
@@ -84,17 +163,68 @@ class UserModel {
     };
   }
 
+  async getTypeUserPrivate({
+    id,
+    email,
+    firstName,
+    lastName,
+    country,
+    photo,
+    phone,
+    phoneCountry,
+    birthDate,
+    birthCountry,
+    birthCity,
+    gender,
+    usCitizen,
+    city,
+    postcode,
+    address1,
+    address2,
+    createdAt,
+    teams,
+    parentUserId,
+  }: any): Promise<UserPrivate> {
+    const teamsDetails = await this.getTeamMemberDetails(id, teams);
+    const parent = parentUserId ? await this.getById(parentUserId) : null;
+
+    const user = {
+      id,
+      email,
+      firstName,
+      lastName,
+      country,
+      photo,
+      phone,
+      phoneCountry,
+      birthDate,
+      birthCountry,
+      birthCity,
+      gender,
+      usCitizen,
+      city,
+      postcode,
+      address1,
+      address2,
+      createDate: createdAt,
+      parent,
+      teams: teamsDetails,
+    };
+
+    return user;
+  }
+
   getTypeImage(image: string | null = ''): Image {
     return {
       url: image ? `https://${this.imagesDomain}/${image}` : '',
     };
   }
 
-  prepareEsItems(items: any[] = []) {
+  prepareEsItems(items: any[] = []): any[] {
     return items.map(({ _id, _source }) => ({ id: _id, ..._source }));
   }
 
-  getEsQueryBySearch(search: string) {
+  getEsQueryBySearch(search?: string) {
     return !search
       ? null
       : {
@@ -159,7 +289,28 @@ class UserModel {
     };
   }
 
-  getEsQuery(userId: string, filter: any = {}) {
+  getEsQueryTeamsArray(boolCondition: string, propertyName: string, values?: string[]) {
+    if (values && values.length) {
+      const result = {
+        nested: {
+          path: 'teams',
+          query: {
+            bool: {
+              [boolCondition]: values.map((value) => ({
+                term: { [`teams.${propertyName}.keyword`]: value },
+              })),
+            },
+          },
+        },
+      };
+
+      return result;
+    }
+
+    return null;
+  }
+
+  getEsQueryListShort(userId: string, filter: any = {}) {
     const {
       search,
       clubId,
@@ -175,6 +326,27 @@ class UserModel {
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByTeams = this.getEsQueryTeams(clubId, teamId, role);
     const must = [filterBySearch, filterByTeams].filter((f) => !!f);
+
+    const query = must.length
+      ? {
+          bool: {
+            must,
+          },
+        }
+      : null;
+
+    return query;
+  }
+
+  getEsQueryList(userId: string, filter: UsersFilter = {}) {
+    const { search, clubIds, teamIds, role } = filter;
+    const roles = role ? [role] : [];
+
+    const filterBySearch = this.getEsQueryBySearch(search);
+    const filterByTeams = this.getEsQueryTeamsArray('should', 'teamId', teamIds);
+    const filterByClubs = this.getEsQueryTeamsArray('should', 'clubId', clubIds);
+    const filterByRole = this.getEsQueryTeamsArray('must', 'role', roles);
+    const must = [filterBySearch, filterByTeams, filterByClubs, filterByRole].filter((f) => !!f);
 
     const query = must.length
       ? {
@@ -206,6 +378,25 @@ class UserModel {
       console.error(JSON.stringify(err, null, 2));
       return { body: null };
     }
+  }
+
+  async esGet(id: string) {
+    try {
+      const {
+        body: { _id, _source },
+      } = await this.es.get({
+        index: 'users',
+        id,
+      });
+
+      if (_source) {
+        return { id: _id, ..._source };
+      }
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2));
+    }
+
+    return null;
   }
 }
 

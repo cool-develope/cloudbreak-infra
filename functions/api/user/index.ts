@@ -5,7 +5,6 @@ import { Handler } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 // @ts-ignore
 import { Client } from '@elastic/elasticsearch';
-// import DynamoHelper from '/opt/nodejs/dynamoHelper';
 import { UserModel } from './common-code/nodejs/models';
 import { FieldName, FunctionEvent, FunctionEventBatch } from './common-code/nodejs/types/user';
 
@@ -17,7 +16,6 @@ export const handler: Handler = async (
   event: FunctionEvent | FunctionEventBatch[],
 ): Promise<any> => {
   const userModel = new UserModel(db, MAIN_TABLE_NAME, IMAGES_DOMAIN, uuidv4, es);
-  console.log(JSON.stringify(event, null, 2));
 
   if (Array.isArray(event)) {
     /**
@@ -33,9 +31,11 @@ export const handler: Handler = async (
 
     const field = fieldName as FieldName;
 
-    // if (field === FieldName.teamsPrivate) {
-    //   return await userModel.list(sub, filter, limit, from);
-    // }
+    if (field === FieldName.usersPrivate) {
+      return await userModel.list(sub, filter, limit, from);
+    } else if (field === FieldName.userPrivate) {
+      return await userModel.getById(sub);
+    }
   }
 
   throw Error('Query not supported');

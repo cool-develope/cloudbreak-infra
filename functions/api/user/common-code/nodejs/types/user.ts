@@ -5,6 +5,8 @@ export enum FieldName {
   teamCoaches = 'teamCoaches',
   teamMembers = 'teamMembers',
   teamFriends = 'teamFriends',
+  userPrivate = 'userPrivate',
+  usersPrivate = 'usersPrivate',
 }
 
 export enum TeamMemberType {
@@ -17,6 +19,11 @@ export enum TeamInvitationStatus {
   Pending = 'Pending',
   Accepted = 'Accepted',
   Declined = 'Declined',
+}
+
+export enum Gender {
+  M,
+  F,
 }
 
 export interface Image {
@@ -34,8 +41,19 @@ export interface UserShort {
   logo: Image;
 }
 
+export interface UsersFilter {
+  search?: string;
+  clubIds?: string[];
+  teamIds?: string[];
+  role?: TeamMemberType;
+}
+
 export interface FunctionEvent {
-  arguments: any;
+  arguments: {
+    filter: UsersFilter;
+    limit: number;
+    from: number;
+  };
   identity: { sub: string };
   info: { fieldName: string };
 }
@@ -72,4 +90,50 @@ export interface EsUserRecord {
         role: string;
       }[]
     | null;
+}
+
+export interface UserChild {
+  firstName: string;
+  lastName: string;
+  photo: Image;
+}
+
+export interface UserPrivate {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  photo: Image;
+  phone: string;
+  phoneCountry: string;
+  birthDate: string;
+  birthCountry: string;
+  birthCity: string;
+  gender: Gender;
+  usCitizen: Boolean;
+  city: string;
+  postcode: string;
+  address1: string;
+  address2: string;
+  createDate: string;
+  parent: UserChild | null;
+  teams: TeamMemberDetails[];
+}
+
+export interface UsersPrivateConnection {
+  items: UserPrivate[];
+  totalCount: number;
+}
+
+export interface TeamMemberDetails {
+  club: TeamShort | null;
+  team: TeamShort | null;
+  role: TeamMemberType;
+}
+
+export interface TeamShort {
+  id: string;
+  name: string;
+  logo: Image;
 }
