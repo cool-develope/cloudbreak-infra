@@ -624,6 +624,7 @@ type TeamMemberDetails {
   club: ClubShort!
   team: TeamShort!
   role: TeamMemberType!
+  status: TeamInvitationStatus!
 }
 
 type UserPrivate {
