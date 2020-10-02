@@ -401,6 +401,11 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('userFn', fn);
 
     dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'usersPrivate',
+    });
+
+    dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'coaches',
       requestMappingTemplate: MappingTemplate.fromString(
