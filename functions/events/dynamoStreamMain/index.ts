@@ -276,6 +276,30 @@ const eventUserHandler = async (items: Item[]) => {
   }
 };
 
+const queryItemsByIndex = (sk: string, pk: string, indexName: string) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    IndexName: indexName,
+    KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
+    ExpressionAttributeValues: {
+      ':sk': sk,
+      ':pk': pk,
+    },
+  };
+
+  return db.query(params).promise();
+};
+
+const getTeams = async (userId: string): Promise<TeamUserRecord[]> => {
+  const { Items } = await queryItemsByIndex(`user#${userId}`, 'team#', 'GSI1');
+  return Items.map(({ clubId, pk, role, status }: TeamUserRecord) => ({
+    teamId: pk.replace('team#', ''),
+    clubId,
+    role,
+    status,
+  }));
+};
+
 const userTeamsHandler = async (items: Item[]) => {
   const body = [];
   for (const item of items) {
