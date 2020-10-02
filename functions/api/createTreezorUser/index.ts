@@ -216,12 +216,14 @@ export const handler: Handler = async (event) => {
   }
 
   treezorNewUserData.incomeRange = '0-18';
-  // treezorNewUserData.legalNetIncomeRange = '0-18';
+  treezorNewUserData.legalNetIncomeRange = '0-4';
+  treezorNewUserData.legalNumberOfEmployeeRange = '0';
+  treezorNewUserData.legalAnnualTurnOver = '0-39';
   treezorNewUserData.title = 'M';
   treezorNewUserData.nationality = treezorNewUserData.country;
   console.log('Treezor user data', treezorNewUserData);
 
-  const treezorUser = await treezorClient.createUser(treezorNewUserData);
+  const { user: treezorUser, error } = await treezorClient.createUser(treezorNewUserData);
 
   if (treezorUser) {
     console.log('Treezor response', treezorUser);
@@ -240,7 +242,7 @@ export const handler: Handler = async (event) => {
       trzCardsId: '0',
     });
   } else {
-    errors.push('Error');
+    errors.push(error || 'Error');
   }
 
   return {
