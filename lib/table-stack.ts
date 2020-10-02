@@ -66,6 +66,8 @@ export class TableStack extends cdk.Stack {
       },
     );
 
+    this.mainTable.grantReadWriteData(dynamoStreamMainFunction);
+
     dynamoStreamMainFunction.addEventSource(
       new DynamoEventSource(this.mainTable, {
         batchSize: 100,
