@@ -621,8 +621,8 @@ type TeamMember {
 }
 
 type TeamMemberDetails {
-  club: ClubShort
-  team: TeamShort
+  club: ClubShort!
+  team: TeamShort!
   role: TeamMemberType!
 }
 
