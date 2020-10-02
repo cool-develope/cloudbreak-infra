@@ -340,14 +340,22 @@ class UserModel {
   }
 
   getEsQueryList(userId: string, filter: UsersFilter = {}) {
-    const { search, clubIds, teamIds, role } = filter;
+    const { search, clubIds, teamIds, role, status } = filter;
     const roles = role ? [role] : [];
+    const statuses = status ? [status] : [];
 
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByTeams = this.getEsQueryTeamsArray('should', 'teamId', teamIds);
     const filterByClubs = this.getEsQueryTeamsArray('should', 'clubId', clubIds);
     const filterByRole = this.getEsQueryTeamsArray('must', 'role', roles);
-    const must = [filterBySearch, filterByTeams, filterByClubs, filterByRole].filter((f) => !!f);
+    const filterByStatus = this.getEsQueryTeamsArray('must', 'status', statuses);
+    const must = [
+      filterBySearch,
+      filterByTeams,
+      filterByClubs,
+      filterByRole,
+      filterByStatus,
+    ].filter((f) => !!f);
 
     const query = must.length
       ? {
