@@ -406,6 +406,11 @@ export class Api2Stack extends cdk.Stack {
     });
 
     dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'userPrivate',
+    });
+
+    dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'coaches',
       requestMappingTemplate: MappingTemplate.fromString(
