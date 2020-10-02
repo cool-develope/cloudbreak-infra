@@ -30,10 +30,12 @@ interface TeamUserRecord {
   role: string;
   createdAt: string;
   clubId: string;
+  status: string;
 }
 
 const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
 const es = new Client({ node: ES_DOMAIN });
+const db = new AWS.DynamoDB.DocumentClient();
 
 const teamPattern = new RegExp('^team#[a-z0-9-]+$');
 // const teamUserPattern = new RegExp('^team#[a-z0-9-]+user#[a-z0-9-]+$');
@@ -308,21 +310,9 @@ const userTeamsHandler = async (items: Item[]) => {
       keys: { pk, sk },
       data,
     } = item;
-    const teamId = pk.replace('team#', '');
     const userId = sk.replace('user#', '');
-    const { clubId, role } = data as TeamUserRecord;
-    let source: string | null = null;
-
-    if (eventName === EventName.INSERT) {
-      source =
-        'if (ctx._source.teams == null) { ctx._source.teams = []; } ctx._source.teams.add(params.team);';
-    } else if (eventName === EventName.REMOVE) {
-      source =
-        'if (ctx._source.teams == null) { ctx._source.teams = []; } ctx._source.teams.remove(params.team);';
-    } else if (eventName === EventName.MODIFY) {
-      // TODO: get all teams and set it here
-      source = 'ctx._source.teams = []; ctx._source.teams.add(params.team);';
-    }
+    const teams = await getTeams(userId);
+    const source = 'ctx._source.teams = params.teams;';
 
     if (source) {
       body.push({
@@ -333,11 +323,7 @@ const userTeamsHandler = async (items: Item[]) => {
           source,
           lang: 'painless',
           params: {
-            team: {
-              clubId,
-              teamId,
-              role,
-            },
+            teams,
           },
         },
       });
