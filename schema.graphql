@@ -159,7 +159,7 @@ input ClubsFilterInput {
   search: String
   city: String
   discipline: [Discipline]
-  isMembership: Boolean
+  clubIds: [String]
 }
 
 input TeamsPrivateFilterInput {
