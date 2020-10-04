@@ -210,15 +210,29 @@ class ClubModel {
       : null;
   }
 
+  getEsQueryByArray(propertyName: string, values?: string[]) {
+    return values && values.length
+      ? {
+          bool: {
+            should: values.map((value) => ({
+              match: {
+                [propertyName]: value,
+              },
+            })),
+          },
+        }
+      : null;
+  }
+
   getEsQuery(userId: string, filter: ClubsFilterInput = {}) {
-    const { search = '', city = '', discipline = [], isMembership = false } = filter;
+    const { search = '', city = '', discipline = [], clubIds } = filter;
 
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByCity = this.getEsQueryByMatch('city', city);
-    // const filterByOwnerUserID = isMembership ? this.getEsQueryByMatch('ownerUserId', userId) : null;
+    const filterById = this.getEsQueryByArray('_id', clubIds);
     const filterByDiscipline = this.getEsQueryByDiscipline(discipline);
 
-    const must = [filterBySearch, filterByCity, filterByDiscipline].filter((f) => !!f);
+    const must = [filterBySearch, filterByCity, filterByDiscipline, filterById].filter((f) => !!f);
 
     const query = must.length
       ? {
