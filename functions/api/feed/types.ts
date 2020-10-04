@@ -96,10 +96,10 @@ export interface FeedConnection {
 export interface FeedFilterInput {
   search?: string;
   myContent?: Boolean;
-  eventType?: [EventType] | EventType;
-  federation?: [string];
-  club?: [string];
-  team?: [string];
+  eventType?: EventType[] | EventType;
+  federation?: string[];
+  club?: string[];
+  team?: string[];
   clubId?: string;
   teamId?: string;
   discipline?: string[];
