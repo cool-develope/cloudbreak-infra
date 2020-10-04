@@ -78,15 +78,9 @@ export interface Club {
   teams: TeamShortConnection | null;
   coaches: UserShortConnection | null;
   members: UserShortConnection | null;
+  friends: UserShortConnection | null;
   federations: FederationShortConnection | null;
-  me: MeInClub | null;
   upcomingEventsCount: number;
-}
-
-export interface MeInClub {
-  role: TeamMemberType;
-  status: TeamInvitationStatus;
-  friends: UserShortConnection;
 }
 
 export interface FederationShortConnection {
