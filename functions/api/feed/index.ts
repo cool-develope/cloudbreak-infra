@@ -95,13 +95,13 @@ const getQueryByMatch = (field: string, value?: string) =>
         },
       };
 
-const getQueryByDiscipline = (discipline?: string[]) =>
-  discipline && discipline.length
+const getEsQueryByArray = (propertyName: string, values?: string[]) =>
+  values && values.length
     ? {
         bool: {
-          should: discipline.map((value) => ({
+          should: values.map((value) => ({
             match: {
-              discipline: value,
+              [propertyName]: value,
             },
           })),
         },
@@ -130,7 +130,12 @@ const getFeedPrivateQuery = (filter: FeedFilterInput = {}, sub: string) => {
   const filterByCreatedAt = getQueryByDate('createdAt', createDateAfter, createDateBefore);
   const filterBySearch = getQueryBySearch(search);
   const filterByOwnerUserID = myContent ? getQueryByMatch('ownerUserId', sub) : null;
-  const filterByDiscipline = getQueryByDiscipline(discipline);
+
+  const filterByDiscipline = getEsQueryByArray('discipline', discipline);
+  // const filterByFederation = getEsQueryByArray('', federation);
+  // const filterByClub = getEsQueryByArray('', club);
+  // const filterByTeam = getEsQueryByArray('', team);
+
   const filterByEventType =
     Array.isArray(eventType) && eventType.length === 1
       ? getQueryByMatch('eventType', eventType[0])
@@ -143,6 +148,7 @@ const getFeedPrivateQuery = (filter: FeedFilterInput = {}, sub: string) => {
     filterByCreatedAt,
     filterBySearch,
     filterByEventType,
+    filterByDiscipline,
   ].filter((f) => !!f);
 
   const query = must.length
@@ -219,7 +225,7 @@ const getEsTypePost = ({
   likesCount,
   viewsCount,
   ownerUserId,
-  createdAt
+  createdAt,
 }: any): Post => ({
   __typename: EventType.Post,
   id,
