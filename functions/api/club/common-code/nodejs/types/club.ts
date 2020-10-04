@@ -131,8 +131,8 @@ export interface UpdateClubPrivatePayload {
 export interface ClubsFilterInput {
   search?: string;
   discipline?: string[];
+  clubIds?: string[];
   city?: string;
-  isMembership?: boolean;
 }
 
 export interface ClubsConnection {
