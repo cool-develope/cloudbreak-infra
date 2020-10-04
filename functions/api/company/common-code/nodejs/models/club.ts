@@ -140,13 +140,9 @@ class ClubModel {
         items: [],
         totalCount: 0,
       },
-      me: {
-        role: TeamMemberType.Member,
-        status: TeamInvitationStatus.None,
-        friends: {
-          items: [],
-          totalCount: 0,
-        },
+      friends: {
+        items: [],
+        totalCount: 0,
       },
       upcomingEventsCount: 1,
     };

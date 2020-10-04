@@ -60,8 +60,8 @@ export interface ClubRecord {
   ownerUserId?: string;
   createdAt?: string;
   modifiedAt?: string;
-  ciCount?: number | null,
-  miCount?: number | null,
+  ciCount?: number | null;
+  miCount?: number | null;
 }
 
 export interface Club {
