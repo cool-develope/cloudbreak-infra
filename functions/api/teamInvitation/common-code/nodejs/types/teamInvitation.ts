@@ -10,7 +10,6 @@ export enum TeamMemberType {
 }
 
 export enum TeamInvitationStatus {
-  None = 'None',
   Pending = 'Pending',
   Accepted = 'Accepted',
   Declined = 'Declined',
