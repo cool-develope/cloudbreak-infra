@@ -559,6 +559,13 @@ enum KycReview {
   REFUSED
 }
 
+enum NotificationType {
+  ChildInvitation
+  TeamInvitation
+  KycReview
+  MoneyRequest
+}
+
 type Image {
   url: String
 }
@@ -881,6 +888,18 @@ type CardType {
   limitWeek: Int
 }
 
+type Notification {
+  id: ID!
+  date: AWSDateTime
+  type: NotificationType
+  attributes: [KeyValue]
+}
+
+type KeyValue {
+  Key: String
+  Value: String
+}
+
 type MyEventsConnection {
   items: [Event]
   totalCount: Int
@@ -925,6 +944,10 @@ type UserConnection {
 type ClubsConnection {
   items: [Club]
   totalCount: Int
+}
+
+type NotificationsConnection {
+  items: [Notification]
 }
 
 union FeedItem = Event | Post
@@ -1059,4 +1082,6 @@ type Query {
 
   usersPrivate(filter: UsersPrivateFilterInput, limit: Int, from: Int): UsersPrivateConnection!
   userPrivate(userId: ID!): UserPrivate
+
+  notifications(limit: Int, from: Int): NotificationsConnection!
 }
