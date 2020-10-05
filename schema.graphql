@@ -592,6 +592,8 @@ type TreezorUser {
 }
 
 type Organization {
+  id: ID!
+  name: String
   type: OrganizationType
   role: OrganizationRole
 }
@@ -659,6 +661,7 @@ type UserPrivate {
   address2: String
   createDate: AWSDateTime
   parent: UserChild
+  organization: Organization
   teams: [TeamMemberDetails]
 }
 
