@@ -660,6 +660,7 @@ type UserChild {
   firstName: String
   lastName: String
   photo: Image
+  phone: String
   email: String
   birthDate: String
   gender: String
