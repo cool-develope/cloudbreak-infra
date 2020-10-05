@@ -634,6 +634,7 @@ type TeamMember {
 type TeamMemberDetails {
   club: ClubShort!
   team: TeamShort!
+  federation: [FederationShort]
   role: TeamMemberType!
   status: TeamInvitationStatus!
 }
@@ -807,6 +808,12 @@ type TeamShort {
 }
 
 type ClubShort {
+  id: String
+  name: String
+  logo: Image
+}
+
+type FederationShort {
   id: String
   name: String
   logo: Image
