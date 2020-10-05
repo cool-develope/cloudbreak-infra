@@ -96,8 +96,8 @@ export class ApiHttpStack extends cdk.Stack {
         ONESIGNAL_APP_ID,
         ONESIGNAL_API_KEY,
       },
-      120,
-      256,
+      180,
+      512,
     );
 
     this.mainTable.grantReadWriteData(fn);
