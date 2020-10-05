@@ -5,6 +5,8 @@ import * as OneSignal from 'onesignal-node';
 // @ts-ignore
 import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
+import CognitoHelper from './cognitoHelper';
+import DynamoHelper from './dynamoHelper';
 
 enum WebhookEvent {
   card_options = 'card.options',
@@ -211,6 +213,8 @@ const createTreezorWallet = async (
 };
 
 const createWallet = async (treezorUserId: string) => {
+  const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
+
   /**
    * 1. Get user info
    */
@@ -253,6 +257,18 @@ const createWallet = async (treezorUserId: string) => {
     tifoUserId,
     treezorWalletId,
   });
+
+  const parentTifoUserId = user.parentUserId;
+  if (parentTifoUserId) {
+    const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, parentTifoUserId);
+    await cognitoHelper.addChildrenData(Number(treezorUserId), [], [Number(treezorWalletId)]);
+    console.log('ADDED CHILD TO TOKEN', {
+      parentTifoUserId,
+      tifoUserId,
+      treezorUserId,
+      treezorWalletId,
+    });
+  }
 };
 
 const updateKycReview = async ({
