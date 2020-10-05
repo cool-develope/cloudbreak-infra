@@ -107,7 +107,6 @@ export class CognitoStack extends cdk.Stack {
       userPoolClientName: 'web-client',
       authFlows: {
         custom: true,
-        refreshToken: true,
         userSrp: true,
       },
     });
