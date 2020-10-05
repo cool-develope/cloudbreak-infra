@@ -816,12 +816,6 @@ type ClubShort {
   logo: Image
 }
 
-type FederationShort {
-  id: String
-  name: String
-  logo: Image
-}
-
 type UserShortConnection {
   items: [UserShort]
   totalCount: Int
