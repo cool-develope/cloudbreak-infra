@@ -106,7 +106,7 @@ export class ApiHttpStack extends cdk.Stack {
     const cognitoPolicy = new PolicyStatement({
       effect: Effect.ALLOW,
     });
-    cognitoPolicy.addActions('cognito-idp:AdminUpdateUserAttributes');
+    cognitoPolicy.addActions('cognito-idp:AdminUpdateUserAttributes', 'cognito-idp:AdminGetUser');
     cognitoPolicy.addResources('*');
     fn.addToRolePolicy(cognitoPolicy);
 
