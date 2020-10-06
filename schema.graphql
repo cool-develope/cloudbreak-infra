@@ -1090,6 +1090,5 @@ type Query {
 
   usersPrivate(filter: UsersPrivateFilterInput, limit: Int, from: Int): UsersPrivateConnection!
   userPrivate(userId: ID!): UserPrivate
-
   notifications(limit: Int): NotificationsConnection!
 }
