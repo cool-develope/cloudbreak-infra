@@ -898,7 +898,7 @@ type CardType {
 
 type Notification {
   id: ID!
-  date: AWSDateTime
+  createDate: AWSDateTime
   type: NotificationType
   attributes: [KeyValue]
 }
@@ -1091,5 +1091,5 @@ type Query {
   usersPrivate(filter: UsersPrivateFilterInput, limit: Int, from: Int): UsersPrivateConnection!
   userPrivate(userId: ID!): UserPrivate
 
-  notifications(limit: Int, from: Int): NotificationsConnection!
+  notifications(limit: Int): NotificationsConnection!
 }
