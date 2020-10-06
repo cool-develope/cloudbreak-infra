@@ -24,4 +24,9 @@ jobs:
     - name: Push schema to Apollo
       env:
         APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
-      run: npx apollo service:push --graph=tifo-api --key=$APOLLO_KEY --variant=current --localSchemaFile=schema_public.graphql
+        APOLLO_KEY_TEST: ${{ secrets.APOLLO_KEY_TEST }}
+        APOLLO_KEY_STAGE: ${{ secrets.APOLLO_KEY_STAGE }}
+      run: |
+        npx apollo service:push --graph=tifo-api-dev --key=$APOLLO_KEY --variant=current --localSchemaFile=schema_public.graphql
+        npx apollo service:push --graph=tifo-api-test --key=$APOLLO_KEY_TEST --variant=current --localSchemaFile=schema_public.graphql
+        npx apollo service:push --graph=tifo-api-stage --key=$APOLLO_KEY_STAGE --variant=current --localSchemaFile=schema_public.graphql
