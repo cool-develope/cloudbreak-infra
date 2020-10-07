@@ -573,10 +573,14 @@ enum KycReview {
 }
 
 enum NotificationType {
-  ChildInvitation
-  TeamInvitation
+  SendTeamInvitation
+  DeclineTeamInvitation
+  AcceptTeamInvitation
+  SendMoneyRequest
+  InviteParent
+  AcceptChildInvitation
+  DeclineChildInvitation
   KycReview
-  MoneyRequest
 }
 
 type Image {
