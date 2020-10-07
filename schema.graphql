@@ -330,6 +330,15 @@ input CompanyOwnerInput {
   email: String!
 }
 
+input UpdateUserPrivateInput {
+  userId: String!
+  firstName: String
+  lastName: String
+  photo: String
+  birthDate: AWSDate
+  gender: Gender
+}
+
 input SendTeamInvitationInput {
   clubId: String!
   teamId: String!
@@ -1010,6 +1019,8 @@ type Mutation {
 
   createCompanyPrivate(input: CreateCompanyPrivateInput!): CreateCompanyPrivatePayload!
   updateCompanyPrivate(input: UpdateCompanyPrivateInput!): UpdateCompanyPrivatePayload!
+
+  updateUserPrivate(input: UpdateUserPrivateInput!): UserPrivate!
 }
 
 type Query {
