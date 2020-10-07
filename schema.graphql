@@ -605,7 +605,7 @@ type TreezorUser {
 }
 
 type Organization {
-  id: ID!
+  id: String
   name: String
   type: OrganizationType
   role: OrganizationRole
