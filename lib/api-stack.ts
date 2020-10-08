@@ -662,6 +662,7 @@ export class ApiStack extends cdk.Stack {
 
     this.mainTable.grantReadWriteData(inviteParentFunction);
     this.allowES(inviteParentFunction);
+    this.allowEventBridge(inviteParentFunction);
 
     const sesPolicy = new PolicyStatement({
       effect: Effect.ALLOW,
@@ -692,6 +693,7 @@ export class ApiStack extends cdk.Stack {
 
     this.mainTable.grantReadWriteData(acceptChildInvitationFunction);
     this.allowES(acceptChildInvitationFunction);
+    this.allowEventBridge(acceptChildInvitationFunction);
 
     const dataSource = this.api.addLambdaDataSource(
       'acceptChildInvitationFunction',
@@ -745,6 +747,16 @@ export class ApiStack extends cdk.Stack {
     esPolicy.addResources('*');
 
     lambdaFunction.addToRolePolicy(esPolicy);
+  }
+
+  allowEventBridge(lambdaFunction: lambda.Function) {
+    const eventsPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    eventsPolicy.addActions('events:PutEvents');
+    eventsPolicy.addResources('*');
+
+    lambdaFunction.addToRolePolicy(eventsPolicy);
   }
 
   getApiKeyExpiration(): cdk.Expiration {
