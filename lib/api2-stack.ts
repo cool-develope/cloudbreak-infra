@@ -374,6 +374,16 @@ export class Api2Stack extends cdk.Stack {
     lambdaFunction.addToRolePolicy(esPolicy);
   }
 
+  allowEventBridge(lambdaFunction: lambda.Function) {
+    const eventsPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    eventsPolicy.addActions('events:PutEvents');
+    eventsPolicy.addResources('*');
+
+    lambdaFunction.addToRolePolicy(eventsPolicy);
+  }
+
   getBatchInvokeTemplate(fieldName: string) {
     return `
    {
