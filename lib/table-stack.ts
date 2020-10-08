@@ -71,7 +71,7 @@ export class TableStack extends cdk.Stack {
     dynamoStreamMainFunction.addEventSource(
       new DynamoEventSource(this.mainTable, {
         batchSize: 100,
-        maxBatchingWindow: Duration.seconds(2),
+        maxBatchingWindow: Duration.seconds(0),
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
       }),
     );
