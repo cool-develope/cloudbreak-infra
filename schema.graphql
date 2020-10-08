@@ -626,6 +626,7 @@ type TreezorUser {
 type Organization {
   id: String
   name: String
+  logo: Image
   type: OrganizationType
   role: OrganizationRole
 }
