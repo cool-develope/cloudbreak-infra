@@ -8,13 +8,24 @@ import targets = require('@aws-cdk/aws-events-targets');
 
 export interface EventsStackProps extends cdk.StackProps {
   mainTable: dynamodb.Table;
+  imagesDomain: string;
+  esDomain: string;
+  commonModulesLayerArn: string;
 }
 
 export class EventsStack extends cdk.Stack {
+  private readonly commonModulesLayer: lambda.ILayerVersion;
+
   constructor(scope: cdk.Construct, id: string, props: EventsStackProps) {
     super(scope, id, props);
 
-    const { mainTable } = props;
+    const { mainTable, imagesDomain, esDomain, commonModulesLayerArn } = props;
+
+    this.commonModulesLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'api2-layers-common-modules',
+      commonModulesLayerArn,
+    );
 
     const createUserFunction = this.getFunction(
       'events-createUser',
