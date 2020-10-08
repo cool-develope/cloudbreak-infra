@@ -87,6 +87,24 @@ const {
 
 const db = new AWS.DynamoDB.DocumentClient();
 const cognito = new AWS.CognitoIdentityServiceProvider();
+const eventbridge = new AWS.EventBridge();
+
+const putEvents = (type: string, detail: any) => {
+  const params = {
+    Entries: [
+      {
+        Source: 'tifo.treezor',
+        EventBusName: 'default',
+        Time: new Date(),
+        DetailType: type,
+        Detail: JSON.stringify(detail),
+      },
+    ],
+  };
+
+  console.log(type, detail);
+  return eventbridge.putEvents(params).promise();
+};
 
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
@@ -280,10 +298,19 @@ const updateKycReview = async ({
 }) => {
   const kycReviewName = KYC_REVIEW_NAMES.get(kycReview);
   const user = await getUser(treezorUserId);
+  const tifoUserId = user.pk.replace('user#', '');
+  
   await updateItem(user.pk, 'metadata', {
     kycReview: kycReviewName,
     modifiedAt: new Date().toISOString(),
   });
+
+  if (kycReview === KycReview.VALIDATED || kycReview === KycReview.REFUSED) {
+    await putEvents('KycReview', {
+      sub: tifoUserId,
+      status: kycReviewName,
+    });
+  }
 };
 
 const processWebhook = async (h: Webhood) => {
