@@ -36,7 +36,19 @@ export class EventsStack extends cdk.Stack {
       },
     );
 
+    const notificationsFunction = this.getFunction(
+      'events-notifications',
+      'events-notifications',
+      'notifications',
+      {
+        MAIN_TABLE_NAME: mainTable.tableName,
+        IMAGES_DOMAIN: imagesDomain,
+        ES_DOMAIN: esDomain,
+      },
+    );
+
     mainTable.grantReadWriteData(createUserFunction);
+    mainTable.grantReadWriteData(notificationsFunction);
 
     const rule = new Rule(this, 'CognitoSignupRule', {
       enabled: true,
@@ -44,6 +56,15 @@ export class EventsStack extends cdk.Stack {
         source: ['custom.cognito'],
         detailType: ['signup'],
       },
+    });
+
+    const notificationsRule = new Rule(this, 'NotificationsRule', {
+      enabled: true,
+      eventPattern: {
+        source: ['tifo.api', 'tifo.treezor'],
+        // all detailType
+      },
+      targets: [new targets.LambdaFunction(notificationsFunction)],
     });
 
     rule.addTarget(new targets.LambdaFunction(createUserFunction));
@@ -56,8 +77,9 @@ export class EventsStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment,
-      logRetention: RetentionDays.ONE_WEEK,
+      logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
+      layers: [this.commonModulesLayer],
     });
   }
 }
