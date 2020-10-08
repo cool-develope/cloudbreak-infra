@@ -205,6 +205,10 @@ input DeclineEventInput {
   eventId: ID!
 }
 
+input RejectMoneyRequestInput {
+  requestId: ID!
+}
+
 input SendPhoneVerificationInput {
   phoneNumber: String!
 }
@@ -447,6 +451,10 @@ type SendMoneyRequestPayload {
   errors: [String]
 }
 
+type RejectMoneyRequestPayload {
+  errors: [String]
+}
+
 type CreateClubPrivatePayload {
   errors: [String]
   club: Club
@@ -564,6 +572,12 @@ enum TeamInvitationStatus {
   Pending
   Accepted
   Declined
+}
+
+enum MoneyRequestStatus {
+  Pending
+  Paid
+  Rejected
 }
 
 enum KycReview {
@@ -1007,6 +1021,7 @@ type Mutation {
   createTreezorCompany: CreateTreezorCompanyPayload!
 
   sendMoneyRequest(input: SendMoneyRequestInput!): SendMoneyRequestPayload!
+  rejectMoneyRequest(input: RejectMoneyRequestInput!): RejectMoneyRequestPayload!
 
   createClubPrivate(input: CreateClubPrivateInput!): CreateClubPrivatePayload!
   updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
