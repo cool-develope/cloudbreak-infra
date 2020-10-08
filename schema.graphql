@@ -181,6 +181,10 @@ input UsersPrivateFilterInput {
   birthDateBefore: AWSDateTime
 }
 
+input MoneyRequestsFilterInput {
+  status: MoneyRequestStatus
+}
+
 input ClubsPrivateFilterInput {
   search: String
 }
@@ -932,6 +936,16 @@ type Notification {
   attributes: [KeyValue]
 }
 
+type MoneyRequest {
+  id: ID!
+  amount: Float!
+  note: String
+  status: MoneyRequestStatus
+  createDate: AWSDateTime
+  user: UserPublic
+  fromMe: Boolean
+}
+
 type KeyValue {
   Key: String
   Value: String
@@ -985,6 +999,10 @@ type ClubsConnection {
 
 type NotificationsConnection {
   items: [Notification]
+}
+
+type MoneyRequestsConnection {
+  items: [MoneyRequest]
 }
 
 union FeedItem = Event | Post
@@ -1121,4 +1139,5 @@ type Query {
   usersPrivate(filter: UsersPrivateFilterInput, limit: Int, from: Int): UsersPrivateConnection!
   userPrivate(userId: ID!): UserPrivate
   notifications(limit: Int): NotificationsConnection!
+  moneyRequests(filter: MoneyRequestsFilterInput): MoneyRequestsConnection!
 }
