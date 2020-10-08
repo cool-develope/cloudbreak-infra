@@ -102,6 +102,7 @@ export class ApiHttpStack extends cdk.Stack {
 
     this.mainTable.grantReadWriteData(fn);
     this.allowES(fn);
+    this.allowEventBridge(fn);
 
     const cognitoPolicy = new PolicyStatement({
       effect: Effect.ALLOW,
@@ -143,6 +144,16 @@ export class ApiHttpStack extends cdk.Stack {
     esPolicy.addResources('*');
 
     lambdaFunction.addToRolePolicy(esPolicy);
+  }
+
+  allowEventBridge(lambdaFunction: lambda.Function) {
+    const eventsPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    eventsPolicy.addActions('events:PutEvents');
+    eventsPolicy.addResources('*');
+
+    lambdaFunction.addToRolePolicy(eventsPolicy);
   }
 
   getFunction(functionName: string, environment?: any, timeoutSeconds = 30, memorySize = 128) {
