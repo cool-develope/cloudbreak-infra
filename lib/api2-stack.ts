@@ -423,6 +423,11 @@ export class Api2Stack extends cdk.Stack {
     });
 
     dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateUserPrivate',
+    });
+
+    dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'coaches',
       requestMappingTemplate: MappingTemplate.fromString(
