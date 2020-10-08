@@ -108,6 +108,8 @@ export class Api2Stack extends cdk.Stack {
     this.teamInvitation();
 
     this.user();
+
+    this.notifications();
   }
 
   dictionaryQuery() {
@@ -472,6 +474,24 @@ export class Api2Stack extends cdk.Stack {
         this.getBatchInvokeTemplate('teamFriends'),
       ),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+  }
+
+  notifications() {
+    const fn = this.getFunction('notifications', 'api-notifications', 'notifications', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('notificationsFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'notifications',
     });
   }
 
