@@ -187,12 +187,23 @@ export class Api2Stack extends cdk.Stack {
 
     this.mainTable.grantReadWriteData(fn);
     this.allowES(fn);
+    this.allowEventBridge(fn);
 
     const dataSource = this.api.addLambdaDataSource('sendMoneyRequestFn', fn);
 
     dataSource.createResolver({
       typeName: 'Mutation',
       fieldName: 'sendMoneyRequest',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'rejectMoneyRequest',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'moneyRequests',
     });
   }
 
@@ -346,6 +357,7 @@ export class Api2Stack extends cdk.Stack {
 
     this.mainTable.grantReadWriteData(fn);
     this.allowES(fn);
+    this.allowEventBridge(fn);
 
     const dataSource = this.api.addLambdaDataSource('teamInvitationFn', fn);
 
