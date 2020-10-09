@@ -8,6 +8,7 @@
   "author": "Sergey Onufrienko <sergey@onufrienko.com>",
   "license": "ISC",
   "dependencies": {
-    "onesignal-node": "^3.1.5"
+    "onesignal-node": "^3.1.5",
+    "uuid": "^8.3.1"
   }
 }
