@@ -8,7 +8,25 @@ export enum FieldName {
 }
 
 const db = new AWS.DynamoDB.DocumentClient();
+const eventbridge = new AWS.EventBridge();
 const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN, ES_DOMAIN } = process.env;
+
+const putEvents = (type: string, detail: any) => {
+  const params = {
+    Entries: [
+      {
+        Source: 'tifo.api',
+        EventBusName: 'default',
+        Time: new Date(),
+        DetailType: type,
+        Detail: JSON.stringify(detail),
+      },
+    ],
+  };
+
+  console.log(type, detail);
+  return eventbridge.putEvents(params).promise();
+};
 
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
@@ -65,7 +83,7 @@ const getItem = (pk: string, sk: string) => {
 
 const getTimeDifferenceInHours = (createdAt: string) => {
   if (!createdAt) {
-    createdAt = new Date(0).toISOString();
+    createdAt = new Date().toISOString();
   }
 
   const dateBegin = new Date(createdAt);
@@ -100,6 +118,8 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
   const sk = `child#${invitationId}`;
 
   const { Item: invitation } = await getItem(pk, sk);
+  const { Item: userChild } = await getItem(`user#${invitationId}`, 'metadata');
+  const { Item: userParent } = await getItem(`user#${sub}`, 'metadata');
 
   if (invitation && invitation.inviteStatus === 'pending') {
     const hoursFromCreation = getTimeDifferenceInHours(invitation.createdAt);
@@ -135,6 +155,21 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
 
         await updateItem(pk, sk, data);
       }
+
+      const detailType =
+        field === FieldName.acceptChildInvitation
+          ? 'AcceptChildInvitation'
+          : 'DeclineChildInvitation';
+
+      await putEvents(detailType, {
+        childSub: invitationId,
+        childFirstName: userChild.firstName,
+        childLastName: userChild.lastName,
+        childBirthDate: userChild.birthDate,
+        parentSub: sub,
+        parentFirstName: userParent.firstName,
+        parentLastName: userParent.lastName,
+      });
     }
   } else if (invitation && invitation.inviteStatus !== 'pending') {
     errors.push('Invitation alredy accepted/declined');
