@@ -177,8 +177,10 @@ class ClubModel {
           bool: {
             should: [
               {
-                match: {
-                  name: search,
+                wildcard: {
+                  name: {
+                    value: `*${search}*`,
+                  },
                 },
               },
               {
