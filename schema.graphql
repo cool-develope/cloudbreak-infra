@@ -698,6 +698,7 @@ type UserPrivate {
   parent: UserChild
   children: [UserChild]
   organization: Organization
+  treezor: TreezorUser
   teams: [TeamMemberDetails]
 }
 
