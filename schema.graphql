@@ -633,6 +633,13 @@ type Organization {
   role: OrganizationRole
 }
 
+type EventOrganization {
+  id: String
+  name: String
+  type: OrganizationType
+  walletId: Int
+}
+
 type User {
   email: String
   firstName: String
@@ -742,6 +749,7 @@ type Event {
   target: EventTarget
   myReaction: EventReaction
   participants: UserConnection!
+  organization: EventOrganization
 }
 
 type Post {
