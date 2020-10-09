@@ -73,8 +73,10 @@ const getQueryBySearch = (search: string) =>
         bool: {
           should: [
             {
-              match: {
-                title: search,
+              wildcard: {
+                title: {
+                  value: `*${search}*`,
+                },
               },
             },
             {
