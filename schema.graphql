@@ -1130,7 +1130,6 @@ type Query {
   Lookup a user contacts
   """
   contacts: [Contact]!
-
   cardTypes: [CardType]!
 
   team(clubId: String!, teamId: ID!): Team
