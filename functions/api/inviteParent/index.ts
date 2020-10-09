@@ -12,6 +12,7 @@ const {
   INVITATION_URL = '',
 } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
+const eventbridge = new AWS.EventBridge();
 const ses = new AWS.SES({ region: SES_REGION });
 const EMAIL_TEMPLATE = './child-invitation.html';
 
@@ -66,6 +67,23 @@ const sendEmail = async (
   await ses.sendEmail(params).promise();
 };
 
+const putEvents = (type: string, detail: any) => {
+  const params = {
+    Entries: [
+      {
+        Source: 'tifo.api',
+        EventBusName: 'default',
+        Time: new Date(),
+        DetailType: type,
+        Detail: JSON.stringify(detail),
+      },
+    ],
+  };
+
+  console.log(type, detail);
+  return eventbridge.putEvents(params).promise();
+};
+
 const getUpdateExpression = (attributes: any = {}) =>
   Object.keys(attributes)
     .map((key) =>
@@ -95,6 +113,20 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
   };
 
   return db.update(params).promise();
+};
+
+const scanItems = (pk: string, sk: string, email: string) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    FilterExpression: 'begins_with(pk, :pk) and sk = :sk and email = :email',
+    ExpressionAttributeValues: {
+      ':pk': pk,
+      ':sk': sk,
+      ':email': email,
+    },
+  };
+
+  return db.scan(params).promise();
 };
 
 const getItem = (pk: string, sk: string) => {
@@ -138,6 +170,9 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
 
   await updateItem(pk, sk, data);
   const { Item: user } = await getItem(`user#${sub}`, 'metadata');
+  const { Items: parents } = await scanItems('user#', 'metadata', email);
+  const [parentUser] = parents;
+  const parentSub = parentUser ? parentUser.pk.replace('user#', '') : null;
 
   const invitationUrl = INVITATION_URL;
   const fullName = `${user.firstName} ${user.lastName}`;
@@ -148,6 +183,18 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
   const childEmail = user.email;
 
   await sendEmail(email, invitationUrl, fullName, photo, birthDate, childEmail);
+
+  await putEvents('InviteParent', {
+    invitationUrl,
+    childSub: sub,
+    childEmail: childEmail,
+    childFirstName: user.firstName,
+    childLastName: user.lastName,
+    childPhoto: photo,
+    childBirthDate: birthDate,
+    childParentSub: parentSub,
+    parentEmail: email,
+  });
 
   return { errors };
 };
