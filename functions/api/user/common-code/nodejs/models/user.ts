@@ -1,5 +1,3 @@
-import { UserProps } from '@aws-cdk/aws-iam';
-import { TeamMember } from 'functions/api/updateUser/types';
 import DynamoHelper from '../dynamoHelper';
 import {
   Image,
@@ -15,6 +13,12 @@ import {
   UserPrivate,
   TeamMemberDetails,
   TeamShort,
+  Organization,
+  OrganizationType,
+  OrganizationRole,
+  UpdateUserPrivateInput,
+  UserChild,
+  TreezorUser,
 } from '../types/user';
 
 class UserModel {
@@ -145,9 +149,18 @@ class UserModel {
           this.getClubShort(clubId),
         ]);
 
+        const federationList: TeamShort[] = [
+          {
+            id: '111',
+            name: 'Federation Name',
+            logo: this.getTypeImage('club/i/logo2.jpg'),
+          },
+        ];
+
         result.push({
           club: clubShort,
           team: teamShort,
+          federation: federationList,
           role,
           status,
         });
@@ -187,6 +200,26 @@ class UserModel {
     };
   }
 
+  getTypeUserChild({
+    firstName = '',
+    lastName = '',
+    photo = '',
+    email = '',
+    birthDate = '',
+    gender = '',
+    phone = '',
+  }: any): UserChild {
+    return {
+      firstName,
+      lastName,
+      photo: this.getTypeImage(photo),
+      email,
+      birthDate,
+      gender,
+      phone,
+    };
+  }
+
   async getTypeUserPrivate({
     id,
     email,
@@ -207,10 +240,20 @@ class UserModel {
     address2,
     createdAt,
     teams,
+    children: esChildren,
+    companyId,
     parentUserId,
-  }: any): Promise<UserPrivate> {
+    treezorUserId = null,
+    treezorWalletId = null,
+  }: any = {}): Promise<UserPrivate> {
     const teamsDetails = await this.getTeamMemberDetails(id, teams);
-    const parent = parentUserId ? await this.getById(parentUserId) : null;
+    const organization = await this.getOrganization(id, companyId, teamsDetails);
+    const children = await this.getChildren(esChildren);
+    const parent = await this.getUserChild(parentUserId);
+    const treezor: TreezorUser = {
+      userId: treezorUserId,
+      walletId: treezorWalletId,
+    };
 
     const user = {
       id,
@@ -218,7 +261,7 @@ class UserModel {
       firstName,
       lastName,
       country,
-      photo,
+      photo: this.getTypeImage(photo),
       phone,
       phoneCountry,
       birthDate,
@@ -232,6 +275,9 @@ class UserModel {
       address2,
       createDate: createdAt,
       parent,
+      children,
+      organization,
+      treezor,
       teams: teamsDetails,
     };
 
@@ -255,18 +301,24 @@ class UserModel {
           bool: {
             should: [
               {
-                match: {
-                  firstName: search,
+                wildcard: {
+                  firstName: {
+                    value: `*${search}*`,
+                  },
                 },
               },
               {
-                match: {
-                  lastName: search,
+                wildcard: {
+                  lastName: {
+                    value: `*${search}*`,
+                  },
                 },
               },
               {
-                match: {
-                  email: search,
+                wildcard: {
+                  email: {
+                    value: `*${search}*`,
+                  },
                 },
               },
             ],
@@ -368,22 +420,68 @@ class UserModel {
     return query;
   }
 
+  getEsQueryByDate(field: string, gte?: string, lte?: string) {
+    return !gte && !lte
+      ? null
+      : {
+          range: {
+            [field]: {
+              gte,
+              lte,
+            },
+          },
+        };
+  }
+
+  getEsQueryExists(field: string) {
+    return {
+      exists: {
+        field,
+      },
+    };
+  }
+
   getEsQueryList(userId: string, filter: UsersFilter = {}) {
-    const { search, clubIds, teamIds, role, status } = filter;
+    const {
+      search,
+      clubIds,
+      teamIds,
+      userIds,
+      hasWallet,
+      role,
+      status,
+      createDateAfter,
+      createDateBefore,
+      birthDateAfter,
+      birthDateBefore,
+    } = filter;
     const roles = role ? [role] : [];
     const statuses = status ? [status] : [];
 
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByTeams = this.getEsQueryTeamsArray('should', 'teamId', teamIds);
     const filterByClubs = this.getEsQueryTeamsArray('should', 'clubId', clubIds);
+    const filterByUsers = this.getEsQueryTeamsArray('should', '_id', userIds);
     const filterByRole = this.getEsQueryTeamsArray('must', 'role', roles);
     const filterByStatus = this.getEsQueryTeamsArray('must', 'status', statuses);
+    const filterByHasWallet = hasWallet === true ? this.getEsQueryExists('treezorWalletId') : null;
+    const filterByCreateDate = this.getEsQueryByDate(
+      'createdAt',
+      createDateAfter,
+      createDateBefore,
+    );
+    const filterByBirthDate = this.getEsQueryByDate('birthDate', birthDateAfter, birthDateBefore);
+
     const must = [
       filterBySearch,
       filterByTeams,
       filterByClubs,
+      filterByUsers,
       filterByRole,
       filterByStatus,
+      filterByCreateDate,
+      filterByBirthDate,
+      filterByHasWallet,
     ].filter((f) => !!f);
 
     const query = must.length
@@ -435,6 +533,94 @@ class UserModel {
     }
 
     return null;
+  }
+
+  async getOrganization(
+    userId: string,
+    companyId: string,
+    teamsDetails: TeamMemberDetails[],
+  ): Promise<Organization | null> {
+    const { Items } = await this.queryItemsByIndexAndFilter('metadata', 'club#', 'GSI1', userId);
+
+    if (Items && Items.length) {
+      /**
+       * CLUB OWNER
+       */
+      const [club] = Items;
+
+      return {
+        type: OrganizationType.Club,
+        role: OrganizationRole.Owner,
+        id: club.pk.replace('club#', ''),
+        name: club.name,
+        logo: this.getTypeImage(club.logo),
+      };
+    } else {
+      /**
+       * CLUB COACH
+       */
+      const coachInTeam = teamsDetails.find((team) => team.role === TeamMemberType.Coach);
+      if (coachInTeam) {
+        const { club } = coachInTeam;
+        return {
+          type: OrganizationType.Club,
+          role: OrganizationRole.Coach,
+          id: club.id,
+          name: club.name,
+          logo: club.logo,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  async getUserChild(userId?: string): Promise<UserChild | null> {
+    if (userId) {
+      const { Item } = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
+      if (Item) {
+        return this.getTypeUserChild(Item);
+      }
+    }
+
+    return null;
+  }
+
+  async getChildren(childrenIds: string[]): Promise<UserChild[]> {
+    const childrenData: UserChild[] = [];
+
+    if (childrenIds && childrenIds.length) {
+      const arrayOfKeys = childrenIds.map((userId: string) => ({
+        pk: `user#${userId}`,
+        sk: 'metadata',
+      }));
+
+      const users = await this.dynamoHelper.batchGet(arrayOfKeys, 'pk', (item) =>
+        this.getTypeUserChild(item),
+      );
+
+      for (const userId of childrenIds) {
+        childrenData.push(users.get(`user#${userId}`));
+      }
+    }
+
+    return childrenData;
+  }
+
+  queryItemsByIndexAndFilter(sk: string, pk: string, indexName: string, ownerUserId: string) {
+    const params = {
+      TableName: this.tableName,
+      IndexName: indexName,
+      KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
+      FilterExpression: 'ownerUserId = :ownerUserId',
+      ExpressionAttributeValues: {
+        ':sk': sk,
+        ':pk': pk,
+        ':ownerUserId': ownerUserId,
+      },
+    };
+
+    return this.db.query(params).promise();
   }
 }
 

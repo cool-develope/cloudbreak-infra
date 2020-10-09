@@ -7,6 +7,7 @@ export enum FieldName {
   teamFriends = 'teamFriends',
   userPrivate = 'userPrivate',
   usersPrivate = 'usersPrivate',
+  updateUserPrivate = 'updateUserPrivate',
 }
 
 export enum TeamMemberType {
@@ -18,6 +19,16 @@ export enum TeamInvitationStatus {
   Pending = 'Pending',
   Accepted = 'Accepted',
   Declined = 'Declined',
+}
+
+export enum OrganizationType {
+  InternationalFederation = 'InternationalFederation',
+  Club = 'Club',
+}
+
+export enum OrganizationRole {
+  Owner = 'Owner',
+  Coach = 'Coach',
 }
 
 export enum Gender {
@@ -44,18 +55,35 @@ export interface UsersFilter {
   search?: string;
   clubIds?: string[];
   teamIds?: string[];
+  userIds?: string[];
+  hasWallet?: boolean;
   role?: TeamMemberType;
   status?: TeamInvitationStatus;
+  createDateAfter?: string;
+  createDateBefore?: string;
+  birthDateAfter?: string;
+  birthDateBefore?: string;
 }
 
 export interface FunctionEvent {
   arguments: {
+    userId: string;
     filter: UsersFilter;
     limit: number;
     from: number;
+    input: UpdateUserPrivateInput;
   };
   identity: { sub: string };
   info: { fieldName: string };
+}
+
+export interface UpdateUserPrivateInput {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+  birthDate: string;
+  gender: Gender;
 }
 
 export interface FunctionEventBatch {
@@ -83,6 +111,8 @@ export interface EsUserRecord {
   address1?: string;
   address2?: string;
   kycReview: string;
+  treezorUserId?: string;
+  treezorWalletId?: string;
   teams:
     | {
         clubId: string;
@@ -96,6 +126,10 @@ export interface UserChild {
   firstName: string;
   lastName: string;
   photo: Image;
+  phone: string;
+  email: string;
+  birthDate: string;
+  gender: string;
 }
 
 export interface UserPrivate {
@@ -118,7 +152,15 @@ export interface UserPrivate {
   address2: string;
   createDate: string;
   parent: UserChild | null;
+  children: UserChild[];
+  organization: Organization | null;
+  treezor: TreezorUser;
   teams: TeamMemberDetails[];
+}
+
+export interface TreezorUser {
+  userId: number | null;
+  walletId: number | null;
 }
 
 export interface UsersPrivateConnection {
@@ -129,6 +171,7 @@ export interface UsersPrivateConnection {
 export interface TeamMemberDetails {
   club: TeamShort;
   team: TeamShort;
+  federation: TeamShort[];
   role: TeamMemberType;
   status: TeamInvitationStatus;
 }
@@ -136,5 +179,13 @@ export interface TeamMemberDetails {
 export interface TeamShort {
   id: string;
   name: string;
+  logo: Image;
+}
+
+export interface Organization {
+  type: OrganizationType;
+  role: OrganizationRole;
+  id: String;
+  name: String;
   logo: Image;
 }
