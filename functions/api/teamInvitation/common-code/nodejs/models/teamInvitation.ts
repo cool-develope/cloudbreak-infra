@@ -1,4 +1,5 @@
 import { error } from 'console';
+import { TeamRecord } from 'functions/api/team/common-code/nodejs/types/team';
 import DynamoHelper from '../dynamoHelper';
 import {
   TeamUserRecord,
@@ -13,14 +14,23 @@ import {
 class TeamInvitationModel {
   private readonly es: any;
   private readonly db: any;
+  private readonly eventbridge: any;
   private readonly tableName: string;
   private readonly dynamoHelper: DynamoHelper;
   private readonly imagesDomain: string;
   private readonly uuidv4: () => string;
 
-  constructor(db: any, tableName: string, imagesDomain: string, uuidv4: () => string, es: any) {
+  constructor(
+    db: any,
+    tableName: string,
+    imagesDomain: string,
+    uuidv4: () => string,
+    es: any,
+    eventbridge: any,
+  ) {
     this.es = es;
     this.db = db;
+    this.eventbridge = eventbridge;
     this.tableName = tableName;
     this.imagesDomain = imagesDomain;
     this.dynamoHelper = new DynamoHelper(this.db, this.tableName);
@@ -29,6 +39,11 @@ class TeamInvitationModel {
 
   async getTeamUser(pk: string, sk: string): Promise<TeamUserRecord | null> {
     const { Item } = await this.dynamoHelper.getItem(pk, sk);
+    return Item;
+  }
+
+  async getTeam(clubId: string, teamId: string): Promise<TeamRecord | null> {
+    const { Item } = await this.dynamoHelper.getItem(`club#${clubId}`, `team#${teamId}`);
     return Item;
   }
 
@@ -61,6 +76,7 @@ class TeamInvitationModel {
     const pk = `team#${teamId}`;
     const sk = `user#${userId}`;
     const teamUser = await this.getTeamUser(pk, sk);
+    const teamDetails = await this.getTeam(clubId, teamId);
     const teamUserExists = !!teamUser;
 
     if (teamUserExists) {
@@ -74,6 +90,12 @@ class TeamInvitationModel {
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
       await this.incrementInvitationsCount(clubId, teamId, role);
+      await this.putEvents('SendTeamInvitation', {
+        sub: userId,
+        teamId,
+        teamName: teamDetails?.name,
+        role,
+      });
     }
 
     return {
@@ -90,6 +112,7 @@ class TeamInvitationModel {
     const pk = `team#${teamId}`;
     const sk = `user#${userId}`;
     const teamUser = await this.getTeamUser(pk, sk);
+    const teamDetails = await this.getTeam(clubId, teamId);
 
     if (!teamUser) {
       errors.push('Invitation not found');
@@ -101,6 +124,12 @@ class TeamInvitationModel {
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
       await this.incrementInvitationsCount(clubId, teamId, teamUser.role, true);
+      await this.putEvents('AcceptTeamInvitation', {
+        sub: userId,
+        teamId,
+        teamName: teamDetails?.name,
+        role: teamUser.role,
+      });
     }
 
     return {
@@ -117,6 +146,7 @@ class TeamInvitationModel {
     const pk = `team#${teamId}`;
     const sk = `user#${userId}`;
     const teamUser = await this.getTeamUser(pk, sk);
+    const teamDetails = await this.getTeam(clubId, teamId);
 
     if (!teamUser) {
       errors.push('Invitation not found');
@@ -128,11 +158,34 @@ class TeamInvitationModel {
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
       await this.incrementInvitationsCount(clubId, teamId, teamUser.role, true);
+      await this.putEvents('DeclineTeamInvitation', {
+        sub: userId,
+        teamId,
+        teamName: teamDetails?.name,
+        role: teamUser.role,
+      });
     }
 
     return {
       errors,
     };
+  }
+
+  putEvents(type: string, detail: any) {
+    const params = {
+      Entries: [
+        {
+          Source: 'tifo.api',
+          EventBusName: 'default',
+          Time: new Date(),
+          DetailType: type,
+          Detail: JSON.stringify(detail),
+        },
+      ],
+    };
+
+    console.log(type, detail);
+    return this.eventbridge.putEvents(params).promise();
   }
 }
 

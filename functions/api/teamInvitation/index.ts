@@ -11,6 +11,7 @@ import { FieldName, FunctionEvent } from './common-code/nodejs/types/teamInvitat
 const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN = '', ES_DOMAIN } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
 const es = new Client({ node: ES_DOMAIN });
+const eventbridge = new AWS.EventBridge();
 
 export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
   const {
@@ -28,6 +29,7 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
     IMAGES_DOMAIN,
     uuidv4,
     es,
+    eventbridge,
   );
 
   if (field === FieldName.sendTeamInvitation) {
