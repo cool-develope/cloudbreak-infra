@@ -171,6 +171,7 @@ input TeamsPrivateFilterInput {
 input UsersPrivateFilterInput {
   search: String
   userIds: [String]
+  hasWallet: Boolean
   clubIds: [String]
   teamIds: [String]
   role: TeamMemberType
