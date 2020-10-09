@@ -89,3 +89,16 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
     --region us-east-1\
     --profile tifo-$TIFO_ENV
   ```
+
+## Events
+tifo.api
+- SendTeamInvitation (sub, teamId, teamName, role)
+- DeclineTeamInvitation (sub, teamId, teamName, role)
+- AcceptTeamInvitation (sub, teamId, teamName, role)
+- SendMoneyRequest (senderSub, senderEmail, senderFirstName, senderLastName, senderPhoto, recipientSub, recipientEmail, amount, note)
+- InviteParent (invitationUrl, childSub, childEmail, childFirstName, childLastName, childPhoto, childBirthDate, childParentSub, parentEmail)
+- AcceptChildInvitation (childSub, childFirstName, childLastName, childBirthDate, parentSub, parentFirstName, parentLastName)
+- DeclineChildInvitation (childSub, childFirstName, childLastName, childBirthDate, parentSub, parentFirstName, parentLastName)
+
+tifo.treezor
+- KycReview (sub, status)
