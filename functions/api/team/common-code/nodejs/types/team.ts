@@ -56,12 +56,12 @@ export interface TeamRecord {
   address?: string;
   email?: string;
   phone?: string;
-  discipline?: string;
+  discipline?: string | null;
   federations?: string[];
   ownerUserId?: string;
   modifiedAt?: string;
-  ciCount?: number | null,
-  miCount?: number | null,
+  ciCount?: number | null;
+  miCount?: number | null;
 }
 
 export interface Team {

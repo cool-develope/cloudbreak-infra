@@ -163,7 +163,7 @@ class TeamModel {
     address = '',
     email = '',
     phone = '',
-    discipline = '',
+    discipline = null,
     federations,
     ciCount = 0,
     miCount = 0,
@@ -184,7 +184,7 @@ class TeamModel {
       phone,
       discipline,
       coaches: null,
-      members:  null,
+      members: null,
       friends: null,
       federations: {
         items: [
