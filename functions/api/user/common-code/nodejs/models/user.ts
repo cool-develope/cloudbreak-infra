@@ -109,6 +109,29 @@ class UserModel {
     return await this.getTypeUserPrivate(esUser);
   }
 
+  delay(ms: number) {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  async updateUserPrivate(sub: string, input: UpdateUserPrivateInput): Promise<UserPrivate> {
+    const { userId, firstName, lastName, photo, birthDate, gender } = input;
+    const pk = `user#${userId}`;
+    const sk = 'metadata';
+
+    await this.dynamoHelper.updateItem(pk, sk, {
+      firstName,
+      lastName,
+      photo,
+      birthDate,
+      gender,
+    });
+
+    await this.delay(4000);
+    return this.getById(userId);
+  }
+
   async getTeamMemberDetails(
     userId: string,
     teams: { clubId: string; teamId: string; role: TeamMemberType; status: TeamInvitationStatus }[],

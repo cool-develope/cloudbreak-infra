@@ -24,7 +24,7 @@ export const handler: Handler = async (
     return await userModel.listBatch(event);
   } else {
     const {
-      arguments: { filter, limit, from },
+      arguments: { filter, limit, from, userId, input },
       identity: { sub },
       info: { fieldName },
     } = event;
@@ -34,7 +34,9 @@ export const handler: Handler = async (
     if (field === FieldName.usersPrivate) {
       return await userModel.list(sub, filter, limit, from);
     } else if (field === FieldName.userPrivate) {
-      return await userModel.getById(sub);
+      return await userModel.getById(userId);
+    } else if (field === FieldName.updateUserPrivate) {
+      return await userModel.updateUserPrivate(sub, input);
     }
   }
 
