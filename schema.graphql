@@ -544,6 +544,7 @@ enum EventType {
 
 enum UploadType {
   UserPhoto
+  UserPrivatePhoto
   EventImage
   PostImage
   PostAttachment
@@ -1068,7 +1069,7 @@ type Query {
   """
   Get direct link to upload user files
   """
-  uploadUrl(type: UploadType!, fileName: String!): UploadUrlPayload!
+  uploadUrl(type: UploadType!, fileName: String!, id: String): UploadUrlPayload!
 
   """
   Get current logged user
