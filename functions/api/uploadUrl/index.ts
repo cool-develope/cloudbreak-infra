@@ -9,6 +9,7 @@ const { IMAGES_BUCKET_NAME, DOCS_BUCKET_NAME } = process.env;
 
 enum UploadType {
   UserPhoto = 'UserPhoto',
+  UserPrivatePhoto = 'UserPrivatePhoto',
   EventImage = 'EventImage',
   PostImage = 'PostImage',
   PostAttachment = 'PostAttachment',
@@ -20,6 +21,7 @@ interface Event {
   arguments: {
     type: UploadType;
     fileName: string;
+    id?: string;
   };
   identity: {
     sub: string;
@@ -31,10 +33,12 @@ interface UploadUrlPayload {
   key: string;
 }
 
-const getS3Key = (type: UploadType, sub: string, fileName: string) => {
+const getS3Key = (type: UploadType, sub: string, fileName: string, id?: string) => {
   switch (type) {
     case UploadType.UserPhoto:
       return `u/${sub}/photo/${fileName}`;
+    case UploadType.UserPrivatePhoto:
+      return `u/${id}/photo/${fileName}`;
     case UploadType.EventImage:
     case UploadType.PostImage:
       return `event/i/${uuidv4()}/${fileName}`;
@@ -49,16 +53,16 @@ const getS3Key = (type: UploadType, sub: string, fileName: string) => {
 
 export const handler: Handler = async (event: Event): Promise<UploadUrlPayload> => {
   const {
-    arguments: { type, fileName },
+    arguments: { type, fileName, id },
     identity: { sub },
   } = event;
 
-  const key = getS3Key(type, sub, fileName);
+  const key = getS3Key(type, sub, fileName, id);
   let uploadUrl = '';
 
   const params = {
     Bucket: type === UploadType.Company ? DOCS_BUCKET_NAME : IMAGES_BUCKET_NAME,
-    Expires: 60, // 1 min
+    Expires: 120, // 1 min
     Key: key,
   };
 
