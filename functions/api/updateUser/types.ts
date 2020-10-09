@@ -58,9 +58,13 @@ export interface UpdateUserInput {
 }
 
 export interface UserChild {
-  firstName: String;
-  lastName: String;
+  firstName: string;
+  lastName: string;
   photo: Image;
+  phone: string;
+  email: string;
+  birthDate: string;
+  gender: string;
 }
 
 export interface User {
@@ -83,10 +87,7 @@ export interface User {
   children: UserChild[];
   parent: UserChild | null;
   pendingChildInvitations: ChildInvitation[];
-  organization: {
-    type: OrganizationType;
-    role: OrganizationRole;
-  };
+  organization: Organization | null;
   kycReview: KycReview;
   teams: TeamMember[];
 }
@@ -111,4 +112,12 @@ export interface TeamUserRecord {
   createdAt: string;
   clubId: string;
   status: TeamInvitationStatus;
+}
+
+export interface Organization {
+  type: OrganizationType;
+  role: OrganizationRole;
+  id: String;
+  name: String;
+  logo: Image;
 }

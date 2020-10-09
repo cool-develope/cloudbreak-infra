@@ -17,6 +17,7 @@ import {
   TeamUserRecord,
   TeamMemberType,
   TeamInvitationStatus,
+  Organization,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -103,6 +104,27 @@ const queryItemsByIndex = (sk: string, pk: string, indexName: string) => {
   return db.query(params).promise();
 };
 
+const queryItemsByIndexAndFilter = (
+  sk: string,
+  pk: string,
+  indexName: string,
+  ownerUserId: string,
+) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    IndexName: indexName,
+    KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
+    FilterExpression: 'ownerUserId = :ownerUserId',
+    ExpressionAttributeValues: {
+      ':sk': sk,
+      ':pk': pk,
+      ':ownerUserId': ownerUserId,
+    },
+  };
+
+  return db.query(params).promise();
+};
+
 const queryItems = (pk: string, sk: string) => {
   const params = {
     TableName: MAIN_TABLE_NAME,
@@ -181,6 +203,56 @@ const getTeams = async (userId: string): Promise<TeamMember[]> => {
   return teams;
 };
 
+const getOrganization = async (
+  userId: string,
+  teams: TeamMember[],
+): Promise<Organization | null> => {
+  const { Items } = await queryItemsByIndexAndFilter('metadata', 'club#', 'GSI1', userId);
+
+  if (Items && Items.length) {
+    /**
+     * CLUB OWNER
+     */
+    const [club] = Items;
+
+    return {
+      type: OrganizationType.Club,
+      role: OrganizationRole.Owner,
+      id: club.pk.replace('club#', ''),
+      name: club.name,
+      logo: getTypeImage(club.logo),
+    };
+  } else {
+    /**
+     * CLUB COACH
+     */
+    const club = await getMyClub(teams);
+    if (club) {
+      return {
+        type: OrganizationType.Club,
+        role: OrganizationRole.Coach,
+        id: club.pk.replace('club#', ''),
+        name: club.name,
+        logo: getTypeImage(club.logo),
+      };
+    }
+  }
+
+  return null;
+};
+
+const getMyClub = async (teams: TeamMember[]): Promise<any | null> => {
+  const coachInTeam = teams.find((team) => team.role === TeamMemberType.Coach);
+
+  if (coachInTeam) {
+    const { clubId } = coachInTeam;
+    const { Item: club } = await getItem(`club#${clubId}`, 'metadata');
+    return club;
+  }
+
+  return null;
+};
+
 const getParent = async ({ parentUserId }: any): Promise<UserChild | null> => {
   if (parentUserId) {
     const { Item } = await getItem(`user#${parentUserId}`, 'metadata');
@@ -257,7 +329,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
     { value: teams = [] },
   ] = result;
 
-  const role: OrganizationRole = companyId ? OrganizationRole.Owner : OrganizationRole.Coach;
+  const organization = await getOrganization(userId, teams);
 
   return {
     email,
@@ -279,19 +351,28 @@ const getTypeUser = async (userData: any): Promise<User> => {
     children,
     parent,
     pendingChildInvitations,
-    organization: {
-      type: OrganizationType.Club,
-      role,
-    },
+    organization,
     kycReview,
     teams,
   };
 };
 
-const getTypeUserChild = ({ firstName = '', lastName = '', photo = '' }: any) => ({
+const getTypeUserChild = ({
+  firstName = '',
+  lastName = '',
+  photo = '',
+  email = '',
+  birthDate = '',
+  gender = '',
+  phone = '',
+}: any) => ({
   firstName,
   lastName,
   photo: getTypeImage(photo),
+  email,
+  birthDate,
+  gender,
+  phone,
 });
 
 const getTypeImage = (photo: string = '') => ({
