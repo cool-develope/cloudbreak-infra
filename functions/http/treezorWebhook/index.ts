@@ -7,54 +7,7 @@ import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import CognitoHelper from './cognitoHelper';
 import DynamoHelper from './dynamoHelper';
-
-enum WebhookEvent {
-  card_options = 'card.options',
-  card_setpin = 'card.setpin',
-  card_unblockpin = 'card.unblockpin',
-  card_lockunlock = 'card.lockunlock',
-  card_requestphysical = 'card.requestphysical',
-  card_createvirtual = 'card.createvirtual',
-  card_convertvirtual = 'card.convertvirtual',
-  card_changepin = 'card.changepin',
-  card_activate = 'card.activate',
-  card_renew = 'card.renew',
-  card_regenerate = 'card.regenerate',
-  card_update = 'card.update',
-  card_limits = 'card.limits',
-  payin_create = 'payin.create',
-  payin_update = 'payin.update',
-  payin_cancel = 'payin.cancel',
-  payout_create = 'payout.create',
-  payout_update = 'payout.update',
-  payout_cancel = 'payout.cancel',
-  payinrefund_create = 'payinrefund.create',
-  payinrefund_update = 'payinrefund.update',
-  payinrefund_cancel = 'payinrefund.cancel',
-  transaction_create = 'transaction.create',
-  cardtransaction_create = 'cardtransaction.create',
-  transfer_create = 'transfer.create',
-  transfer_update = 'transfer.update',
-  transfer_cancel = 'transfer.cancel',
-  transferrefund_create = 'transferrefund.create',
-  transferrefund_update = 'transferrefund.update',
-  transferrefund_cancel = 'transferrefund.cancel',
-  user_create = 'user.create',
-  user_update = 'user.update',
-  user_cancel = 'user.cancel',
-  user_kycreview = 'user.kycreview',
-  user_kycrequest = 'user.kycrequest',
-  wallet_create = 'wallet.create',
-  wallet_update = 'wallet.update',
-  wallet_cancel = 'wallet.cancel',
-}
-
-enum KycReview {
-  NONE = '0',
-  PENDING = '1',
-  VALIDATED = '2',
-  REFUSED = '3',
-}
+import { Transfer, WebhookEvent, KycReview, Webhook, TransferType } from './types';
 
 const KYC_REVIEW_NAMES = new Map<string, string>([
   ['0', 'NONE'],
@@ -62,16 +15,6 @@ const KYC_REVIEW_NAMES = new Map<string, string>([
   ['2', 'VALIDATED'],
   ['3', 'REFUSED'],
 ]);
-
-interface Webhood {
-  webhook: WebhookEvent;
-  webhook_id: string;
-  object: string;
-  object_id: string;
-  object_payload: any;
-  object_payload_signature: string;
-  auth_key: string;
-}
 
 const {
   MAIN_TABLE_NAME = '',
@@ -88,6 +31,7 @@ const {
 const db = new AWS.DynamoDB.DocumentClient();
 const cognito = new AWS.CognitoIdentityServiceProvider();
 const eventbridge = new AWS.EventBridge();
+const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 
 const putEvents = (type: string, detail: any) => {
   const params = {
@@ -137,28 +81,33 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
   return db.update(params).promise();
 };
 
-const scanItems = (pk: string, sk: string, treezorUserId: number) => {
+const scanItems = (pk: string, sk: string, fieldName: string, fieldValue: any) => {
   const params = {
     TableName: MAIN_TABLE_NAME,
-    FilterExpression: 'begins_with(pk, :pk) and sk = :sk and treezorUserId = :treezorUserId',
+    FilterExpression: `begins_with(pk, :pk) and sk = :sk and ${fieldName} = :fieldValue`,
     ExpressionAttributeValues: {
       ':pk': pk,
       ':sk': sk,
-      ':treezorUserId': treezorUserId,
+      ':fieldValue': fieldValue,
     },
   };
 
   return db.scan(params).promise();
 };
 
-const getUser = async (treezorUserId: string): Promise<any> => {
-  const treezorUserIdNumber = Number(treezorUserId);
-  const { Items } = await scanItems('user#', 'metadata', treezorUserIdNumber);
-  if (Items && Items.length) {
-    return Items[0];
-  } else {
-    throw Error(`User not found: ${treezorUserId}`);
-  }
+const getUserByTreezorUserId = async (treezorUserId: string): Promise<any> => {
+  const { Items } = await scanItems('user#', 'metadata', 'treezorUserId', Number(treezorUserId));
+  return Items?.[0];
+};
+
+const getUserByTreezorWalletId = async (treezorWalletId: string): Promise<any> => {
+  const { Items } = await scanItems(
+    'user#',
+    'metadata',
+    'treezorWalletId',
+    Number(treezorWalletId),
+  );
+  return Items?.[0];
 };
 
 const updateUserAttributes = ({
@@ -189,7 +138,7 @@ const getTreezorToken = async (): Promise<string> => {
   params.append('grant_type', 'client_credentials');
   params.append('client_id', TREEZOR_CLIENT_ID);
   params.append('client_secret', TREEZOR_CLIENT_SECRET);
-  params.append('scope', 'read_only read_write admin keys legal');
+  params.append('scope', 'read_only read_write admin keys legal read_all');
 
   try {
     const res = await fetch(`${TREEZOR_BASE_URL}/oauth/token`, {
@@ -231,13 +180,12 @@ const createTreezorWallet = async (
 };
 
 const createWallet = async (treezorUserId: string) => {
-  const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
-
   /**
    * 1. Get user info
    */
-  const user = await getUser(treezorUserId);
+  const user = await getUserByTreezorUserId(treezorUserId);
   const tifoUserId: string = user.pk.replace('user#', '');
+  const fullName = `${user.firstName} ${user.lastName}`;
 
   /**
    * 2. Get Treezor token
@@ -251,7 +199,7 @@ const createWallet = async (treezorUserId: string) => {
     walletTypeId: '9',
     tariffId: '113',
     userId: treezorUserId,
-    eventName: 'Wallet',
+    eventName: fullName,
   });
 
   const treezorWalletId = wallet.wallets[0].walletId;
@@ -297,9 +245,9 @@ const updateKycReview = async ({
   kycReview: KycReview;
 }) => {
   const kycReviewName = KYC_REVIEW_NAMES.get(kycReview);
-  const user = await getUser(treezorUserId);
+  const user = await getUserByTreezorUserId(treezorUserId);
   const tifoUserId = user.pk.replace('user#', '');
-  
+
   await updateItem(user.pk, 'metadata', {
     kycReview: kycReviewName,
     modifiedAt: new Date().toISOString(),
@@ -313,7 +261,48 @@ const updateKycReview = async ({
   }
 };
 
-const processWebhook = async (h: Webhood) => {
+const getDetailsByTransferTag = (
+  transferTag: string,
+): { type: TransferType; id: string } | null => {
+  if (transferTag.startsWith('event:')) {
+    return {
+      type: TransferType.Event,
+      id: transferTag.replace('event:', ''),
+    };
+  }
+
+  return null;
+};
+
+const processTransferUpdate = async (transfer: Transfer) => {
+  if (transfer.transferStatus === 'VALIDATED') {
+    const { walletId, transferTag, amount, beneficiaryWalletId, transferId } = transfer;
+    const user = await getUserByTreezorWalletId(walletId);
+
+    if (!user) {
+      throw Error(`processTransferUpdate, user not found by walletId: ${walletId}`);
+    }
+
+    const transferDetails = getDetailsByTransferTag(transferTag);
+
+    if (transferDetails && transferDetails.type === TransferType.Event) {
+      // TODO: validate beneficiaryWalletId
+      // TODO: validate amount
+
+      const eventId = transferDetails.id;
+      const userId = user.pk.replace('user#', '');
+      const pk = `event#${eventId}`;
+      const sk = `user#${userId}`;
+
+      console.log('Paid event:', { eventId, userId, amount, transferId });
+
+      await dynamoHelper.updateItem(pk, sk, { a: true, treezorTransferId: transferId });
+      await dynamoHelper.incrementField(pk, 'metadata', 'acceptedCount');
+    }
+  }
+};
+
+const processWebhook = async (h: Webhook) => {
   switch (h.webhook) {
     case WebhookEvent.user_create:
       await createWallet(h.object_payload.users[0].userId);
@@ -326,6 +315,8 @@ const processWebhook = async (h: Webhood) => {
     case WebhookEvent.user_kycreview:
       await updateKycReview(h.object_payload.users[0]);
       break;
+    case WebhookEvent.transfer_update:
+      await processTransferUpdate(h.object_payload.transfers[0]);
   }
 };
 
@@ -338,7 +329,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
    */
 
   try {
-    const h: Webhood = JSON.parse(body);
+    const h: Webhook = JSON.parse(body);
     console.log(JSON.stringify(h, null, 4));
     await processWebhook(h);
   } catch (err) {

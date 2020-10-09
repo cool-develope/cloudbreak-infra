@@ -110,6 +110,27 @@ class DynamoHelper {
 
     return result;
   }
+
+  incrementField(
+    pk: string,
+    sk: string,
+    fieldName: string,
+    value: number = 1,
+    isDecrement = false,
+  ) {
+    const operator = isDecrement ? '-' : '+';
+
+    const params = {
+      TableName: this.tableName,
+      Key: { pk, sk },
+      UpdateExpression: `SET ${fieldName} = ${fieldName} ${operator} :v`,
+      ExpressionAttributeValues: {
+        ':v': value,
+      },
+    };
+
+    return this.db.update(params).promise();
+  }
 }
 
 export default DynamoHelper;
