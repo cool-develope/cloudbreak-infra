@@ -65,6 +65,7 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
   - Click "Add to Route53"
 - SNS
   - SenderID: Tifo
+  - Budget
 
 ## AWS CLI commands
 
