@@ -564,7 +564,11 @@ enum RepeatType {
 }
 
 enum OrganizationType {
+  """
+  Deprecated
+  """
   InternationalFederation
+  Federation
   Club
 }
 
