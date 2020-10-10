@@ -772,6 +772,7 @@ type Post {
   target: EventTarget
   myReaction: PostReaction
   createDate: AWSDateTime
+  organization: EventOrganization
 }
 
 type Company {
