@@ -979,6 +979,7 @@ type MyEventsConnection {
 
 type UpcomingEventsPrivateConnection {
   items: [Event]
+  totalCount: Int
 }
 
 type FeedConnection {
