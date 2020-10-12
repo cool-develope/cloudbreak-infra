@@ -674,6 +674,7 @@ type User {
   Only for business users
   """
   organization: Organization
+  treezor: TreezorUser
   kycReview: KycReview
   teams: [TeamMember]
 }
