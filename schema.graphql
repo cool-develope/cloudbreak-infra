@@ -430,6 +430,7 @@ type RemoveLikePayload {
 }
 
 type AcceptEventPayload {
+  errors: [String]
   eventId: ID!
 }
 
