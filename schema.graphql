@@ -619,6 +619,7 @@ type Image {
 
 type File {
   url: String
+  key: String
   size: Int
 }
 
