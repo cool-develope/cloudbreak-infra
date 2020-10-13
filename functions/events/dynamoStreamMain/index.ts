@@ -34,9 +34,18 @@ interface TeamUserRecord {
   status: string;
 }
 
-const { MAIN_TABLE_NAME, ES_DOMAIN } = process.env;
+interface EventUserRecord {
+  pk: string;
+  sk: string;
+  l?: boolean;
+  a?: boolean;
+  treezorTransferId?: number;
+}
+
+const { MAIN_TABLE_NAME = '', ES_DOMAIN } = process.env;
 const es = new Client({ node: ES_DOMAIN });
 const db = new AWS.DynamoDB.DocumentClient();
+const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 
 const teamPattern = new RegExp('^team#[a-z0-9-]+$');
 // const teamUserPattern = new RegExp('^team#[a-z0-9-]+user#[a-z0-9-]+$');
@@ -103,6 +112,9 @@ const usersHandler = async (items: Item[]) => {
     delete data.pk;
     delete data.sk;
     delete data.modifiedAt;
+
+    const teams = await getTeams(_id);
+    data.teams = teams;
 
     if (eventName === EventName.INSERT) {
       body.push({
@@ -204,6 +216,9 @@ const eventMetadataHandler = async (items: Item[]) => {
     delete data.sk;
     delete data.modifiedAt;
 
+    const participants = await getEventParticipants(eventId);
+    data.participants = participants;
+
     if (eventName === EventName.INSERT) {
       body.push({
         index: { _id: eventId },
@@ -251,7 +266,7 @@ const eventUserHandler = async (items: Item[]) => {
     const userId = sk.replace('user#', '');
     const { a: accepted } = data;
 
-    if (accepted) {
+    if (accepted === true) {
       body.push({
         update: { _id: eventId },
       });
@@ -269,13 +284,32 @@ const eventUserHandler = async (items: Item[]) => {
   }
 
   if (body.length) {
-    const result = await es.bulk({
-      index: 'events',
-      refresh: true,
-      body,
-    });
+    try {
+      const result = await es.bulk({
+        index: 'events',
+        refresh: true,
+        body,
+      });
 
-    console.log(JSON.stringify(result, null, 2));
+      console.log(JSON.stringify(result, null, 2));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Get uniq ids of Events/Post
+  const eventIdsAll = items.map(({ keys: { pk } }) => pk.replace('event#', ''));
+  const eventIdsUniq = [...new Set(eventIdsAll)];
+
+  // Update counts for each Event/Post
+  for (const eventId of eventIdsUniq) {
+    const { Items: users } = await dynamoHelper.queryItems(`event#${eventId}`, 'user#');
+    const acceptedCount = users.filter(({ a }: EventUserRecord) => a === true).length;
+    const likesCount = users.filter(({ l }: EventUserRecord) => l === true).length;
+    const pk = `event#${eventId}`;
+    const sk = 'metadata';
+    const metadata = { acceptedCount, likesCount };
+    await dynamoHelper.updateItem(pk, sk, metadata);
   }
 };
 
@@ -301,6 +335,13 @@ const getTeams = async (userId: string): Promise<TeamUserRecord[]> => {
     role,
     status,
   }));
+};
+
+const getEventParticipants = async (eventId: string): Promise<string[]> => {
+  const { Items } = await dynamoHelper.queryItems(`event#${eventId}`, 'user#');
+  return Items.filter(({ a }: EventUserRecord) => a === true).map(({ sk }: EventUserRecord) =>
+    sk.replace('user#', ''),
+  );
 };
 
 const userTeamsHandler = async (items: Item[]) => {
