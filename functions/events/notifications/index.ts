@@ -48,7 +48,7 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       });
       break;
 
-    case NotificationType.SendTeamInvitation:
+    case NotificationType.AcceptTeamInvitation:
       await notificationsModel.create(detail.sub, {
         type,
         attributes: objToKeyValueArray({
