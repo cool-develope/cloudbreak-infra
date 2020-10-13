@@ -2,6 +2,7 @@
 import * as AWS from 'aws-sdk';
 import { DynamoDBStreamHandler, StreamRecord } from 'aws-lambda';
 import { Client, ApiResponse, RequestParams } from '@elastic/elasticsearch';
+import DynamoHelper from './dynamoHelper';
 
 interface Item {
   eventName: EventName;
