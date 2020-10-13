@@ -18,6 +18,7 @@ import {
   TeamMemberType,
   TeamInvitationStatus,
   Organization,
+  TreezorUser,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -309,6 +310,8 @@ const getTypeUser = async (userData: any): Promise<User> => {
     address1,
     address2,
     companyId,
+    treezorUserId = null,
+    treezorWalletId = null,
     kycReview = KycReview.NONE,
   } = userData;
 
@@ -330,6 +333,11 @@ const getTypeUser = async (userData: any): Promise<User> => {
   ] = result;
 
   const organization = await getOrganization(userId, teams);
+
+  const treezor: TreezorUser = {
+    userId: treezorUserId,
+    walletId: treezorWalletId,
+  };
 
   return {
     email,
@@ -353,6 +361,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
     pendingChildInvitations,
     organization,
     kycReview,
+    treezor,
     teams,
   };
 };
@@ -432,9 +441,13 @@ export const handler: Handler = async (event) => {
      * Query me:
      */
     const { Item: userData } = await getItem(pk, 'metadata');
-    const user = await getTypeUser(userData);
-    return user;
+    if (userData) {
+      const user = await getTypeUser(userData);
+      return user;
+    } else {
+      return null;
+    }
   }
 
-  return null;
+  throw Error('Query not supported');
 };

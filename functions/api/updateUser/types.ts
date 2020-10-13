@@ -9,7 +9,7 @@ export enum Gender {
 }
 
 export enum OrganizationType {
-  InternationalFederation = 'InternationalFederation',
+  Federation = 'Federation',
   Club = 'Club',
 }
 
@@ -67,6 +67,11 @@ export interface UserChild {
   gender: string;
 }
 
+export interface TreezorUser {
+  userId: number;
+  walletId: number;
+}
+
 export interface User {
   email: string;
   firstName: string;
@@ -88,6 +93,7 @@ export interface User {
   parent: UserChild | null;
   pendingChildInvitations: ChildInvitation[];
   organization: Organization | null;
+  treezor: TreezorUser;
   kycReview: KycReview;
   teams: TeamMember[];
 }
