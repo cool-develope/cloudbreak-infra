@@ -5,7 +5,7 @@ import { Handler } from 'aws-lambda';
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 import DynamoHelper from './dynamoHelper';
-import { stat } from 'fs/promises';
+import { error } from 'console';
 
 enum FieldName {
   sendMoneyRequest = 'sendMoneyRequest',
@@ -85,11 +85,15 @@ const getAllMoneyRequests = (userId: string, status: MoneyRequestStatus) => {
     TableName: MAIN_TABLE_NAME,
     IndexName: 'GSI1',
     KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
-    FilterExpression: 'senderUserId = :userId or recipientUserId = :userId',
+    FilterExpression: '(senderUserId = :userId or recipientUserId = :userId) and #status = :status',
+    ExpressionAttributeNames: {
+      '#status': 'status',
+    },
     ExpressionAttributeValues: {
       ':sk': sk,
       ':pk': pk,
       ':userId': userId,
+      ':status': status,
     },
   };
 
@@ -218,28 +222,49 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
   return errors;
 };
 
-const rejectMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
+const rejectMoneyRequest = async (sub: string, input: any) => {
   const { requestId } = input;
-  return [];
+  const errors: string[] = [];
+  const pk = `money-request#${requestId}`;
+  const sk = 'metadata';
+
+  const { Item } = await dynamoHelper.getItem(pk, sk);
+  if (Item) {
+    const { recipientUserId, senderUserId } = Item;
+    const haveAccess = sub === recipientUserId || sub === senderUserId;
+    if (haveAccess) {
+      await dynamoHelper.updateItem(pk, sk, { status: MoneyRequestStatus.Rejected });
+    } else {
+      console.error('Access Denied', {
+        sub,
+        requestId,
+      });
+      errors.push('Access Denied');
+    }
+  } else {
+    errors.push('This money request not exists');
+  }
+
+  return errors;
 };
 
-const moneyRequests = async (sub: string, filter: any): Promise<MoneyRequest[]> => {
+const moneyRequests = async (sub: string, filter: any = {}): Promise<MoneyRequest[]> => {
   const { status } = filter;
-  const { Items } = await getAllMoneyRequests(sub, status);
+  const { Items } = await getAllMoneyRequests(sub, status || MoneyRequestStatus.Pending);
   const resultItems: MoneyRequest[] = [];
 
   for (const item of Items) {
-    // senderUserId	recipientUserId
-    // const { Item } = await dynamoHelper.getItem(`user#${}`, 'metadata')
-    const user = {};
+    const { recipientUserId, senderUserId } = item;
+    const userId = item.senderUserId === sub ? recipientUserId : senderUserId;
+    const { Item: userData } = await dynamoHelper.getItem(`user#${userId}`, 'metadata');
 
     resultItems.push({
       id: item.pk.replace('money-request#', ''),
       amount: item.amount,
       note: item.note,
       status: item.status,
-      createDate: item.createAt,
-      user,
+      createDate: item.createdAt,
+      user: getTypeUser(userData || {}),
       fromMe: item.senderUserId === sub,
     });
   }
