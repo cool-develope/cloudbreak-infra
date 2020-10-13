@@ -22,7 +22,7 @@ export enum TeamInvitationStatus {
 }
 
 export enum OrganizationType {
-  InternationalFederation = 'InternationalFederation',
+  Federation = 'Federation',
   Club = 'Club',
 }
 
