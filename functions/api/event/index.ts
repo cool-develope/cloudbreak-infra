@@ -11,6 +11,8 @@ import {
   EventRecord,
   EventTarget,
   AttachmentItemRecord,
+  EventOrganization,
+  OrganizationType,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -38,7 +40,8 @@ const getItem = (pk: string, sk: string) => {
   return db.get(params).promise();
 };
 
-const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: 'Todo soon' }));
+const getTargetObject = (targetItem: string[] = []) =>
+  targetItem.map((id) => ({ id, name: 'Todo soon' }));
 
 const getTypeEventTarget = (metadata: EventRecord): EventTarget => ({
   country: metadata.targetCountry || '',
@@ -84,8 +87,14 @@ const getTypeEvent = (metadata: EventRecord): Event => {
     },
     repeatType: (metadata.repeatType || RepeatType.None) as RepeatType,
     target: getTypeEventTarget(metadata),
+    organization: getTypeEventOrganization(metadata),
   };
 };
+
+const getTypeEventOrganization = ({ clubId, federationId }: EventRecord): EventOrganization => ({
+  id: clubId || federationId || '',
+  type: federationId ? OrganizationType.Federation : OrganizationType.Club,
+});
 
 const getTypePost = (metadata: EventRecord): Post => {
   const {
@@ -111,6 +120,7 @@ const getTypePost = (metadata: EventRecord): Post => {
       id: ownerUserId,
     },
     target: getTypeEventTarget(metadata),
+    organization: getTypeEventOrganization(metadata),
   };
 };
 
@@ -121,6 +131,7 @@ const getTypeImage = (image: string = '') => ({
 const getTypeFile = (attachment: any[] = []): File[] =>
   attachment.map(({ key, size }: AttachmentItemRecord) => ({
     url: key ? `https://${IMAGES_DOMAIN}/${key}` : '',
+    key,
     size,
   }));
 

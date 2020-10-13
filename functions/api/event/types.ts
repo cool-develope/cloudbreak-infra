@@ -16,12 +16,18 @@ export enum RepeatType {
   Monthly = 'Monthly',
 }
 
+export enum OrganizationType {
+  Federation = 'Federation',
+  Club = 'Club',
+}
+
 export interface Image {
   url: string;
 }
 
 export interface File {
   url: string;
+  key: string;
   size: number;
 }
 
@@ -42,7 +48,8 @@ export interface Event {
     id: string;
   };
   repeatType: string;
-  target?: EventTarget;
+  target: EventTarget;
+  organization: EventOrganization;
 }
 
 export interface Post {
@@ -56,7 +63,8 @@ export interface Post {
   author: {
     id: string;
   };
-  target?: EventTarget;
+  target: EventTarget;
+  organization: EventOrganization;
 }
 
 export interface EventTarget {
@@ -80,6 +88,8 @@ export interface EventTarget {
 export interface EventRecord {
   pk: string;
   sk: string;
+  clubId?: string;
+  federationId?: string;
   eventType: EventType;
   title: string;
   description: string;
@@ -109,4 +119,11 @@ export interface EventRecord {
 export interface AttachmentItemRecord {
   key: string;
   size: number;
+}
+
+export interface EventOrganization {
+  id: string;
+  name?: string;
+  type: OrganizationType;
+  walletId?: number;
 }
