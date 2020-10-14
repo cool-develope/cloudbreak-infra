@@ -53,8 +53,17 @@ export class EventsStack extends cdk.Stack {
       },
     );
 
+    const teamFunction = this.getFunction('events-team', 'events-team', 'team', {
+      MAIN_TABLE_NAME: mainTable.tableName,
+      IMAGES_DOMAIN: imagesDomain,
+      ES_DOMAIN: esDomain,
+      COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+    });
+
     mainTable.grantReadWriteData(createUserFunction);
     mainTable.grantReadWriteData(notificationsFunction);
+    mainTable.grantReadWriteData(teamFunction);
+    this.allowCognito(teamFunction);
 
     const rule = new Rule(this, 'CognitoSignupRule', {
       enabled: true,
@@ -62,6 +71,15 @@ export class EventsStack extends cdk.Stack {
         source: ['custom.cognito'],
         detailType: ['signup'],
       },
+    });
+
+    const teamRule = new Rule(this, 'TeamRule', {
+      enabled: true,
+      eventPattern: {
+        source: ['tifo.api'],
+        detailType: ['SendTeamInvitation', 'DeclineTeamInvitation', 'AcceptTeamInvitation'],
+      },
+      targets: [new targets.LambdaFunction(teamFunction)],
     });
 
     const notificationsRule = new Rule(this, 'NotificationsRule', {
