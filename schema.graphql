@@ -196,6 +196,7 @@ input ClubsPrivateFilterInput {
 
 input FederationsPrivateFilterInput {
   search: String
+  discipline: [Discipline]
 }
 
 input AddLikeInput {
@@ -299,6 +300,33 @@ input UpdateTeamPrivateInput {
   phone: String
   discipline: Discipline
   federations: [String]
+}
+
+input CreateFederationPrivateInput {
+  name: String!
+  description: String
+  cover: Image
+  logo: Image
+  email: String
+  phone: String
+  address: String
+  discipline: [Discipline]!
+  country: String!
+  city: String
+}
+
+input UpdateFederationPrivateInput {
+  id: ID!
+  name: String!
+  description: String
+  cover: Image
+  logo: Image
+  email: String
+  phone: String
+  address: String
+  discipline: [Discipline]
+  country: String
+  city: String
 }
 
 input CreateCompanyPrivateInput {
@@ -516,6 +544,16 @@ type DeclineTeamInvitationPrivatePayload {
 
 type ChangeTeamRolePrivatePayload {
   errors: [String]
+}
+
+type CreateFederationPrivatePayload {
+  errors: [String]
+  federation: Federation
+}
+
+type UpdateFederationPrivatePayload {
+  errors: [String]
+  federation: Federation
 }
 
 enum Gender {
@@ -842,6 +880,38 @@ type Club {
   memberInvitationsCount: Int
 }
 
+"""
+TODO: 
+settings: FederationSettings
+affiliates: FederationConnection
+parent: Federation
+"""
+type Federation {
+  id: ID!
+  name: String
+  description: String
+  cover: Image
+  logo: Image
+  email: String
+  phone: String
+  address: String
+  discipline: [Discipline]
+  country: String
+  city: String
+  clubs: ClubShortConnection
+  members: UserShortConnection
+}
+
+type FederationConnection {
+  items: [Federation]
+  totalCount: Int
+}
+
+type ClubShortConnection {
+  items: [ClubShort]
+  totalCount: Int
+}
+
 type FederationShortConnection {
   items: [FederationShort]
   totalCount: Int
@@ -1099,6 +1169,9 @@ type Mutation {
   updateCompanyPrivate(input: UpdateCompanyPrivateInput!): UpdateCompanyPrivatePayload!
 
   updateUserPrivate(input: UpdateUserPrivateInput!): UserPrivate!
+
+  createFederationPrivate(input: CreateFederationPrivateInput!): CreateFederationPrivatePayload!
+  updateFederationPrivate(input: UpdateFederationPrivateInput!): UpdateFederationPrivatePayload!
 }
 
 type Query {
