@@ -21,7 +21,7 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
   const type = event['detail-type'];
   console.log(type, detail);
 
-  const { sub, teamId, clubId, teamName, role } = detail;
+  const { sub, teamId, clubId, teamName, role, fromRole, toRole } = detail;
   const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, sub);
 
   switch (type) {
@@ -49,6 +49,22 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
         // await cognitoHelper.addClub(clubId);
         // await cognitoHelper.addTeam(teamId);
         await cognitoHelper.addUserToGroup(CognitoGroup.ClubCoaches);
+      }
+      break;
+
+    case NotificationType.ChangeTeamRole:
+      if (toRole === TeamMemberType.Coach) {
+        // await cognitoHelper.addClub(clubId);
+        // await cognitoHelper.addTeam(teamId);
+        await cognitoHelper.addUserToGroup(CognitoGroup.ClubCoaches);
+      } else {
+        /**
+         * TODO - leave other clubs and teams
+         * TODO - leave in group if can
+         */
+        // await cognitoHelper.removeClub(clubId);
+        // await cognitoHelper.removeTeam(teamId);
+        await cognitoHelper.removeUserFromGroup(CognitoGroup.ClubCoaches);
       }
       break;
   }

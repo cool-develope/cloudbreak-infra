@@ -7,6 +7,7 @@ export enum NotificationType {
   AcceptChildInvitation = 'AcceptChildInvitation',
   DeclineChildInvitation = 'DeclineChildInvitation',
   KycReview = 'KycReview',
+  ChangeTeamRole = 'ChangeTeamRole',
 }
 
 export enum TeamMemberType {
