@@ -230,10 +230,23 @@ export class Api2Stack extends cdk.Stack {
       MAIN_TABLE_NAME: this.mainTable.tableName,
       IMAGES_DOMAIN: this.imagesDomain,
       ES_DOMAIN: this.esDomain,
+      COGNITO_USERPOOL_ID: this.userPool.userPoolId,
     });
 
     this.mainTable.grantReadWriteData(fn);
     this.allowES(fn);
+
+    const cognitoPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    cognitoPolicy.addActions(
+      'cognito-idp:AdminUpdateUserAttributes',
+      'cognito-idp:AdminAddUserToGroup',
+      'cognito-idp:AdminRemoveUserFromGroup',
+      'cognito-idp:AdminGetUser',
+    );
+    cognitoPolicy.addResources('*');
+    fn.addToRolePolicy(cognitoPolicy);
 
     const dataSource = this.api.addLambdaDataSource('clubFn', fn);
 
