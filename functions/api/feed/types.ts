@@ -1,6 +1,8 @@
 export enum FieldName {
   feed = 'feed',
   feedPrivate = 'feedPrivate',
+  myEvents = 'myEvents',
+  upcomingEventsPrivate = 'upcomingEventsPrivate',
 }
 
 export enum EventType {
@@ -45,12 +47,18 @@ export enum Discipline {
   TABLE_TENNIS = 'TABLE_TENNIS',
 }
 
+export enum OrganizationType {
+  Federation = 'Federation',
+  Club = 'Club',
+}
+
 export interface Image {
   url: string;
 }
 
 export interface File {
   url: string;
+  key: string;
   size: number;
 }
 
@@ -71,6 +79,7 @@ export interface Event {
   author: {
     id: string;
   };
+  organization: EventOrganization;
 }
 
 export interface Post {
@@ -86,6 +95,7 @@ export interface Post {
     id: string;
   };
   createDate: string;
+  organization: EventOrganization;
 }
 
 export interface FeedConnection {
@@ -93,15 +103,18 @@ export interface FeedConnection {
   totalCount: number;
 }
 
-export interface FeedFilterInput {
+export interface EventsConnection {
+  items: Event[];
+  totalCount: number;
+}
+
+export interface FeedPrivateFilterInput {
   search?: string;
   myContent?: Boolean;
-  eventType?: EventType[] | EventType;
+  eventType?: EventType[];
   federation?: string[];
   club?: string[];
   team?: string[];
-  clubId?: string;
-  teamId?: string;
   discipline?: string[];
   createDateAfter?: string;
   createDateBefore?: string;
@@ -111,9 +124,24 @@ export interface FeedFilterInput {
   endDateBefore?: string;
 }
 
+export interface FeedFilterInput {
+  eventType?: EventType;
+  clubId?: string;
+  teamId?: string;
+}
+
+export interface MyEventsFilterInput {
+  startDateAfter?: string;
+  startDateBefore?: string;
+  endDateAfter?: string;
+  endDateBefore?: string;
+}
+
 export interface EventRecord {
   pk: string;
   sk: string;
+  clubId?: string;
+  federationId?: string;
   eventType: EventType;
   title: string;
   description?: string;
@@ -143,4 +171,11 @@ export interface EventRecord {
 export interface AttachmentItemRecord {
   key: string;
   size: number;
+}
+
+export interface EventOrganization {
+  id: string;
+  name?: string;
+  type: OrganizationType;
+  walletId?: number;
 }

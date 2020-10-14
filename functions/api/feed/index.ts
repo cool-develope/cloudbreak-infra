@@ -10,10 +10,15 @@ import {
   Event,
   Post,
   FeedConnection,
+  EventsConnection,
   FeedFilterInput,
+  FeedPrivateFilterInput,
+  MyEventsFilterInput,
   FieldName,
   EventRecord,
   AttachmentItemRecord,
+  EventOrganization,
+  OrganizationType,
 } from './types';
 
 const { MAIN_TABLE_NAME, IMAGES_DOMAIN, ES_DOMAIN } = process.env;
@@ -110,7 +115,48 @@ const getEsQueryByArray = (propertyName: string, values?: string[]) =>
       }
     : null;
 
-const getFeedPrivateQuery = (filter: FeedFilterInput = {}, sub: string) => {
+const getMyEventsQuery = (filter: MyEventsFilterInput = {}, sub: string) => {
+  const { startDateAfter, startDateBefore, endDateAfter, endDateBefore } = filter;
+  const filterByStartDate = getQueryByDate('startDate', startDateAfter, startDateBefore);
+  const filterByEndDate = getQueryByDate('endDate', endDateAfter, endDateBefore);
+  const filterByEventType = getQueryByMatch('eventType', EventType.Event);
+  const filterByMe = { match: { participants: sub } };
+
+  const must = [filterByMe, filterByStartDate, filterByEndDate, filterByEventType].filter(
+    (f) => !!f,
+  );
+
+  const query = must.length
+    ? {
+        bool: {
+          must,
+        },
+      }
+    : null;
+
+  return query;
+};
+
+const getUpcomingEventsQuery = () => {
+  const startDateAfter = new Date().toISOString();
+  const startDateBefore = new Date(2022, 1, 1).toISOString();
+  const filterByStartDate = getQueryByDate('startDate', startDateAfter, startDateBefore);
+  const filterByEventType = getQueryByMatch('eventType', EventType.Event);
+
+  const must = [filterByStartDate, filterByEventType].filter((f) => !!f);
+
+  const query = must.length
+    ? {
+        bool: {
+          must,
+        },
+      }
+    : null;
+
+  return query;
+};
+
+const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) => {
   const {
     search = '',
     myContent,
@@ -164,7 +210,17 @@ const getFeedPrivateQuery = (filter: FeedFilterInput = {}, sub: string) => {
   return query;
 };
 
-const search = async ({ query, limit, from }: { query: any; limit: number; from: number }) => {
+const search = async ({
+  query,
+  limit,
+  from,
+  sort,
+}: {
+  query: any;
+  limit: number;
+  from: number;
+  sort: any[];
+}) => {
   try {
     const queryFilter = query ? { query } : null;
 
@@ -174,79 +230,99 @@ const search = async ({ query, limit, from }: { query: any; limit: number; from:
         from,
         size: limit,
         ...queryFilter,
-        sort: [{ createdAt: 'desc' }, { _id: 'asc' }],
+        sort,
       },
     });
 
     return result;
   } catch (err) {
-    console.log(JSON.stringify(err, null, 2));
+    console.error(JSON.stringify(err, null, 2));
     return { body: null };
   }
 };
 
-const getEsTypeEvent = ({
-  id,
-  title,
-  description,
-  image,
-  startDate,
-  endDate,
-  address,
-  discipline = [],
-  price,
-  likesCount,
-  viewsCount,
-  acceptedCount,
-  ownerUserId,
-}: any): Event => ({
-  __typename: EventType.Event,
-  id,
-  title,
-  description,
-  image: getTypeImage(image),
-  startDate,
-  endDate,
-  address,
-  discipline,
-  price,
-  likesCount,
-  viewsCount,
-  acceptedCount,
-  author: {
-    id: ownerUserId,
-  },
-});
+const getEsTypeEvent = (metadata: any): Event => {
+  const {
+    id,
+    title,
+    description,
+    image,
+    startDate,
+    endDate,
+    address,
+    discipline = [],
+    price,
+    likesCount,
+    viewsCount,
+    acceptedCount,
+    ownerUserId,
+  } = metadata;
 
-const getEsTypePost = ({
-  id,
-  title,
-  description,
-  image,
-  attachment,
-  likesCount,
-  viewsCount,
-  ownerUserId,
-  createdAt,
-}: any): Post => ({
-  __typename: EventType.Post,
-  id,
-  title,
-  description,
-  image: getTypeImage(image),
-  attachment: getTypeFile(attachment),
-  likesCount,
-  viewsCount,
-  author: {
-    id: ownerUserId,
-  },
-  createDate: createdAt,
+  return {
+    __typename: EventType.Event,
+    id,
+    title,
+    description,
+    image: getTypeImage(image),
+    startDate,
+    endDate,
+    address,
+    discipline,
+    price,
+    likesCount,
+    viewsCount,
+    acceptedCount,
+    author: {
+      id: ownerUserId,
+    },
+    organization: getTypeEventOrganization(metadata),
+  };
+};
+
+const getEsTypePost = (metadata: any): Post => {
+  const {
+    id,
+    title,
+    description,
+    image,
+    attachment,
+    likesCount,
+    viewsCount,
+    ownerUserId,
+    createdAt,
+  } = metadata;
+
+  return {
+    __typename: EventType.Post,
+    id,
+    title,
+    description,
+    image: getTypeImage(image),
+    attachment: getTypeFile(attachment),
+    likesCount,
+    viewsCount,
+    author: {
+      id: ownerUserId,
+    },
+    createDate: createdAt,
+    organization: getTypeEventOrganization(metadata),
+  };
+};
+
+const getTypeEventOrganization = ({ clubId, federationId }: EventRecord): EventOrganization => ({
+  id: clubId || federationId || '',
+  type: federationId ? OrganizationType.Federation : OrganizationType.Club,
 });
 
 const getEsFeedConnection = (items: any[], totalCount: number): FeedConnection => ({
   items: items.map((item) =>
     item.eventType === EventType.Event ? getEsTypeEvent(item) : getEsTypePost(item),
   ),
+  totalCount,
+});
+
+const getEsEventsConnection = (items: any[], totalCount: number): EventsConnection => ({
+  items: items.map((item) => getEsTypeEvent(item)),
   totalCount,
 });
 
@@ -257,34 +333,52 @@ const getTypeImage = (image: string = ''): Image => ({
 const getTypeFile = (attachment: any[] = []): File[] =>
   attachment.map(({ key, size }: AttachmentItemRecord) => ({
     url: key ? `https://${IMAGES_DOMAIN}/${key}` : '',
+    key,
     size,
   }));
 
-export const handler: Handler = async (event) => {
+export const handler: Handler = async (event): Promise<FeedConnection | EventsConnection> => {
   const {
     arguments: { filter = {}, limit = 10, from = 0 },
     identity: { sub },
     info: { fieldName },
   } = event;
 
-  console.log('Filter', filter);
-
   const field = fieldName as FieldName;
-  let esResult: any = null;
+  let query: any = null;
+  let sort: any[] = [{ createdAt: 'desc' }, { _id: 'asc' }];
 
   if (field === FieldName.feed) {
-    const query = getFeedQuery(filter, sub);
-    console.log('FeedQuery', JSON.stringify(query, null, 2));
-    esResult = await search({ query, limit, from });
+    query = getFeedQuery(filter, sub);
   } else if (field === FieldName.feedPrivate) {
-    const query = getFeedPrivateQuery(filter, sub);
-    console.log('FeedPrivateQuery', JSON.stringify(query, null, 2));
-    esResult = await search({ query, limit, from });
+    query = getFeedPrivateQuery(filter, sub);
+  } else if (field === FieldName.myEvents) {
+    // TODO
+    query = getMyEventsQuery(filter, sub);
+    sort = [{ startDate: 'asc' }, { _id: 'asc' }];
+  } else if (field === FieldName.upcomingEventsPrivate) {
+    // TODO
+    query = getUpcomingEventsQuery();
+    sort = [{ startDate: 'asc' }, { _id: 'asc' }];
   }
 
+  console.log({
+    fieldName,
+    filter: JSON.stringify(filter, null, 2),
+    query: JSON.stringify(query, null, 2),
+  });
+
+  const esResult = await search({ query, limit, from, sort });
   const totalCount = esResult.body?.hits.total.value || 0;
   const items = prepareEsItems(esResult.body?.hits.hits);
 
-  const result = getEsFeedConnection(items, totalCount);
-  return result;
+  if (field === FieldName.feed || field === FieldName.feedPrivate) {
+    const result = getEsFeedConnection(items, totalCount);
+    return result;
+  } else if (field === FieldName.myEvents || field === FieldName.upcomingEventsPrivate) {
+    const result = getEsEventsConnection(items, totalCount);
+    return result;
+  }
+
+  throw Error('Query not supported');
 };
