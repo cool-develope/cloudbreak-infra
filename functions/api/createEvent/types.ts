@@ -47,17 +47,25 @@ export enum Discipline {
   TABLE_TENNIS = 'TABLE_TENNIS',
 }
 
+export enum OrganizationType {
+  Federation = 'Federation',
+  Club = 'Club',
+}
+
 export interface Image {
   url: string;
 }
 
 export interface File {
   url: string;
+  key: string;
   size: number;
 }
 
 export interface CreateEventInput {
   id?: string;
+  clubId?: string;
+  federationId?: string;
   title?: string;
   description?: string;
   image?: string;
@@ -72,6 +80,8 @@ export interface CreateEventInput {
 
 export interface CreatePostInput {
   id?: string;
+  clubId?: string;
+  federationId?: string;
   title?: string;
   description?: string;
   image?: string;
@@ -108,15 +118,15 @@ export interface EventTarget {
 
 export interface CreateEventPayload {
   errors?: string[];
-  event?: EventForAdmin | null;
+  event?: Event | null;
 }
 
 export interface CreatePostPayload {
   errors?: string[];
-  post?: PostForAdmin | null;
+  post?: Post | null;
 }
 
-export interface EventForAdmin {
+export interface Event {
   id?: string;
   title?: string;
   description?: string;
@@ -131,9 +141,10 @@ export interface EventForAdmin {
   acceptedCount: number;
   repeatType: RepeatType;
   target?: EventTarget;
+  organization: EventOrganization;
 }
 
-export interface PostForAdmin {
+export interface Post {
   id?: string;
   title?: string;
   description?: string;
@@ -143,11 +154,14 @@ export interface PostForAdmin {
   viewsCount?: number;
   target?: EventTarget;
   createDate: string;
+  organization: EventOrganization;
 }
 
 export interface EventRecord {
   pk: string;
   sk: string;
+  clubId?: string;
+  federationId?: string;
   eventType: EventType;
   title: string;
   description?: string;
@@ -177,4 +191,11 @@ export interface EventRecord {
 export interface AttachmentItemRecord {
   key: string;
   size: number;
+}
+
+export interface EventOrganization {
+  id: string;
+  name?: string;
+  type: OrganizationType;
+  walletId?: number;
 }

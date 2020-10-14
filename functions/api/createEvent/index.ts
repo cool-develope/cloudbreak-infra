@@ -17,11 +17,13 @@ import {
   EventTarget,
   CreateEventPayload,
   CreatePostPayload,
-  EventForAdmin,
-  PostForAdmin,
+  Event,
+  Post,
   EventRecord,
   AttachmentItemRecord,
   Discipline,
+  EventOrganization,
+  OrganizationType,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -86,7 +88,8 @@ const getAttachmentEnriched = async (
     .filter((v: AttachmentItemRecord) => !!v);
 };
 
-const getTargetObject = (targetItem: string[] = []) => targetItem.map((id) => ({ id, name: 'Todo name' }));
+const getTargetObject = (targetItem: string[] = []) =>
+  targetItem.map((id) => ({ id, name: 'Todo name' }));
 
 const getTypeEventTarget = (metadata: EventRecord): EventTarget => ({
   country: metadata.targetCountry || '',
@@ -97,7 +100,7 @@ const getTypeEventTarget = (metadata: EventRecord): EventTarget => ({
   userRole: metadata.targetUserRole,
 });
 
-const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
+const getTypeEvent = (metadata: EventRecord): Event => ({
   id: metadata.pk.replace('event#', ''),
   title: metadata.title,
   description: metadata.description,
@@ -112,9 +115,10 @@ const getTypeEvent = (metadata: EventRecord): EventForAdmin => ({
   acceptedCount: metadata.acceptedCount,
   repeatType: (metadata.repeatType || RepeatType.None) as RepeatType,
   target: getTypeEventTarget(metadata),
+  organization: getTypeEventOrganization(metadata),
 });
 
-const getTypePost = (metadata: EventRecord): PostForAdmin => ({
+const getTypePost = (metadata: EventRecord): Post => ({
   id: metadata.pk.replace('event#', ''),
   title: metadata.title,
   description: metadata.description,
@@ -124,6 +128,12 @@ const getTypePost = (metadata: EventRecord): PostForAdmin => ({
   viewsCount: metadata.viewsCount,
   target: getTypeEventTarget(metadata),
   createDate: metadata.createdAt,
+  organization: getTypeEventOrganization(metadata),
+});
+
+const getTypeEventOrganization = ({ clubId, federationId }: EventRecord): EventOrganization => ({
+  id: clubId || federationId || '',
+  type: federationId ? OrganizationType.Federation : OrganizationType.Club,
 });
 
 const getTypeImage = (image: string = ''): Image => ({
@@ -133,6 +143,7 @@ const getTypeImage = (image: string = ''): Image => ({
 const getTypeFile = (attachment: AttachmentItemRecord[] = []): File[] =>
   attachment.map(({ key, size }) => ({
     url: key ? `https://${IMAGES_DOMAIN}/${key}` : '',
+    key,
     size,
   }));
 
@@ -160,14 +171,19 @@ const createEvent = async (
     discipline = [],
     price,
     repeatType = RepeatType.None,
+    clubId,
+    federationId,
     target,
   } = input;
 
+  const errors: string[] = [];
   const pk = id ? `event#${id}` : `event#${uuidv4()}`;
   const defaultValues = id ? null : getDefaultValues(userId, EventType.Event);
 
   const metadata: any = {
     ...defaultValues,
+    clubId,
+    federationId,
     title,
     description,
     image,
@@ -194,20 +210,33 @@ const createEvent = async (
   const event = getTypeEvent(Attributes);
 
   return {
-    errors: [],
+    errors,
     event,
   };
 };
 
+const validateInput = (fieldName: FieldName, { clubId, federationId }: any): string[] => {
+  const errors: string[] = [];
+
+  if (!clubId && !federationId) {
+    errors.push('Required field: clubId or federationId');
+  }
+
+  return errors;
+};
+
 const createPost = async (userId: string, input: CreatePostInput): Promise<CreatePostPayload> => {
-  const { id, title, description = '', image, attachment, target } = input;
+  const { id, title, description = '', image, attachment, target, clubId, federationId } = input;
   const attachmentEnriched = await getAttachmentEnriched(attachment);
 
+  const errors: string[] = [];
   const pk = id ? `event#${id}` : `event#${uuidv4()}`;
   const defaultValues = id ? null : getDefaultValues(userId, EventType.Post);
 
   const metadata = {
     ...defaultValues,
+    clubId,
+    federationId,
     title,
     description,
     image,
@@ -225,7 +254,7 @@ const createPost = async (userId: string, input: CreatePostInput): Promise<Creat
   const post = getTypePost(Attributes);
 
   return {
-    errors: [],
+    errors,
     post,
   };
 };
@@ -238,6 +267,12 @@ export const handler: Handler = async (event) => {
   } = event;
 
   const field = fieldName as FieldName;
+
+  // TODO: enable input validation
+  // const errors: string[] = validateInput(FieldName.createPost, input);
+  // if(errors.length) {
+  //   return { errors }
+  // }
 
   if (field === FieldName.createEvent || field === FieldName.updateEvent) {
     /**
