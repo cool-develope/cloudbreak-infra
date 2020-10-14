@@ -1,5 +1,3 @@
-import { error } from 'console';
-import { TeamRecord } from 'functions/api/team/common-code/nodejs/types/team';
 import DynamoHelper from '../dynamoHelper';
 import {
   TeamUserRecord,
@@ -8,7 +6,9 @@ import {
   SendTeamInvitationInput,
   AcceptTeamInvitationPrivateInput,
   DeclineTeamInvitationPrivateInput,
+  ChangeTeamRolePrivateInput,
   SendTeamInvitationPayload,
+  TeamRecord,
 } from '../types/teamInvitation';
 
 class TeamInvitationModel {
@@ -71,6 +71,7 @@ class TeamInvitationModel {
 
     /**
      * TODO - send notification to club owner
+     * TODO - coach can't be club owner
      */
 
     const pk = `team#${teamId}`;
@@ -93,6 +94,7 @@ class TeamInvitationModel {
       await this.putEvents('SendTeamInvitation', {
         sub: userId,
         teamId,
+        clubId,
         teamName: teamDetails?.name,
         role,
       });
@@ -127,6 +129,7 @@ class TeamInvitationModel {
       await this.putEvents('AcceptTeamInvitation', {
         sub: userId,
         teamId,
+        clubId,
         teamName: teamDetails?.name,
         role: teamUser.role,
       });
@@ -161,6 +164,7 @@ class TeamInvitationModel {
       await this.putEvents('DeclineTeamInvitation', {
         sub: userId,
         teamId,
+        clubId,
         teamName: teamDetails?.name,
         role: teamUser.role,
       });
@@ -169,6 +173,28 @@ class TeamInvitationModel {
     return {
       errors,
     };
+  }
+
+  async changeTeamRole(sub: string, input: ChangeTeamRolePrivateInput) {
+    const { userId, clubId, teamId, role } = input;
+    const pk = `team#${teamId}`;
+    const sk = `user#${userId}`;
+    const teamUser = await this.getTeamUser(pk, sk);
+    const teamDetails = await this.getTeam(clubId, teamId);
+
+    const data = {
+      role,
+    };
+
+    await this.dynamoHelper.updateItem(pk, sk, data);
+    await this.putEvents('ChangeTeamRole', {
+      sub: userId,
+      teamId,
+      clubId,
+      teamName: teamDetails?.name,
+      fromRole: teamUser?.role,
+      toRole: role,
+    });
   }
 
   putEvents(type: string, detail: any) {

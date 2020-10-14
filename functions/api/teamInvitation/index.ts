@@ -38,6 +38,8 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
     return await teamInvitationModel.acceptInvitation(sub, input);
   } else if (field === FieldName.declineTeamInvitationPrivate) {
     return await teamInvitationModel.declineInvitation(sub, input);
+  } else if (field === FieldName.changeTeamRolePrivate) {
+    return await teamInvitationModel.changeTeamRole(sub, input);
   }
 
   throw Error('Query not supported');

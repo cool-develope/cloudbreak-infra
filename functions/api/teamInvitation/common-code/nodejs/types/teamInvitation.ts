@@ -2,6 +2,7 @@ export enum FieldName {
   sendTeamInvitation = 'sendTeamInvitation',
   acceptTeamInvitationPrivate = 'acceptTeamInvitationPrivate',
   declineTeamInvitationPrivate = 'declineTeamInvitationPrivate',
+  changeTeamRolePrivate = 'changeTeamRolePrivate',
 }
 
 export enum TeamMemberType {
@@ -33,6 +34,13 @@ export interface DeclineTeamInvitationPrivateInput {
   teamId: string;
 }
 
+export interface ChangeTeamRolePrivateInput {
+  userId: string;
+  clubId: string;
+  teamId: string;
+  role: TeamMemberType;
+}
+
 export interface SendTeamInvitationPayload {
   errors: string[];
 }
@@ -50,4 +58,23 @@ export interface TeamUserRecord {
   createdAt: string;
   clubId: string;
   status: TeamInvitationStatus;
+}
+
+export interface TeamRecord {
+  pk?: string;
+  sk?: string;
+  name?: string;
+  description?: string;
+  cover: string | null;
+  logo: string | null;
+  parentTeamId: string | null;
+  address?: string;
+  email?: string;
+  phone?: string;
+  discipline?: string | null;
+  federations?: string[];
+  ownerUserId?: string;
+  modifiedAt?: string;
+  ciCount?: number | null;
+  miCount?: number | null;
 }
