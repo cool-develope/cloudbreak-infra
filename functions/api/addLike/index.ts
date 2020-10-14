@@ -28,32 +28,6 @@ const getExpressionAttributeValues = (attributes = {}) => {
   return obj;
 };
 
-const incrementField = (pk: string, sk: string, fieldName: string, value: number = 1) => {
-  const params = {
-    TableName: MAIN_TABLE_NAME,
-    Key: { pk, sk },
-    UpdateExpression: `SET ${fieldName} = ${fieldName} + :v`,
-    ExpressionAttributeValues: {
-      ':v': value,
-    },
-  };
-
-  return db.update(params).promise();
-};
-
-const decrementField = (pk: string, sk: string, fieldName: string, value: number = 1) => {
-  const params = {
-    TableName: MAIN_TABLE_NAME,
-    Key: { pk, sk },
-    UpdateExpression: `SET ${fieldName} = ${fieldName} - :v`,
-    ExpressionAttributeValues: {
-      ':v': value,
-    },
-  };
-
-  return db.update(params).promise();
-};
-
 const updateItem = (pk: string, sk: string, attributes: any) => {
   const condition = 'SET ' + getUpdateExpression(attributes);
   const values = getExpressionAttributeValues(attributes);
@@ -69,7 +43,16 @@ const updateItem = (pk: string, sk: string, attributes: any) => {
   return db.update(params).promise();
 };
 
-export const handler: Handler = async (event): Promise<{ eventId: string }> => {
+const getItem = (pk: string, sk: string) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    Key: { pk, sk },
+  };
+
+  return db.get(params).promise();
+};
+
+export const handler: Handler = async (event): Promise<{ errors: string[]; eventId: string }> => {
   const {
     arguments: {
       input: { eventId },
@@ -82,31 +65,29 @@ export const handler: Handler = async (event): Promise<{ eventId: string }> => {
   const pk = `event#${eventId}`;
   const sk = `user#${sub}`;
 
+  const { Item: eventMetadata } = await getItem(pk, 'metadata');
+  const errors: string[] = [];
+
   if (field === FieldName.addLike) {
-    // @ts-ignore
-    await Promise.allSettled([
-      updateItem(pk, sk, { l: true }),
-      incrementField(pk, 'metadata', 'likesCount'),
-    ]);
+    await updateItem(pk, sk, { l: true });
   } else if (field === FieldName.removeLike) {
-    // @ts-ignore
-    await Promise.allSettled([
-      updateItem(pk, sk, { l: false }),
-      decrementField(pk, 'metadata', 'likesCount'),
-    ]);
+    await updateItem(pk, sk, { l: false });
   } else if (field === FieldName.acceptEvent) {
-    // @ts-ignore
-    await Promise.allSettled([
-      updateItem(pk, sk, { a: true }),
-      incrementField(pk, 'metadata', 'acceptedCount'),
-    ]);
+    if (eventMetadata.price > 0) {
+      errors.push('You need to pay for the Event');
+    } else {
+      await updateItem(pk, sk, { a: true });
+    }
   } else if (field === FieldName.declineEvent) {
-    // @ts-ignore
-    await Promise.allSettled([
-      updateItem(pk, sk, { a: false }),
-      decrementField(pk, 'metadata', 'acceptedCount'),
-    ]);
+    if (eventMetadata.price > 0) {
+      errors.push("You can't decline already paid Event");
+    } else {
+      await updateItem(pk, sk, { a: false });
+    }
   }
 
-  return { eventId };
+  return {
+    errors,
+    eventId,
+  };
 };
