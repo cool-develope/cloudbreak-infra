@@ -390,6 +390,11 @@ export class Api2Stack extends cdk.Stack {
       typeName: 'Mutation',
       fieldName: 'declineTeamInvitationPrivate',
     });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'changeTeamRolePrivate',
+    });
   }
 
   allowES(lambdaFunction: lambda.Function) {
