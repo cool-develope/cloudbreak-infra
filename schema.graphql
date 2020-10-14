@@ -305,8 +305,8 @@ input UpdateTeamPrivateInput {
 input CreateFederationPrivateInput {
   name: String!
   description: String
-  cover: Image
-  logo: Image
+  cover: String
+  logo: String
   email: String
   phone: String
   address: String
@@ -319,8 +319,8 @@ input UpdateFederationPrivateInput {
   id: ID!
   name: String!
   description: String
-  cover: Image
-  logo: Image
+  cover: String
+  logo: String
   email: String
   phone: String
   address: String
@@ -544,6 +544,16 @@ type DeclineTeamInvitationPrivatePayload {
 
 type ChangeTeamRolePrivatePayload {
   errors: [String]
+}
+
+type CreateFederationPrivatePayload {
+  errors: [String]
+  federation: Federation
+}
+
+type UpdateFederationPrivatePayload {
+  errors: [String]
+  federation: Federation
 }
 
 enum Gender {
@@ -870,6 +880,32 @@ type Club {
   memberInvitationsCount: Int
 }
 
+type Federation {
+  id: ID!
+  name: String
+  description: String
+  cover: Image
+  logo: Image
+  email: String
+  phone: String
+  address: String
+  discipline: [Discipline]
+  country: String
+  city: String
+  clubs: ClubShortConnection
+  members: UserShortConnection
+}
+
+type FederationConnection {
+  items: [Federation]
+  totalCount: Int
+}
+
+type ClubShortConnection {
+  items: [ClubShort]
+  totalCount: Int
+}
+
 type FederationShortConnection {
   items: [FederationShort]
   totalCount: Int
@@ -943,12 +979,6 @@ type Author {
 }
 
 type ClubItemPrivate {
-  id: ID!
-  name: String
-  logo: Image
-}
-
-type FederationItemPrivate {
   id: ID!
   name: String
   logo: Image
@@ -1051,10 +1081,6 @@ type UsersPrivateConnection {
   totalCount: Int
 }
 
-type FederationsPrivateConnection {
-  items: [FederationItemPrivate]
-}
-
 type UserConnection {
   items: [UserPublic]
 }
@@ -1127,6 +1153,9 @@ type Mutation {
   updateCompanyPrivate(input: UpdateCompanyPrivateInput!): UpdateCompanyPrivatePayload!
 
   updateUserPrivate(input: UpdateUserPrivateInput!): UserPrivate!
+
+  createFederationPrivate(input: CreateFederationPrivateInput!): CreateFederationPrivatePayload!
+  updateFederationPrivate(input: UpdateFederationPrivateInput!): UpdateFederationPrivatePayload!
 }
 
 type Query {
@@ -1198,7 +1227,8 @@ type Query {
     filter: FederationsPrivateFilterInput
     limit: Int
     from: Int
-  ): FederationsPrivateConnection!
+  ): FederationConnection!
+  federation(federationId: ID!): Federation
 
   club(clubId: ID!): Club
   clubs(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
