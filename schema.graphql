@@ -371,6 +371,13 @@ input DeclineTeamInvitationPrivateInput {
   teamId: String!
 }
 
+input ChangeTeamRolePrivateInput {
+  userId: ID!
+  clubId: String!
+  teamId: String!
+  role: TeamMemberType!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -504,6 +511,10 @@ type AcceptTeamInvitationPrivatePayload {
 }
 
 type DeclineTeamInvitationPrivatePayload {
+  errors: [String]
+}
+
+type ChangeTeamRolePrivatePayload {
   errors: [String]
 }
 
@@ -1081,6 +1092,7 @@ type Mutation {
     input: DeclineTeamInvitationPrivateInput!
   ): DeclineTeamInvitationPrivatePayload
 
+  changeTeamRolePrivate(input: ChangeTeamRolePrivateInput!): ChangeTeamRolePrivatePayload
   createCompanyPrivate(input: CreateCompanyPrivateInput!): CreateCompanyPrivatePayload!
   updateCompanyPrivate(input: UpdateCompanyPrivateInput!): UpdateCompanyPrivatePayload!
 
