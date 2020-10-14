@@ -2,11 +2,14 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import * as cognito from '@aws-cdk/aws-cognito';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Rule } from '@aws-cdk/aws-events';
+import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 import targets = require('@aws-cdk/aws-events-targets');
 
 export interface EventsStackProps extends cdk.StackProps {
+  userPool: cognito.UserPool;
   mainTable: dynamodb.Table;
   imagesDomain: string;
   esDomain: string;
@@ -15,11 +18,14 @@ export interface EventsStackProps extends cdk.StackProps {
 
 export class EventsStack extends cdk.Stack {
   private readonly commonModulesLayer: lambda.ILayerVersion;
+  private readonly userPool: cognito.UserPool;
 
   constructor(scope: cdk.Construct, id: string, props: EventsStackProps) {
     super(scope, id, props);
 
-    const { mainTable, imagesDomain, esDomain, commonModulesLayerArn } = props;
+    const { mainTable, imagesDomain, esDomain, commonModulesLayerArn, userPool } = props;
+
+    this.userPool = userPool;
 
     this.commonModulesLayer = lambda.LayerVersion.fromLayerVersionArn(
       this,
@@ -68,6 +74,20 @@ export class EventsStack extends cdk.Stack {
     });
 
     rule.addTarget(new targets.LambdaFunction(createUserFunction));
+  }
+
+  allowCognito(fn: lambda.Function) {
+    const cognitoPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    cognitoPolicy.addActions(
+      'cognito-idp:AdminUpdateUserAttributes',
+      'cognito-idp:AdminAddUserToGroup',
+      'cognito-idp:AdminRemoveUserFromGroup',
+      'cognito-idp:AdminGetUser',
+    );
+    cognitoPolicy.addResources('*');
+    fn.addToRolePolicy(cognitoPolicy);
   }
 
   getFunction(id: string, functionName: string, folderName: string, environment?: any) {
