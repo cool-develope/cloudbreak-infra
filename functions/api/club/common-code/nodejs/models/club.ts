@@ -1,4 +1,5 @@
 import DynamoHelper from '../dynamoHelper';
+import CognitoHelper, { CognitoGroup } from '../cognitoHelper';
 import {
   UpdateClubPrivateInput,
   UpdateClubPrivatePayload,
@@ -14,22 +15,43 @@ import {
 class ClubModel {
   private readonly es: any;
   private readonly db: any;
+  private readonly cognito: any;
   private readonly tableName: string;
   private readonly dynamoHelper: DynamoHelper;
   private readonly imagesDomain: string;
+  private readonly userPoolId: string;
   private readonly uuidv4: () => string;
 
-  constructor(db: any, tableName: string, imagesDomain: string, uuidv4: () => string, es: any) {
+  constructor(
+    db: any,
+    tableName: string,
+    imagesDomain: string,
+    uuidv4: () => string,
+    es: any,
+    cognito: any,
+    userPoolId: string,
+  ) {
     this.es = es;
     this.db = db;
+    this.cognito = cognito;
     this.tableName = tableName;
     this.imagesDomain = imagesDomain;
+    this.userPoolId = userPoolId;
     this.dynamoHelper = new DynamoHelper(this.db, this.tableName);
     this.uuidv4 = uuidv4;
   }
 
   async create(userId: string, input: UpdateClubPrivateInput): Promise<UpdateClubPrivatePayload> {
-    return this.update(userId, input);
+    const clubPayload = await this.update(userId, input);
+
+    const cognitoHelper = new CognitoHelper(this.cognito, this.userPoolId, userId);
+    if (clubPayload && clubPayload.club) {
+      const clubId = clubPayload.club.id;
+      // await cognitoHelper.addClub(clubId);
+      await cognitoHelper.addUserToGroup(CognitoGroup.ClubOwners);
+    }
+
+    return clubPayload;
   }
 
   async update(userId: string, input: UpdateClubPrivateInput): Promise<UpdateClubPrivatePayload> {
