@@ -196,6 +196,7 @@ input ClubsPrivateFilterInput {
 
 input FederationsPrivateFilterInput {
   search: String
+  discipline: [Discipline]
 }
 
 input AddLikeInput {
