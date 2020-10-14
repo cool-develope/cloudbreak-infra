@@ -302,6 +302,33 @@ input UpdateTeamPrivateInput {
   federations: [String]
 }
 
+input CreateFederationPrivateInput {
+  name: String!
+  description: String
+  cover: Image
+  logo: Image
+  email: String
+  phone: String
+  address: String
+  discipline: [Discipline]!
+  country: String!
+  city: String
+}
+
+input UpdateFederationPrivateInput {
+  id: ID!
+  name: String!
+  description: String
+  cover: Image
+  logo: Image
+  email: String
+  phone: String
+  address: String
+  discipline: [Discipline]
+  country: String
+  city: String
+}
+
 input CreateCompanyPrivateInput {
   name: String!
   country: String
