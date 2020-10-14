@@ -7,8 +7,9 @@ export interface PostReaction {
 }
 
 export interface EventReaction {
-  liked: Boolean;
-  accepted: Boolean;
+  liked: boolean;
+  accepted: boolean;
+  paid: boolean;
 }
 
 export enum EventType {
@@ -60,9 +61,18 @@ const batchGet = async (PKs: Set<string>, sk: string): Promise<Map<string, any>>
   return reactions;
 };
 
-const getTypeEventReaction = ({ l, a }: { l: boolean; a: boolean }): EventReaction => ({
+const getTypeEventReaction = ({
+  l,
+  a,
+  treezorTransferId,
+}: {
+  l: boolean;
+  a: boolean;
+  treezorTransferId?: number;
+}): EventReaction => ({
   liked: l,
   accepted: a,
+  paid: (treezorTransferId || 0) > 0,
 });
 
 export const handler: Handler = async (event: { source: any; identity: any }[]) => {
