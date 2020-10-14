@@ -317,7 +317,7 @@ input CreateFederationPrivateInput {
 
 input UpdateFederationPrivateInput {
   id: ID!
-  name: String!
+  name: String
   description: String
   cover: String
   logo: String
