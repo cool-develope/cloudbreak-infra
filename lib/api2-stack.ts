@@ -110,6 +110,8 @@ export class Api2Stack extends cdk.Stack {
     this.user();
 
     this.notifications();
+
+    this.eventOrganizationField();
   }
 
   dictionaryQuery() {
@@ -509,6 +511,42 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'notifications',
+    });
+  }
+
+  eventOrganizationField() {
+    const fn = this.getFunction(
+      'eventOrganizationBatch',
+      'api-eventOrganizationBatch',
+      'eventOrganizationBatch',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+      },
+    );
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('eventOrganizationBatchFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Event',
+      fieldName: 'organization',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('eventOrganization'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Post',
+      fieldName: 'organization',
+      requestMappingTemplate: MappingTemplate.fromString(
+        this.getBatchInvokeTemplate('eventOrganization'),
+      ),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
 
