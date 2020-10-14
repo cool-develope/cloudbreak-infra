@@ -566,6 +566,8 @@ enum UploadType {
   PostImage
   PostAttachment
   Club
+  Team
+  Federation
   Company
 }
 
