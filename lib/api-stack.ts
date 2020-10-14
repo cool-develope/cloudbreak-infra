@@ -88,7 +88,7 @@ export class ApiStack extends cdk.Stack {
     this.createEventMutation();
 
     /**
-     * Query: feed, feedPrivate
+     * Query: feed, feedPrivate, myEvents, upcomingEventsPrivate
      */
     this.feedQuery();
 
@@ -117,16 +117,6 @@ export class ApiStack extends cdk.Stack {
      * Field: Event.participants
      */
     this.eventParticipantsField();
-
-    /**
-     * Query: myEvents
-     */
-    this.myEventsQuery();
-
-    /**
-     * Query: upcomingEventsPrivate
-     */
-    this.upcomingEventsPrivateQuery();
 
     /**
      * Query: clubsPrivate
@@ -317,6 +307,16 @@ export class ApiStack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'feedPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'myEvents',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'upcomingEventsPrivate',
     });
   }
 
@@ -516,50 +516,6 @@ export class ApiStack extends cdk.Stack {
 }
 `),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
-    });
-  }
-
-  myEventsQuery() {
-    const myEventsFunction = this.getFunction('myEvents', 'api-myEvents', 'myEvents', {
-      MAIN_TABLE_NAME: this.mainTable.tableName,
-      IMAGES_DOMAIN: this.imagesDomain,
-      ES_DOMAIN: this.esDomain,
-    });
-
-    this.mainTable.grantReadWriteData(myEventsFunction);
-    this.allowES(myEventsFunction);
-
-    const dataSource = this.api.addLambdaDataSource('myEventsFunction', myEventsFunction);
-
-    dataSource.createResolver({
-      typeName: 'Query',
-      fieldName: 'myEvents',
-    });
-  }
-
-  upcomingEventsPrivateQuery() {
-    const upcomingEventsPrivateFunction = this.getFunction(
-      'upcomingEventsPrivate',
-      'api-upcomingEventsPrivate',
-      'upcomingEventsPrivate',
-      {
-        MAIN_TABLE_NAME: this.mainTable.tableName,
-        IMAGES_DOMAIN: this.imagesDomain,
-        ES_DOMAIN: this.esDomain,
-      },
-    );
-
-    this.mainTable.grantReadWriteData(upcomingEventsPrivateFunction);
-    this.allowES(upcomingEventsPrivateFunction);
-
-    const dataSource = this.api.addLambdaDataSource(
-      'upcomingEventsPrivateFunction',
-      upcomingEventsPrivateFunction,
-    );
-
-    dataSource.createResolver({
-      typeName: 'Query',
-      fieldName: 'upcomingEventsPrivate',
     });
   }
 
