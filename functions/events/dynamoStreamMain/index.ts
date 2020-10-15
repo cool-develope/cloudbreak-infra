@@ -99,6 +99,56 @@ const clubMetadataHandler = async (items: Item[]) => {
   }
 };
 
+const federationsHandler = async (items: Item[]) => {
+  const body = [];
+  for (const item of items) {
+    const {
+      eventName,
+      keys: { pk, sk },
+      data,
+    } = item;
+
+    const _id = pk.replace('federation#', '');
+    delete data.pk;
+    delete data.sk;
+    delete data.modifiedAt;
+    delete data.createdAt;
+
+    if (eventName === EventName.INSERT) {
+      body.push({
+        index: { _id },
+      });
+      body.push({
+        ...data,
+      });
+    } else if (eventName === EventName.MODIFY) {
+      body.push({
+        update: { _id },
+      });
+      body.push({
+        doc: {
+          ...data,
+        },
+        doc_as_upsert: true,
+      });
+    } else if (eventName === EventName.REMOVE) {
+      body.push({
+        delete: { _id },
+      });
+    }
+  }
+
+  if (body.length) {
+    const result = await es.bulk({
+      index: 'federations',
+      refresh: true,
+      body,
+    });
+
+    console.log(JSON.stringify(result, null, 2));
+  }
+};
+
 const usersHandler = async (items: Item[]) => {
   const body = [];
   for (const item of items) {
@@ -390,6 +440,7 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
   const teams: Item[] = [];
   const users: Item[] = [];
   const userTeams: Item[] = [];
+  const federations: Item[] = [];
 
   for (const record of event.Records) {
     const { eventName, dynamodb: { NewImage, OldImage, Keys } = {} } = record as {
@@ -417,6 +468,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
 
     if (keys.pk.startsWith('user#') && keys.sk === 'metadata') {
       users.push({ eventName, keys, data, oldData });
+    }
+
+    if (keys.pk.startsWith('federation#') && keys.sk === 'metadata') {
+      federations.push({ eventName, keys, data, oldData });
     }
 
     if (keys.pk.startsWith('team#') && keys.sk.startsWith('user#')) {
@@ -452,6 +507,10 @@ export const handler: DynamoDBStreamHandler = async (event, context, callback: a
 
   if (userTeams.length) {
     userTeamsHandler(userTeams);
+  }
+
+  if (federations.length) {
+    federationsHandler(federations);
   }
 
   callback(null, `Successfully processed ${event.Records.length} records.`);
