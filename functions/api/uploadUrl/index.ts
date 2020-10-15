@@ -14,6 +14,8 @@ enum UploadType {
   PostImage = 'PostImage',
   PostAttachment = 'PostAttachment',
   Club = 'Club',
+  Team = 'Team',
+  Federation = 'Federation',
   Company = 'Company',
 }
 
@@ -48,6 +50,10 @@ const getS3Key = (type: UploadType, sub: string, fileName: string, id?: string) 
       return `club/i/${uuidv4()}/${fileName}`;
     case UploadType.Company:
       return `user/${sub}/company/${fileName}`;
+    case UploadType.Team:
+      return `team/i/${uuidv4()}/${fileName}`;
+    case UploadType.Federation:
+      return `federation/i/${uuidv4()}/${fileName}`;
   }
 };
 
