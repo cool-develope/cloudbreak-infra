@@ -112,6 +112,8 @@ export class Api2Stack extends cdk.Stack {
     this.notifications();
 
     this.eventOrganizationField();
+
+    this.federation();
   }
 
   dictionaryQuery() {
@@ -565,6 +567,52 @@ export class Api2Stack extends cdk.Stack {
         this.getBatchInvokeTemplate('eventOrganization'),
       ),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+  }
+
+  federation() {
+    const fn = this.getFunction('federation', 'api-federation', 'federation', {
+      MAIN_TABLE_NAME: this.mainTable.tableName,
+      IMAGES_DOMAIN: this.imagesDomain,
+      ES_DOMAIN: this.esDomain,
+      COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+    });
+
+    this.mainTable.grantReadWriteData(fn);
+    this.allowES(fn);
+
+    const cognitoPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    cognitoPolicy.addActions(
+      'cognito-idp:AdminUpdateUserAttributes',
+      'cognito-idp:AdminAddUserToGroup',
+      'cognito-idp:AdminRemoveUserFromGroup',
+      'cognito-idp:AdminGetUser',
+    );
+    cognitoPolicy.addResources('*');
+    fn.addToRolePolicy(cognitoPolicy);
+
+    const dataSource = this.api.addLambdaDataSource('federationFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'createFederationPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'updateFederationPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'federationsPrivate',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'federation',
     });
   }
 
