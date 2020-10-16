@@ -10,8 +10,8 @@
   "author": "Sergey Onufrienko <sergey@onufrienko.com>",
   "license": "ISC",
   "dependencies": {
-    "@elastic/elasticsearch": "^7.9.0",
+    "@elastic/elasticsearch": "^7.9.1",
     "aws-xray-sdk": "^3.2.0",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.1"
   }
 }
