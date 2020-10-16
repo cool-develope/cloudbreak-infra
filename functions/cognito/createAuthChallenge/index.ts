@@ -3,7 +3,15 @@ import * as AWS from 'aws-sdk';
 import * as fs from 'fs';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
-const { SIGNIN_URL, SIGNIN_WEB_URL, SES_FROM_ADDRESS, SES_REGION, IMAGES_DOMAIN } = process.env;
+const {
+  SIGNIN_URL,
+  SIGNIN_WEB_URL,
+  SES_FROM_ADDRESS,
+  SES_REGION,
+  IMAGES_DOMAIN,
+  COGNITO_WEB_CLIENT_ID = '',
+  COGNITO_MOBILE_CLIENT_ID = '',
+} = process.env;
 AWS.config.update({ region: SES_REGION });
 const ses = new AWS.SES();
 const EMAIL_TEMPLATE = './signin.html';
@@ -26,14 +34,14 @@ const randomDigits = (len: number): string =>
     .map(() => getRandomInteger(0, 9))
     .join('');
 
-const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
-  const signinUrl = `${SIGNIN_URL}?code=${secretLoginCode}`;
-  const signinUrlWeb = `${SIGNIN_WEB_URL}?code=${secretLoginCode}`;
+const sendEmail = async (isWeb: boolean, emailAddress: string, secretLoginCode: string) => {
+  const signinUrl = isWeb
+    ? `${SIGNIN_WEB_URL}?code=${secretLoginCode}`
+    : `${SIGNIN_URL}?code=${secretLoginCode}`;
 
   const html = getEmailHtml(EMAIL_TEMPLATE, {
     domain: `https://${IMAGES_DOMAIN}`,
     url_signin: signinUrl,
-    url_signin_2: signinUrlWeb,
     text1: 'Click the link below to sign in to your Tifo account.',
     text2: 'This link will expire in 15 minutes and can only be used once.',
     button: 'Sign in to Tifo',
@@ -61,14 +69,19 @@ const sendEmail = async (emailAddress: string, secretLoginCode: string) => {
 
 export const handler: CognitoUserPoolTriggerHandler = async (event, context) => {
   console.log(JSON.stringify(event, null, 4));
-  console.log(JSON.stringify(context, null, 4));
+
+  const {
+    callerContext: { clientId },
+  } = event;
+
+  const isWeb = clientId === COGNITO_WEB_CLIENT_ID;
 
   let secretLoginCode: string;
   if (!event.request.session || !event.request.session.length) {
     // This is a new auth session
     // Generate a new secret login code and mail it to the user
     secretLoginCode = randomDigits(6);
-    await sendEmail(event.request.userAttributes.email, secretLoginCode);
+    await sendEmail(isWeb, event.request.userAttributes.email, secretLoginCode);
   } else {
     // There's an existing session. Don't generate new digits but
     // re-use the code from the current session. This allows the user to
