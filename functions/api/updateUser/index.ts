@@ -374,6 +374,8 @@ const getTypeUserChild = ({
   birthDate = '',
   gender = '',
   phone = '',
+  treezorUserId = '',
+  treezorWalletId = '',
 }: any) => ({
   firstName,
   lastName,
@@ -382,6 +384,10 @@ const getTypeUserChild = ({
   birthDate,
   gender,
   phone,
+  treezor: {
+    userId: treezorUserId,
+    walletId: treezorWalletId,
+  },
 });
 
 const getTypeImage = (photo: string = '') => ({

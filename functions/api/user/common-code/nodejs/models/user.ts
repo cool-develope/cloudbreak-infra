@@ -208,6 +208,8 @@ class UserModel {
     birthDate = '',
     gender = '',
     phone = '',
+    treezorUserId = '',
+    treezorWalletId = '',
   }: any): UserChild {
     return {
       firstName,
@@ -217,6 +219,10 @@ class UserModel {
       birthDate,
       gender,
       phone,
+      treezor: {
+        userId: treezorUserId,
+        walletId: treezorWalletId,
+      },
     };
   }
 

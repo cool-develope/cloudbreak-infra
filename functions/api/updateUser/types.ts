@@ -65,6 +65,7 @@ export interface UserChild {
   email: string;
   birthDate: string;
   gender: string;
+  treezor: TreezorUser;
 }
 
 export interface TreezorUser {
