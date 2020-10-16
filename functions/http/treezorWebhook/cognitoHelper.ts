@@ -125,6 +125,21 @@ class CognitoHelper {
     return [...set.values()].join(', ');
   }
 
+  async addCard(cardId: string) {
+    const attributes = await this.getUserAttributes();
+    const attr = attributes.find((a) => a.Name === CognitoAttributes.trzCardsId);
+    const oldValue = attr?.Value || '';
+
+    const newValue = this.addToCSV(oldValue, cardId);
+
+    const newAttr: NameValue = {
+      Name: CognitoAttributes.trzCardsId,
+      Value: newValue,
+    };
+
+    await this.updateUserAttributes([newAttr]);
+  }
+
   addClub(clubId: string) {
     return this.addOrRemoveValue(CognitoAttributes.clubs, clubId, false);
   }
@@ -171,6 +186,10 @@ class CognitoHelper {
     };
 
     await this.updateUserAttributes([newAttr]);
+  }
+
+  private addToCSV(csv: string, value: string) {
+    return csv && csv.length > 3 ? `${csv}, ${value}` : value;
   }
 
   private addPropsToObject(
