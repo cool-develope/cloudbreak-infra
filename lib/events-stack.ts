@@ -2,30 +2,30 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
-import * as cognito from '@aws-cdk/aws-cognito';
+import { Fn } from '@aws-cdk/core';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Rule } from '@aws-cdk/aws-events';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 import targets = require('@aws-cdk/aws-events-targets');
 
 export interface EventsStackProps extends cdk.StackProps {
-  userPool: cognito.UserPool;
-  mainTable: dynamodb.Table;
   imagesDomain: string;
-  esDomain: string;
   commonModulesLayerArn: string;
 }
 
 export class EventsStack extends cdk.Stack {
   private readonly commonModulesLayer: lambda.ILayerVersion;
-  private readonly userPool: cognito.UserPool;
+  private readonly userPoolId: string;
 
   constructor(scope: cdk.Construct, id: string, props: EventsStackProps) {
     super(scope, id, props);
 
-    const { mainTable, imagesDomain, esDomain, commonModulesLayerArn, userPool } = props;
+    const { imagesDomain, commonModulesLayerArn } = props;
+    const { MAIN_TABLE_NAME = '' } = process.env;
 
-    this.userPool = userPool;
+    const mainTable = dynamodb.Table.fromTableName(this, 'MTable', MAIN_TABLE_NAME);
+    this.userPoolId = Fn.importValue('UserPoolId');
+    const esDomain = `https://${Fn.importValue('EsDomainEndpoint')}`;
 
     this.commonModulesLayer = lambda.LayerVersion.fromLayerVersionArn(
       this,
@@ -57,12 +57,12 @@ export class EventsStack extends cdk.Stack {
       MAIN_TABLE_NAME: mainTable.tableName,
       IMAGES_DOMAIN: imagesDomain,
       ES_DOMAIN: esDomain,
-      COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+      COGNITO_USERPOOL_ID: this.userPoolId,
     });
 
-    mainTable.grantReadWriteData(createUserFunction);
-    mainTable.grantReadWriteData(notificationsFunction);
-    mainTable.grantReadWriteData(teamFunction);
+    this.allowDynamoDB(createUserFunction);
+    this.allowDynamoDB(notificationsFunction);
+    this.allowDynamoDB(teamFunction);
     this.allowCognito(teamFunction);
 
     const rule = new Rule(this, 'CognitoSignupRule', {
@@ -106,6 +106,30 @@ export class EventsStack extends cdk.Stack {
     );
     cognitoPolicy.addResources('*');
     fn.addToRolePolicy(cognitoPolicy);
+  }
+
+  allowDynamoDB(lambdaFunction: lambda.Function) {
+    const dbPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    dbPolicy.addActions(
+      'dynamodb:BatchGetItem',
+      'dynamodb:GetRecords',
+      'dynamodb:GetShardIterator',
+      'dynamodb:Query',
+      'dynamodb:GetItem',
+      'dynamodb:Scan',
+      'dynamodb:BatchWriteItem',
+      'dynamodb:PutItem',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    );
+    dbPolicy.addResources(
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+    );
+
+    lambdaFunction.addToRolePolicy(dbPolicy);
   }
 
   getFunction(id: string, functionName: string, folderName: string, environment?: any) {

@@ -135,9 +135,6 @@ new ApiDomainStack(app, 'api-domain-stack', {
  * EventBridge
  */
 new EventsStack(app, 'events-stack', {
-  userPool: cognito.userPool,
-  mainTable: tables.mainTable,
   imagesDomain: `images.${process.env.ZONE_NAME}`,
-  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
   commonModulesLayerArn: process.env.LAYER_COMMON_MODULES_ARN || '',
 });
