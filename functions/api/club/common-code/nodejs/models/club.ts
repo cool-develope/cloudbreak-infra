@@ -47,7 +47,7 @@ class ClubModel {
     const cognitoHelper = new CognitoHelper(this.cognito, this.userPoolId, userId);
     if (clubPayload && clubPayload.club) {
       const clubId = clubPayload.club.id;
-      // await cognitoHelper.addClub(clubId);
+      await cognitoHelper.addClub(clubId);
       await cognitoHelper.addUserToGroup(CognitoGroup.ClubOwners);
     }
 

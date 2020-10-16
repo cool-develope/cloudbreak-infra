@@ -49,7 +49,7 @@ class FederationModel {
     const cognitoHelper = new CognitoHelper(this.cognito, this.userPoolId, userId);
     if (federationPayload && federationPayload.federation) {
       const federationId = federationPayload.federation.id;
-      // await cognitoHelper.addFederation(federationId);
+      await cognitoHelper.addFederation(federationId);
       await cognitoHelper.addUserToGroup(CognitoGroup.FederationOwners);
     }
 
