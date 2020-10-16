@@ -62,12 +62,8 @@ new TableStack(app, 'table-stack');
 /**
  * Create GraphQL API
  */
-const api = new ApiStack(app, 'api-stack', {
-  userPool: cognito.userPool,
-  dictionaryTable: tables.dictionaryTable,
-  mainTable: tables.mainTable,
+new ApiStack(app, 'api-stack', {
   imagesDomain: `images.${process.env.ZONE_NAME}`,
-  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
 });
 
 api.addDependency(cognito);

@@ -4,7 +4,7 @@ import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
-import { ITable } from '@aws-cdk/aws-dynamodb';
+import { Fn } from '@aws-cdk/core';
 import { UserPoolDefaultAction, MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
@@ -12,29 +12,32 @@ import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 const SCHEMA_FILE = '../schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
-  userPool: cognito.UserPool;
-  dictionaryTable: dynamodb.Table;
-  mainTable: dynamodb.Table;
   imagesDomain: string;
-  esDomain: string;
 }
 
 export class ApiStack extends cdk.Stack {
   public readonly api: appsync.GraphqlApi;
-  public readonly dictionaryTable: dynamodb.Table;
-  public readonly mainTable: dynamodb.Table;
+  public readonly dictionaryTable: dynamodb.ITable;
+  public readonly mainTable: dynamodb.ITable;
   public readonly imagesDomain: string;
   public readonly esDomain: string;
 
   constructor(scope: cdk.Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
-    const { userPool, dictionaryTable, mainTable, imagesDomain, esDomain } = props;
+    const { imagesDomain } = props;
+    const { MAIN_TABLE_NAME = '', DICTIONARY_TABLE_NAME = '' } = process.env;
 
-    this.dictionaryTable = dictionaryTable;
-    this.mainTable = mainTable;
+    this.mainTable = dynamodb.Table.fromTableName(this, 'MTable', MAIN_TABLE_NAME);
+    this.dictionaryTable = dynamodb.Table.fromTableName(this, 'DTable', DICTIONARY_TABLE_NAME);
     this.imagesDomain = imagesDomain;
-    this.esDomain = esDomain;
+    this.esDomain = `https://${Fn.importValue('EsDomainEndpoint')}`;
+
+    const userPool = cognito.UserPool.fromUserPoolId(
+      this,
+      'apiStackUserPool',
+      Fn.importValue('UserPoolId'),
+    );
 
     /**
      * AppSync API
@@ -143,7 +146,15 @@ export class ApiStack extends cdk.Stack {
      */
     this.verifyPhoneMutation();
 
-    new cdk.CfnOutput(this, 'api-url', { value: this.api.graphqlUrl });
+    new cdk.CfnOutput(this, 'AppSyncUrl', {
+      value: this.api.graphqlUrl,
+      exportName: 'AppSyncUrl',
+    });
+
+    new cdk.CfnOutput(this, 'AppSyncApiId', {
+      value: this.api.apiId,
+      exportName: 'AppSyncApiId',
+    });
   }
 
   uploadUrlQuery() {
@@ -188,7 +199,7 @@ export class ApiStack extends cdk.Stack {
       },
     );
 
-    this.mainTable.grantReadWriteData(signinMobileFunction);
+    this.allowDynamoDB(signinMobileFunction);
 
     const dataSource = this.api.addLambdaDataSource('signinMobileFunction', signinMobileFunction);
 
@@ -218,7 +229,7 @@ export class ApiStack extends cdk.Stack {
       256,
     );
 
-    this.mainTable.grantReadWriteData(updateUserFunction);
+    this.allowDynamoDB(updateUserFunction);
 
     const dataSource = this.api.addLambdaDataSource('updateUserFunction', updateUserFunction);
 
@@ -249,7 +260,7 @@ export class ApiStack extends cdk.Stack {
       256,
     );
 
-    this.mainTable.grantReadWriteData(createEventFunction);
+    this.allowDynamoDB(createEventFunction);
 
     const s3Policy = new PolicyStatement({
       effect: Effect.ALLOW,
@@ -289,7 +300,7 @@ export class ApiStack extends cdk.Stack {
       ES_DOMAIN: this.esDomain,
     });
 
-    this.mainTable.grantReadWriteData(feedFunction);
+    this.allowDynamoDB(feedFunction);
     this.allowES(feedFunction);
 
     const dataSource = this.api.addLambdaDataSource('feedFunction', feedFunction);
@@ -329,7 +340,7 @@ export class ApiStack extends cdk.Stack {
       256,
     );
 
-    this.mainTable.grantReadWriteData(lambdaFunction);
+    this.allowDynamoDB(lambdaFunction);
     this.allowES(lambdaFunction);
 
     const lambdaDS = this.api.addLambdaDataSource('syncContactsFunction', lambdaFunction);
@@ -356,7 +367,7 @@ export class ApiStack extends cdk.Stack {
       120,
     );
 
-    this.mainTable.grantReadWriteData(lambdaFunction);
+    this.allowDynamoDB(lambdaFunction);
 
     const lambdaDS = this.api.addLambdaDataSource('addLikeFunction', lambdaFunction);
 
@@ -393,7 +404,7 @@ export class ApiStack extends cdk.Stack {
       120,
     );
 
-    this.mainTable.grantReadWriteData(eventAuthorBatchFunction);
+    this.allowDynamoDB(eventAuthorBatchFunction);
 
     const lambdaDS = this.api.addLambdaDataSource(
       'eventAuthorBatchFunction',
@@ -438,7 +449,7 @@ export class ApiStack extends cdk.Stack {
       120,
     );
 
-    this.mainTable.grantReadWriteData(eventMyReactionBatchFunction);
+    this.allowDynamoDB(eventMyReactionBatchFunction);
 
     const lambdaDS = this.api.addLambdaDataSource(
       'eventMyReactionBatchFunction',
@@ -492,7 +503,7 @@ export class ApiStack extends cdk.Stack {
       256,
     );
 
-    this.mainTable.grantReadWriteData(eventParticipantsBatchFunction);
+    this.allowDynamoDB(eventParticipantsBatchFunction);
     this.allowES(eventParticipantsBatchFunction);
 
     const lambdaDS = this.api.addLambdaDataSource(
@@ -526,7 +537,7 @@ export class ApiStack extends cdk.Stack {
       },
     );
 
-    this.mainTable.grantReadWriteData(clubsPrivateFunction);
+    this.allowDynamoDB(clubsPrivateFunction);
     this.allowES(clubsPrivateFunction);
 
     const dataSource = this.api.addLambdaDataSource('clubsPrivateFunction', clubsPrivateFunction);
@@ -544,7 +555,7 @@ export class ApiStack extends cdk.Stack {
       ES_DOMAIN: this.esDomain,
     });
 
-    this.mainTable.grantReadWriteData(eventFunction);
+    this.allowDynamoDB(eventFunction);
     this.allowES(eventFunction);
 
     const dataSource = this.api.addLambdaDataSource('eventFunction', eventFunction);
@@ -585,7 +596,7 @@ export class ApiStack extends cdk.Stack {
       },
     );
 
-    this.mainTable.grantReadWriteData(inviteParentFunction);
+    this.allowDynamoDB(inviteParentFunction);
     this.allowES(inviteParentFunction);
     this.allowEventBridge(inviteParentFunction);
 
@@ -616,7 +627,7 @@ export class ApiStack extends cdk.Stack {
       },
     );
 
-    this.mainTable.grantReadWriteData(acceptChildInvitationFunction);
+    this.allowDynamoDB(acceptChildInvitationFunction);
     this.allowES(acceptChildInvitationFunction);
     this.allowEventBridge(acceptChildInvitationFunction);
 
@@ -641,7 +652,7 @@ export class ApiStack extends cdk.Stack {
       MAIN_TABLE_NAME: this.mainTable.tableName,
     });
 
-    this.mainTable.grantReadWriteData(verifyPhoneFunction);
+    this.allowDynamoDB(verifyPhoneFunction);
 
     const snsPolicy = new PolicyStatement({
       effect: Effect.ALLOW,
@@ -684,6 +695,30 @@ export class ApiStack extends cdk.Stack {
     lambdaFunction.addToRolePolicy(eventsPolicy);
   }
 
+  allowDynamoDB(lambdaFunction: lambda.Function) {
+    const dbPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    dbPolicy.addActions(
+      'dynamodb:BatchGetItem',
+      'dynamodb:GetRecords',
+      'dynamodb:GetShardIterator',
+      'dynamodb:Query',
+      'dynamodb:GetItem',
+      'dynamodb:Scan',
+      'dynamodb:BatchWriteItem',
+      'dynamodb:PutItem',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    );
+    dbPolicy.addResources(
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+    );
+
+    lambdaFunction.addToRolePolicy(dbPolicy);
+  }
+
   getApiKeyExpiration(): cdk.Expiration {
     return cdk.Expiration.atDate(new Date(2021, 6, 1));
   }
@@ -698,7 +733,9 @@ export class ApiStack extends cdk.Stack {
   ) {
     return new lambda.Function(this, id, {
       functionName,
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName)),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName), {
+        exclude: ['*.ts'],
+      }),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment,
