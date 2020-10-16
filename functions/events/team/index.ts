@@ -34,8 +34,8 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
        * TODO - leave in group if can
        */
       if (role === TeamMemberType.Coach) {
-        // await cognitoHelper.removeClub(clubId);
-        // await cognitoHelper.removeTeam(teamId);
+        await cognitoHelper.removeClub(clubId);
+        await cognitoHelper.removeTeam(teamId);
         await cognitoHelper.removeUserFromGroup(CognitoGroup.ClubCoaches);
       }
       break;
@@ -46,24 +46,24 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
        * Add clubId/teamId to Cognito
        */
       if (role === TeamMemberType.Coach) {
-        // await cognitoHelper.addClub(clubId);
-        // await cognitoHelper.addTeam(teamId);
+        await cognitoHelper.addClub(clubId);
+        await cognitoHelper.addTeam(teamId);
         await cognitoHelper.addUserToGroup(CognitoGroup.ClubCoaches);
       }
       break;
 
     case NotificationType.ChangeTeamRole:
       if (toRole === TeamMemberType.Coach) {
-        // await cognitoHelper.addClub(clubId);
-        // await cognitoHelper.addTeam(teamId);
+        await cognitoHelper.addClub(clubId);
+        await cognitoHelper.addTeam(teamId);
         await cognitoHelper.addUserToGroup(CognitoGroup.ClubCoaches);
       } else {
         /**
          * TODO - leave other clubs and teams
          * TODO - leave in group if can
          */
-        // await cognitoHelper.removeClub(clubId);
-        // await cognitoHelper.removeTeam(teamId);
+        await cognitoHelper.removeClub(clubId);
+        await cognitoHelper.removeTeam(teamId);
         await cognitoHelper.removeUserFromGroup(CognitoGroup.ClubCoaches);
       }
       break;
