@@ -927,6 +927,7 @@ type Team {
   cover: Image
   logo: Image
   parentTeam: Team
+  children: [Team]
   address: String
   email: String
   phone: String
