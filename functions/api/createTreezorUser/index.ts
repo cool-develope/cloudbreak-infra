@@ -176,6 +176,13 @@ export const handler: Handler = async (event) => {
     info: { fieldName },
   } = event;
 
+  /**
+   * 1. Adult
+   * 2. Parent
+   * 3. Child
+   * 4. Business user
+   */
+
   const field = fieldName as FieldName;
   const pk = `user#${sub}`;
   const errors: string[] = [];
@@ -197,6 +204,16 @@ export const handler: Handler = async (event) => {
 
     const user = await getUser(pk);
     treezorNewUserData = await getTreezorUserData(user);
+
+    const { parentUserId } = user;
+    if (parentUserId) {
+      const parentUser = await getUser(`user#${parentUserId}`);
+      if (parentUser && parentUser.treezorUserId) {
+        treezorNewUserData.parentUserId = parentUser.treezorUserId;
+        treezorNewUserData.controllingPersonType = 1;
+        treezorNewUserData.parentType = 'shareholder';
+      }
+    }
   } else if (field === FieldName.createTreezorCompany) {
     const user = await getUser(pk);
     const { companyId } = user;
