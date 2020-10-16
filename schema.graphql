@@ -172,6 +172,7 @@ input TeamsPrivateFilterInput {
   discipline: [Discipline]
   clubIds: [String]
   parentTeamId: String
+  isParent: Boolean
 }
 
 input UsersPrivateFilterInput {
