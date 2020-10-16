@@ -71,19 +71,12 @@ new Api2Stack(app, 'api2-stack', {
   commonModulesLayerArn: process.env.LAYER_COMMON_MODULES_ARN || '',
 });
 
-api2.addDependency(cognito);
-api2.addDependency(elasticsearch);
-api2.addDependency(tables);
-
-const hapi = new ApiHttpStack(app, 'hapi-stack', {
-  mainTable: tables.mainTable,
+new ApiHttpStack(app, 'hapi-stack', {
   zoneId: process.env.ZONE_ID || '',
   zoneName: process.env.ZONE_NAME || '',
   domain: `hapi.${process.env.ZONE_NAME}`,
   certificateArn: process.env.EU_CERTIFICATE_ARN || '',
-  userPool: cognito.userPool,
   imagesDomain: `images.${process.env.ZONE_NAME}`,
-  esDomain: `https://${elasticsearch.domain.attrDomainEndpoint}`,
 });
 
 /**

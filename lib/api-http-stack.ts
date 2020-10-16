@@ -4,48 +4,37 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as apigateway from '@aws-cdk/aws-apigatewayv2';
 import * as route53 from '@aws-cdk/aws-route53';
-import * as cognito from '@aws-cdk/aws-cognito';
+import { Fn } from '@aws-cdk/core';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { HttpMethod, LambdaProxyIntegration, HttpApi, DomainName } from '@aws-cdk/aws-apigatewayv2';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface ApiHttpStackProps extends cdk.StackProps {
-  mainTable: dynamodb.Table;
   zoneId: string;
   zoneName: string;
   domain: string;
   certificateArn: string;
-  userPool: cognito.UserPool;
   imagesDomain: string;
-  esDomain: string;
 }
 
 export class ApiHttpStack extends cdk.Stack {
   public readonly api: apigateway.HttpApi;
-  private readonly mainTable: dynamodb.Table;
+  private readonly mainTable: dynamodb.ITable;
   private readonly imagesDomain: string;
   private readonly esDomain: string;
-  private readonly userPool: cognito.UserPool;
+  private readonly userPoolId: string;
 
   constructor(scope: cdk.Construct, id: string, props: ApiHttpStackProps) {
     super(scope, id, props);
 
-    const {
-      mainTable,
-      zoneId,
-      zoneName,
-      domain,
-      certificateArn,
-      userPool,
-      imagesDomain,
-      esDomain,
-    } = props;
+    const { zoneId, zoneName, domain, certificateArn, imagesDomain } = props;
+    const { MAIN_TABLE_NAME = '' } = process.env;
 
-    this.mainTable = mainTable;
-    this.userPool = userPool;
+    this.mainTable = dynamodb.Table.fromTableName(this, 'MTable', MAIN_TABLE_NAME);
     this.imagesDomain = imagesDomain;
-    this.esDomain = esDomain;
+    this.esDomain = `https://${Fn.importValue('EsDomainEndpoint')}`;
+    this.userPoolId = Fn.importValue('UserPoolId');
 
     const certificate = Certificate.fromCertificateArn(this, 'http-api-cert', certificateArn);
     const domainName = new DomainName(this, 'HttpApiDomain', {
@@ -89,7 +78,7 @@ export class ApiHttpStack extends cdk.Stack {
         MAIN_TABLE_NAME: this.mainTable.tableName,
         IMAGES_DOMAIN: this.imagesDomain,
         ES_DOMAIN: this.esDomain,
-        COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+        COGNITO_USERPOOL_ID: this.userPoolId,
         TREEZOR_BASE_URL,
         TREEZOR_CLIENT_ID,
         TREEZOR_CLIENT_SECRET,
@@ -100,7 +89,7 @@ export class ApiHttpStack extends cdk.Stack {
       512,
     );
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
     this.allowEventBridge(fn);
 
@@ -154,6 +143,30 @@ export class ApiHttpStack extends cdk.Stack {
     eventsPolicy.addResources('*');
 
     lambdaFunction.addToRolePolicy(eventsPolicy);
+  }
+
+  allowDynamoDB(lambdaFunction: lambda.Function) {
+    const dbPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    dbPolicy.addActions(
+      'dynamodb:BatchGetItem',
+      'dynamodb:GetRecords',
+      'dynamodb:GetShardIterator',
+      'dynamodb:Query',
+      'dynamodb:GetItem',
+      'dynamodb:Scan',
+      'dynamodb:BatchWriteItem',
+      'dynamodb:PutItem',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    );
+    dbPolicy.addResources(
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+    );
+
+    lambdaFunction.addToRolePolicy(dbPolicy);
   }
 
   getFunction(functionName: string, environment?: any, timeoutSeconds = 30, memorySize = 128) {
