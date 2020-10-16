@@ -2,66 +2,45 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
-import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
-import { ITable } from '@aws-cdk/aws-dynamodb';
+import { Fn } from '@aws-cdk/core';
 import { MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface Api2StackProps extends cdk.StackProps {
-  userPool: cognito.UserPool;
-  dictionaryTable: dynamodb.Table;
-  mainTable: dynamodb.Table;
   imagesDomain: string;
-  esDomain: string;
-  graphqlApiId: string;
   commonModulesLayerArn: string;
-  commonCodeLayerArn: string;
 }
 
 export class Api2Stack extends cdk.Stack {
   public readonly api: appsync.IGraphqlApi;
-  public readonly dictionaryTable: dynamodb.Table;
-  public readonly mainTable: dynamodb.Table;
+  public readonly dictionaryTable: dynamodb.ITable;
+  public readonly mainTable: dynamodb.ITable;
   public readonly imagesDomain: string;
   public readonly esDomain: string;
-  private readonly userPool: cognito.UserPool;
+  private readonly userPoolId: string;
   private readonly commonModulesLayer: lambda.ILayerVersion;
-  private readonly commonCodeLayer: lambda.ILayerVersion;
 
   constructor(scope: cdk.Construct, id: string, props: Api2StackProps) {
     super(scope, id, props);
 
-    const {
-      userPool,
-      dictionaryTable,
-      mainTable,
-      imagesDomain,
-      esDomain,
-      graphqlApiId,
-      commonModulesLayerArn,
-      commonCodeLayerArn,
-    } = props;
+    const { imagesDomain, commonModulesLayerArn } = props;
+    const { MAIN_TABLE_NAME = '', DICTIONARY_TABLE_NAME = '' } = process.env;
 
-    this.userPool = userPool;
-    this.dictionaryTable = dictionaryTable;
-    this.mainTable = mainTable;
+    this.mainTable = dynamodb.Table.fromTableName(this, 'MTable', MAIN_TABLE_NAME);
+    this.dictionaryTable = dynamodb.Table.fromTableName(this, 'DTable', DICTIONARY_TABLE_NAME);
     this.imagesDomain = imagesDomain;
-    this.esDomain = esDomain;
-
-    this.api = appsync.GraphqlApi.fromGraphqlApiAttributes(this, 'api2-appsync', { graphqlApiId });
+    this.esDomain = `https://${Fn.importValue('EsDomainEndpoint')}`;
+    this.userPoolId = Fn.importValue('UserPoolId');
+    this.api = appsync.GraphqlApi.fromGraphqlApiAttributes(this, 'api2-appsync', {
+      graphqlApiId: Fn.importValue('AppSyncApiId'),
+    });
 
     this.commonModulesLayer = lambda.LayerVersion.fromLayerVersionArn(
       this,
       'api2-layers-common-modules',
       commonModulesLayerArn,
-    );
-
-    this.commonCodeLayer = lambda.LayerVersion.fromLayerVersionArn(
-      this,
-      'api2-layers-common-code',
-      commonCodeLayerArn,
     );
 
     /**
@@ -145,14 +124,14 @@ export class Api2Stack extends cdk.Stack {
         MAIN_TABLE_NAME: this.mainTable.tableName,
         IMAGES_DOMAIN: this.imagesDomain,
         ES_DOMAIN: this.esDomain,
-        COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+        COGNITO_USERPOOL_ID: this.userPoolId,
         TREEZOR_BASE_URL,
         TREEZOR_CLIENT_ID,
         TREEZOR_CLIENT_SECRET,
       },
     );
 
-    this.mainTable.grantReadWriteData(createTreezorUserFunction);
+    this.allowDynamoDB(createTreezorUserFunction);
     this.allowES(createTreezorUserFunction);
 
     const cognitoPolicy = new PolicyStatement({
@@ -189,7 +168,7 @@ export class Api2Stack extends cdk.Stack {
       ONESIGNAL_API_KEY,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
     this.allowEventBridge(fn);
 
@@ -217,7 +196,7 @@ export class Api2Stack extends cdk.Stack {
       IMAGES_DOMAIN: this.imagesDomain,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
 
     const dataSource = this.api.addLambdaDataSource('cardTypesFn', fn);
 
@@ -232,10 +211,10 @@ export class Api2Stack extends cdk.Stack {
       MAIN_TABLE_NAME: this.mainTable.tableName,
       IMAGES_DOMAIN: this.imagesDomain,
       ES_DOMAIN: this.esDomain,
-      COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+      COGNITO_USERPOOL_ID: this.userPoolId,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
 
     const cognitoPolicy = new PolicyStatement({
@@ -279,7 +258,7 @@ export class Api2Stack extends cdk.Stack {
       IMAGES_DOMAIN: this.imagesDomain,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     const dataSource = this.api.addLambdaDataSource('companyFn', fn);
 
     dataSource.createResolver({
@@ -305,7 +284,7 @@ export class Api2Stack extends cdk.Stack {
       ES_DOMAIN: this.esDomain,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
 
     const dataSource = this.api.addLambdaDataSource('teamFn', fn);
@@ -372,7 +351,7 @@ export class Api2Stack extends cdk.Stack {
       ES_DOMAIN: this.esDomain,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
     this.allowEventBridge(fn);
 
@@ -441,7 +420,7 @@ export class Api2Stack extends cdk.Stack {
       ES_DOMAIN: this.esDomain,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
 
     const dataSource = this.api.addLambdaDataSource('userFn', fn);
@@ -523,7 +502,7 @@ export class Api2Stack extends cdk.Stack {
       ES_DOMAIN: this.esDomain,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
 
     const dataSource = this.api.addLambdaDataSource('notificationsFn', fn);
@@ -546,7 +525,7 @@ export class Api2Stack extends cdk.Stack {
       },
     );
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
 
     const dataSource = this.api.addLambdaDataSource('eventOrganizationBatchFn', fn);
@@ -575,10 +554,10 @@ export class Api2Stack extends cdk.Stack {
       MAIN_TABLE_NAME: this.mainTable.tableName,
       IMAGES_DOMAIN: this.imagesDomain,
       ES_DOMAIN: this.esDomain,
-      COGNITO_USERPOOL_ID: this.userPool.userPoolId,
+      COGNITO_USERPOOL_ID: this.userPoolId,
     });
 
-    this.mainTable.grantReadWriteData(fn);
+    this.allowDynamoDB(fn);
     this.allowES(fn);
 
     const cognitoPolicy = new PolicyStatement({
@@ -614,6 +593,30 @@ export class Api2Stack extends cdk.Stack {
       typeName: 'Query',
       fieldName: 'federation',
     });
+  }
+
+  allowDynamoDB(lambdaFunction: lambda.Function) {
+    const dbPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    dbPolicy.addActions(
+      'dynamodb:BatchGetItem',
+      'dynamodb:GetRecords',
+      'dynamodb:GetShardIterator',
+      'dynamodb:Query',
+      'dynamodb:GetItem',
+      'dynamodb:Scan',
+      'dynamodb:BatchWriteItem',
+      'dynamodb:PutItem',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    );
+    dbPolicy.addResources(
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+    );
+
+    lambdaFunction.addToRolePolicy(dbPolicy);
   }
 
   getFunction(
