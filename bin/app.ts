@@ -22,7 +22,7 @@ dotenv.config({
 
 const app = new cdk.App();
 
-const layers = new LayersStack(app, 'layers-stack');
+new LayersStack(app, 'layers-stack');
 
 /**
  * Register certificates in US for CloudFront
@@ -34,7 +34,7 @@ new AcmStack(app, 'acm-us-stack', {
   },
 });
 
-const euCertificate = new AcmStack(app, 'acm-eu-stack', {
+new AcmStack(app, 'acm-eu-stack', {
   domainName: process.env.ZONE_NAME || '',
   prefix: 'eu',
 });
@@ -52,7 +52,7 @@ new CognitoStack(app, 'cognito-stack', {
 /**
  * Elasticsearch
  */
-const elasticsearch = new ElasticsearchStack(app, 'es-stack', {});
+new ElasticsearchStack(app, 'es-stack', {});
 
 /**
  * Create DynamoDB tables
