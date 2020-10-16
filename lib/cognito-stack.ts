@@ -2,9 +2,9 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as lambda from '@aws-cdk/aws-lambda';
-import * as iam from '@aws-cdk/aws-iam';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
-import { UserPoolOperation } from '@aws-cdk/aws-cognito';
+import { Fn } from '@aws-cdk/core';
+import { UserPoolOperation, CfnUserPoolClient } from '@aws-cdk/aws-cognito';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
@@ -16,7 +16,7 @@ export interface CognitoStackProps extends cdk.StackProps {
 }
 
 export class CognitoStack extends cdk.Stack {
-  public readonly userPool: cognito.UserPool;
+  private readonly userPool: cognito.UserPool;
 
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
@@ -24,53 +24,19 @@ export class CognitoStack extends cdk.Stack {
     const { signinUrl, signinWebUrl, mainTableName, imagesDomain } = props;
     const mainTable = dynamodb.Table.fromTableName(this, 'events-table-main', mainTableName);
 
-    /**
-     * TODO: Fix it some time
-     */
-    let customAttributes = null;
-    if (process.env.TIFO_ENV === 'dev') {
-      /**
-       * Old dev deploy
-       */
-      customAttributes = {
-        trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
-        trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 256, mutable: true }),
-        trzChildren: new cognito.StringAttribute({
-          maxLen: 1000,
-          mutable: true,
-        }),
-        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-      };
-    } else if (process.env.TIFO_ENV === 'test') {
-      /**
-       * TEST env
-       */
-      customAttributes = {
-        trzUserId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzScopes: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzChildren: new cognito.StringAttribute({
-          maxLen: 1000,
-          mutable: true,
-        }),
-        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-      };
-    } else {
-      /**
-       * New deploy
-       */
-      customAttributes = {
-        trzUserId: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
-        trzScopes: new cognito.StringAttribute({ minLen: 1, maxLen: 1000, mutable: true }),
-        trzChildren: new cognito.StringAttribute({
-          maxLen: 1000,
-          mutable: true,
-        }),
-        trzWalletsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-        trzCardsId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
-      };
-    }
+    const customAttributes = {
+      clubs: new cognito.StringAttribute({ maxLen: 2048, mutable: true }),
+      teams: new cognito.StringAttribute({ maxLen: 2048, mutable: true }),
+      federations: new cognito.StringAttribute({ maxLen: 2048, mutable: true }),
+      trzUserId: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+      trzScopes: new cognito.StringAttribute({ maxLen: 1000, mutable: true }),
+      trzChildren: new cognito.StringAttribute({
+        maxLen: 2048,
+        mutable: true,
+      }),
+      trzWalletsId: new cognito.StringAttribute({ maxLen: 2048, mutable: true }),
+      trzCardsId: new cognito.StringAttribute({ maxLen: 2048, mutable: true }),
+    };
 
     this.userPool = new cognito.UserPool(this, 'user-pool', {
       userPoolName: 'users',
@@ -84,12 +50,28 @@ export class CognitoStack extends cdk.Stack {
       customAttributes,
     });
 
-    new cdk.CfnOutput(this, 'user-pool-id', { value: this.userPool.userPoolId });
+    new cognito.CfnUserPoolGroup(this, 'club-owners-group', {
+      groupName: 'club-owners',
+      userPoolId: this.userPool.userPoolId,
+    });
 
-    /**
-     * Create a UserPool client for web/mobile app
-     */
-    const userPoolClient = this.createUserPoolClient();
+    new cognito.CfnUserPoolGroup(this, 'club-coaches-group', {
+      groupName: 'club-coaches',
+      userPoolId: this.userPool.userPoolId,
+    });
+
+    new cognito.CfnUserPoolGroup(this, 'federation-owners-group', {
+      groupName: 'federation-owners',
+      userPoolId: this.userPool.userPoolId,
+    });
+
+    new cdk.CfnOutput(this, 'UserPoolId', {
+      value: this.userPool.userPoolId,
+      exportName: 'UserPoolId',
+    });
+
+    this.createUserPoolWebClient();
+    this.createUserPoolMobileClient();
 
     /**
      * Add triggers
@@ -101,21 +83,60 @@ export class CognitoStack extends cdk.Stack {
     this.addTriggerPostAuthentication(mainTable);
   }
 
-  createUserPoolClient() {
-    const userPoolClient = new cognito.UserPoolClient(this, 'user-pool-web-client', {
-      userPool: this.userPool,
-      userPoolClientName: 'web-client',
-      authFlows: {
-        custom: true,
-        userSrp: true,
-      },
+  createUserPoolWebClient() {
+    const userPoolClient = new CfnUserPoolClient(this, 'UserPoolWebClient', {
+      userPoolId: this.userPool.userPoolId,
+      clientName: 'web-client',
+      explicitAuthFlows: ['ALLOW_CUSTOM_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH'],
+      readAttributes: [
+        'email',
+        'custom:clubs',
+        'custom:teams',
+        'custom:federations',
+        'custom:trzUserId',
+        'custom:trzScopes',
+        'custom:trzChildren',
+        'custom:trzWalletsId',
+        'custom:trzCardsId',
+      ],
+      writeAttributes: ['address'],
     });
 
-    new cdk.CfnOutput(this, 'user-pool-web-client-id', { value: userPoolClient.userPoolClientId });
-    return userPoolClient;
+    new cdk.CfnOutput(this, 'UserPoolWebClientId', {
+      value: userPoolClient.ref,
+      exportName: 'UserPoolWebClientId',
+    });
+  }
+
+  createUserPoolMobileClient() {
+    const userPoolClient = new CfnUserPoolClient(this, 'UserPoolMobileClient', {
+      userPoolId: this.userPool.userPoolId,
+      clientName: 'mobile-client',
+      explicitAuthFlows: ['ALLOW_CUSTOM_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH'],
+      readAttributes: [
+        'email',
+        'custom:clubs',
+        'custom:teams',
+        'custom:federations',
+        'custom:trzUserId',
+        'custom:trzScopes',
+        'custom:trzChildren',
+        'custom:trzWalletsId',
+        'custom:trzCardsId',
+      ],
+      writeAttributes: ['address'],
+    });
+
+    new cdk.CfnOutput(this, 'UserPoolMobileClientId', {
+      value: userPoolClient.ref,
+      exportName: 'UserPoolMobileClientId',
+    });
   }
 
   addTriggerCreateAuthChallenge(signinUrl: string, signinWebUrl: string, imagesDomain: string) {
+    const webClientId = Fn.importValue('UserPoolWebClientId');
+    const mobileClientId = Fn.importValue('UserPoolMobileClientId');
+
     const triggerFunction = this.getFunction(
       'cognitoCreateAuthChallenge',
       'cognito-createAuthChallenge',
@@ -126,6 +147,8 @@ export class CognitoStack extends cdk.Stack {
         SIGNIN_URL: signinUrl,
         SIGNIN_WEB_URL: signinWebUrl,
         IMAGES_DOMAIN: imagesDomain,
+        COGNITO_WEB_CLIENT_ID: webClientId,
+        COGNITO_MOBILE_CLIENT_ID: mobileClientId,
       },
     );
 
