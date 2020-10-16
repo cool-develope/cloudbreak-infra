@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import CognitoHelper from './cognitoHelper';
 import DynamoHelper from './dynamoHelper';
-import { Transfer, WebhookEvent, KycReview, Webhook, TransferType } from './types';
+import { Transfer, WebhookEvent, KycReview, Webhook, TransferType, Card } from './types';
 
 const KYC_REVIEW_NAMES = new Map<string, string>([
   ['0', 'NONE'],
@@ -302,6 +302,43 @@ const processTransferUpdate = async (transfer: Transfer) => {
   }
 };
 
+const processCreateVirtualCard = async (card: Card) => {
+  /**
+   * Card of adult/parent
+   * Card of child
+   */
+
+  const { userId, walletId, cardId } = card;
+  const user = await getUserByTreezorUserId(userId);
+
+  if (!user) {
+    throw Error(`processCreateVirtualCard, user not found by userId: ${userId}`);
+  }
+
+  const tifoUserId = user.pk.replace('user#', '');
+  const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, tifoUserId);
+  await cognitoHelper.addCard(cardId);
+
+  const { parentUserId } = user;
+  if (parentUserId) {
+    const parentCognito = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, parentUserId);
+    await parentCognito.addChildrenData(Number(userId), [Number(cardId)], []);
+    console.log('Add child card to parent', {
+      childId: parentUserId,
+      parentId: tifoUserId,
+      userId,
+      cardId,
+    });
+  }
+
+  console.log('card_createvirtual', {
+    tifoUserId,
+    userId,
+    walletId,
+    cardId,
+  });
+};
+
 const processWebhook = async (h: Webhook) => {
   switch (h.webhook) {
     case WebhookEvent.user_create:
@@ -317,6 +354,8 @@ const processWebhook = async (h: Webhook) => {
       break;
     case WebhookEvent.transfer_update:
       await processTransferUpdate(h.object_payload.transfers[0]);
+    case WebhookEvent.card_createvirtual:
+      await processCreateVirtualCard(h.object_payload.cards[0]);
   }
 };
 
