@@ -268,11 +268,10 @@ export const handler: Handler = async (event) => {
 
   const field = fieldName as FieldName;
 
-  // TODO: enable input validation
-  // const errors: string[] = validateInput(FieldName.createPost, input);
-  // if(errors.length) {
-  //   return { errors }
-  // }
+  const errors: string[] = validateInput(FieldName.createPost, input);
+  if (errors.length) {
+    return { errors };
+  }
 
   if (field === FieldName.createEvent || field === FieldName.updateEvent) {
     /**
