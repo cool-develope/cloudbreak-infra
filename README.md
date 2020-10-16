@@ -66,6 +66,8 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
 - SNS
   - SenderID: Tifo
   - Budget
+- ES
+  - Access Policy + Mapping
 
 ## AWS CLI commands
 
