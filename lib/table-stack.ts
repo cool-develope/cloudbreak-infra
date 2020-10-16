@@ -5,28 +5,25 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
-import { Duration } from '@aws-cdk/core';
+import { Duration, Fn } from '@aws-cdk/core';
 
-export interface TableStackProps extends cdk.StackProps {
-  esDomain: string;
-  dictionaryTableName: string;
-  mainTableName: string;
-}
+export interface TableStackProps extends cdk.StackProps {}
 
 export class TableStack extends cdk.Stack {
   public readonly dictionaryTable: dynamodb.Table;
   public readonly mainTable: dynamodb.Table;
 
-  constructor(scope: cdk.Construct, id: string, props: TableStackProps) {
+  constructor(scope: cdk.Construct, id: string, props?: TableStackProps) {
     super(scope, id, props);
 
-    const { dictionaryTableName, mainTableName, esDomain } = props;
+    const { MAIN_TABLE_NAME = '', DICTIONARY_TABLE_NAME = '' } = process.env;
+    const esDomain = `https://${Fn.importValue('EsDomainEndpoint')}`;
 
     /**
      * Dictionary
      */
-    this.dictionaryTable = new dynamodb.Table(this, 'DictionaryTable', {
-      tableName: dictionaryTableName,
+     this.dictionaryTable = new dynamodb.Table(this, 'DictionaryTable', {
+      tableName: DICTIONARY_TABLE_NAME,
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
     });
@@ -35,7 +32,7 @@ export class TableStack extends cdk.Stack {
      * Main
      */
     this.mainTable = new dynamodb.Table(this, 'MainTable', {
-      tableName: mainTableName,
+      tableName: MAIN_TABLE_NAME,
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
@@ -61,12 +58,12 @@ export class TableStack extends cdk.Stack {
       'events-dynamoStreamMain',
       'dynamoStreamMain',
       {
-        MAIN_TABLE_NAME: mainTableName,
+        MAIN_TABLE_NAME,
         ES_DOMAIN: esDomain,
       },
     );
 
-    this.mainTable.grantReadWriteData(dynamoStreamMainFunction);
+    this.allowDynamoDB(dynamoStreamMainFunction);
 
     dynamoStreamMainFunction.addEventSource(
       new DynamoEventSource(this.mainTable, {
@@ -96,6 +93,30 @@ export class TableStack extends cdk.Stack {
     // ec2:DeleteNetworkInterface
 
     dynamoStreamMainFunction.addToRolePolicy(mainPolicy);
+  }
+
+  allowDynamoDB(lambdaFunction: lambda.Function) {
+    const dbPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    dbPolicy.addActions(
+      'dynamodb:BatchGetItem',
+      'dynamodb:GetRecords',
+      'dynamodb:GetShardIterator',
+      'dynamodb:Query',
+      'dynamodb:GetItem',
+      'dynamodb:Scan',
+      'dynamodb:BatchWriteItem',
+      'dynamodb:PutItem',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    );
+    dbPolicy.addResources(
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+    );
+
+    lambdaFunction.addToRolePolicy(dbPolicy);
   }
 
   getFunction(id: string, functionName: string, folderName: string, environment?: any) {
