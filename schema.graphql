@@ -785,6 +785,7 @@ type UserChild {
   email: String
   birthDate: String
   gender: String
+  treezor: TreezorUser
 }
 
 type ChildInvitation {
