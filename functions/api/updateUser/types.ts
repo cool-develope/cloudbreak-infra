@@ -55,6 +55,7 @@ export interface UpdateUserInput {
   postcode?: string;
   address1?: string;
   address2?: string;
+  language?: string;
 }
 
 export interface UserChild {

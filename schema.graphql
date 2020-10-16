@@ -63,6 +63,7 @@ input UpdateUserInput {
   postcode: String
   address1: String
   address2: String
+  language: String
 }
 
 input InviteParentInput {
