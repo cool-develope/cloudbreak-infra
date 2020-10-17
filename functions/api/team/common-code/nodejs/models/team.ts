@@ -131,6 +131,29 @@ class TeamModel {
     return result;
   }
 
+  async getChildrenTeamsBatch(event: FunctionEventBatch[]) {
+    const sub = event[0]?.identity.sub;
+
+    /**
+     * - get all team IDs
+     * - search teams by parentTeamID
+     */
+
+    const limit = 10;
+    const teamIds = event.map(({ source: { id } }) => id);
+
+    const arrayOfPromises = teamIds.map((id) => {
+      const filter = {
+        parentTeamId: id,
+      };
+      return this.list(sub, filter, limit);
+    });
+
+    const listResults = await Promise.all(arrayOfPromises);
+    const result = listResults.map((teamConnetion) => teamConnetion.items);
+    return result;
+  }
+
   async getTeamsByClubs(userId: string, clubIds: string[]): Promise<TeamsConnection[]> {
     const limit = 10;
 

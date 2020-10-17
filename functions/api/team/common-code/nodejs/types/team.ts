@@ -4,6 +4,7 @@ export enum FieldName {
   team = 'team',
   teamsPrivate = 'teamsPrivate',
   parentTeam = 'parentTeam',
+  childrenTeams = 'childrenTeams',
   clubTeams = 'clubTeams',
 }
 
