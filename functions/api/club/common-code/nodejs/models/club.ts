@@ -10,6 +10,7 @@ import {
   ClubRecord,
   TeamMemberType,
   TeamInvitationStatus,
+  CognitoClaims,
 } from '../types/club';
 
 class ClubModel {
@@ -41,10 +42,38 @@ class ClubModel {
     this.uuidv4 = uuidv4;
   }
 
-  async create(userId: string, input: UpdateClubPrivateInput): Promise<UpdateClubPrivatePayload> {
-    const clubPayload = await this.update(userId, input);
+  async create(
+    claims: CognitoClaims,
+    input: UpdateClubPrivateInput,
+  ): Promise<UpdateClubPrivatePayload> {
+    /**
+     * ! SECURITY
+     * - have only one club - check in token and DynamoDB
+     * - have 'club-owners' in 'cognito:groups'
+     */
 
-    const cognitoHelper = new CognitoHelper(this.cognito, this.userPoolId, userId);
+    const { sub, ['cognito:groups']: groups = [], ['custom:clubs']: clubs = '' } = claims;
+    const haveClubOwnersGroup = (groups || []).includes('club-owners');
+    if (!haveClubOwnersGroup) {
+      return {
+        errors: ['You are not allowed to create a club.', 'Access Denied'],
+        club: null,
+      };
+    }
+
+    const haveClubInToken = clubs && clubs.length;
+    const clubIds = await this.getClubsByOwnerUserId(sub);
+    const haveClubInDB = clubIds && clubIds.length;
+    if (haveClubInToken || haveClubInDB) {
+      return {
+        errors: ['You can have only one club'],
+        club: null,
+      };
+    }
+
+    const clubPayload = await this.update(claims, input);
+
+    const cognitoHelper = new CognitoHelper(this.cognito, this.userPoolId, sub);
     if (clubPayload && clubPayload.club) {
       const clubId = clubPayload.club.id;
       await cognitoHelper.addClub(clubId);
@@ -54,7 +83,25 @@ class ClubModel {
     return clubPayload;
   }
 
-  async update(userId: string, input: UpdateClubPrivateInput): Promise<UpdateClubPrivatePayload> {
+  async update(
+    claims: CognitoClaims,
+    input: UpdateClubPrivateInput,
+  ): Promise<UpdateClubPrivatePayload> {
+    /**
+     * ! SECURITY
+     * - have id in 'custom:clubs'
+     * - have 'club-owners' in 'cognito:groups'
+     */
+
+    const { sub, ['cognito:groups']: groups = [], ['custom:clubs']: clubs = '' } = claims;
+    const haveClubOwnersGroup = (groups || []).includes('club-owners');
+    if (!haveClubOwnersGroup) {
+      return {
+        errors: ['You are not allowed to update a club.', 'Access Denied'],
+        club: null,
+      };
+    }
+
     const {
       id,
       name,
@@ -70,8 +117,20 @@ class ClubModel {
       discipline,
     } = input;
 
-    const pk = id ? `club#${id}` : `club#${this.uuidv4()}`;
-    const defaultValues = id ? null : this.getDefaultValues(userId);
+    const isNew = !id;
+    const pk = isNew ? `club#${this.uuidv4()}` : `club#${id}`;
+    const defaultValues = isNew ? this.getDefaultValues(sub) : null;
+
+    if (id) {
+      const clubIds = await this.getClubsByOwnerUserId(sub);
+      const haveClubInDB = clubIds && clubIds.length && clubIds.includes(id);
+      if (!haveClubInDB) {
+        return {
+          errors: ['You are not allowed to update this club.', 'Access Denied'],
+          club: null,
+        };
+      }
+    }
 
     const metadata: ClubRecord = {
       ...defaultValues,
@@ -173,6 +232,23 @@ class ClubModel {
       ciCount: 0,
       miCount: 0,
     };
+  }
+
+  async getClubsByOwnerUserId(ownerUserId: string): Promise<string[]> {
+    const params = {
+      TableName: this.tableName,
+      IndexName: 'GSI1',
+      KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
+      FilterExpression: 'ownerUserId = :ownerUserId',
+      ExpressionAttributeValues: {
+        ':sk': 'metadata',
+        ':pk': 'club#',
+        ':ownerUserId': ownerUserId,
+      },
+    };
+
+    const { Items } = await this.db.query(params).promise();
+    return Items.map(({ pk }: ClubRecord) => pk?.replace('club#', ''));
   }
 
   prepareEsItems(items: any[] = []) {
