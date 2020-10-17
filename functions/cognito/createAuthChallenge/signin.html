@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       @font-face {
-        font-family: "SFProTextRegular";
-        src: url("{{ domain }}/email/SFProTextRegular.ttf") format("truetype");
+        font-family: 'SFProTextRegular';
+        src: url('{{ domain }}/email/SFProTextRegular.ttf') format('truetype');
       }
       @font-face {
-        font-family: "SFProTextMedium";
-        src: url("{{ domain }}/email/SFProTextMedium.ttf") format("truetype");
+        font-family: 'SFProTextMedium';
+        src: url('{{ domain }}/email/SFProTextMedium.ttf') format('truetype');
       }
       body,
       p {
@@ -24,12 +24,12 @@
       }
       p,
       a {
-        font-family: "SFProTextRegular", "Helvetica", sans-serif;
+        font-family: 'SFProTextRegular', 'Helvetica', sans-serif;
         font-size: 28px;
         line-height: 34px;
       }
       .btn_link {
-        font-family: "SFProTextMedium", "Helvetica", sans-serif;
+        font-family: 'SFProTextMedium', 'Helvetica', sans-serif;
         background: #3054e5;
         text-decoration: none;
         display: block;
@@ -75,7 +75,17 @@
     >
       <tbody>
         <tr>
-          <td width="100%" align="center" class="table-header">
+          <td
+            width="100%"
+            align="center"
+            class="table-header"
+            style="height: 400px;
+          background-image: url({{ domain }}/email/Bg.png);
+          background-repeat: no-repeat;
+          -webkit-background-size: 100% 100%;
+          -moz-background-size: 100% 100%;
+          background-size: 100% 100%;"
+          >
             <img src="{{ domain }}/email/Logo.png" alt="logo" width="165" height="165" />
           </td>
         </tr>
@@ -96,6 +106,19 @@
             <a
               href="{{ url_signin }}"
               class="btn_link"
+              style="
+                font-family: 'SFProTextMedium', 'Helvetica', sans-serif;
+                background: #3054e5;
+                text-decoration: none;
+                display: block;
+                max-width: 578px;
+                color: #ffffff !important;
+                border-radius: 5.6px;
+                padding-top: 27px;
+                padding-bottom: 27px;
+                margin-left: 15px;
+                margin-right: 15px;
+              "
               color="#FFFFFF!important"
               >{{ button }}</a
             >
