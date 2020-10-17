@@ -23,7 +23,7 @@ const es = new Client({ node: ES_DOMAIN });
 export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
   const {
     arguments: { input, clubId, filter, limit, from },
-    identity: { sub },
+    identity: { sub, claims },
     info: { fieldName },
   } = event;
 
@@ -39,9 +39,9 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
   );
 
   if (field === FieldName.createClubPrivate) {
-    return await clubModel.create(sub, input);
+    return await clubModel.create(claims, input);
   } else if (field === FieldName.updateClubPrivate) {
-    return await clubModel.update(sub, input);
+    return await clubModel.update(claims, input);
   } else if (field === FieldName.club) {
     return await clubModel.getById(clubId);
   } else if (field === FieldName.clubs) {
