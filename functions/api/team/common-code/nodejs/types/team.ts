@@ -50,9 +50,9 @@ export interface TeamRecord {
   sk?: string;
   name?: string;
   description?: string;
-  cover: string | null;
-  logo: string | null;
-  parentTeamId: string | null;
+  cover?: string | null;
+  logo?: string | null;
+  parentTeamId?: string | null;
   address?: string;
   email?: string;
   phone?: string;
@@ -121,7 +121,7 @@ export interface UpdateTeamPrivateInput {
   description?: string;
   cover?: string;
   logo?: string;
-  parentTeamId?: string;
+  parentTeamId?: string | null;
   address?: string;
   email?: string;
   phone?: string;
