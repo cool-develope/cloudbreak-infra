@@ -125,7 +125,7 @@ export interface UpdateClubPrivateInput {
 
 export interface UpdateClubPrivatePayload {
   errors: string[];
-  club: Club;
+  club: Club | null;
 }
 
 export interface ClubsFilterInput {
@@ -140,6 +140,21 @@ export interface ClubsConnection {
   totalCount: number;
 }
 
+export interface CognitoClaims {
+  sub: string;
+  aud: string;
+  token_use: string;
+  email: string;
+  'cognito:groups': string[];
+  'cognito:username': string;
+  'custom:trzUserId': string;
+  'custom:clubs': string;
+  'custom:trzWalletsId': string;
+  'custom:trzScopes': string;
+  'custom:trzCardsId': string;
+  'custom:trzChildren': string;
+}
+
 export interface FunctionEvent {
   arguments: {
     input: UpdateClubPrivateInput;
@@ -148,6 +163,6 @@ export interface FunctionEvent {
     limit?: number;
     from?: number;
   };
-  identity: { sub: string };
+  identity: { sub: string; claims: CognitoClaims };
   info: { fieldName: string };
 }
