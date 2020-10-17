@@ -327,6 +327,23 @@ export class Api2Stack extends cdk.Stack {
     });
 
     dataSource.createResolver({
+      typeName: 'Team',
+      fieldName: 'children',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "childrenTeams",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'teams',
       requestMappingTemplate: MappingTemplate.fromString(`
