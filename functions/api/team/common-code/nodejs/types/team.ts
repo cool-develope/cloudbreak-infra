@@ -158,6 +158,8 @@ export interface TeamsFilterInput {
   search?: string;
   discipline?: string[];
   clubIds?: string[];
+  parentTeamId?: string | null;
+  isParent?: boolean;
 }
 
 export interface TeamsConnection {
