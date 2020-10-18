@@ -11,6 +11,7 @@ import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 export interface CognitoStackProps extends cdk.StackProps {
   signinUrl: string;
   signinWebUrl: string;
+  signinManagerUrl: string;
   mainTableName: string;
   imagesDomain: string;
 }
@@ -21,7 +22,7 @@ export class CognitoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CognitoStackProps) {
     super(scope, id, props);
 
-    const { signinUrl, signinWebUrl, mainTableName, imagesDomain } = props;
+    const { signinUrl, signinWebUrl, signinManagerUrl, mainTableName, imagesDomain } = props;
     const mainTable = dynamodb.Table.fromTableName(this, 'events-table-main', mainTableName);
 
     const customAttributes = {
@@ -65,6 +66,11 @@ export class CognitoStack extends cdk.Stack {
       userPoolId: this.userPool.userPoolId,
     });
 
+    new cognito.CfnUserPoolGroup(this, 'tifo-manager-group', {
+      groupName: 'tifo-manager',
+      userPoolId: this.userPool.userPoolId,
+    });
+
     new cdk.CfnOutput(this, 'UserPoolId', {
       value: this.userPool.userPoolId,
       exportName: 'UserPoolId',
@@ -72,11 +78,12 @@ export class CognitoStack extends cdk.Stack {
 
     this.createUserPoolWebClient();
     this.createUserPoolMobileClient();
+    this.createUserPoolManagerClient();
 
     /**
      * Add triggers
      */
-    this.addTriggerCreateAuthChallenge(signinUrl, signinWebUrl, imagesDomain);
+    this.addTriggerCreateAuthChallenge(signinUrl, signinWebUrl, signinManagerUrl, imagesDomain);
     this.addTriggerDefineAuthChallenge();
     this.addTriggerPreSignup();
     this.addTriggerVerifyAuthChallenge();
@@ -133,9 +140,30 @@ export class CognitoStack extends cdk.Stack {
     });
   }
 
-  addTriggerCreateAuthChallenge(signinUrl: string, signinWebUrl: string, imagesDomain: string) {
+  createUserPoolManagerClient() {
+    const userPoolClient = new CfnUserPoolClient(this, 'UserPoolManagerClient', {
+      userPoolId: this.userPool.userPoolId,
+      clientName: 'manager-client',
+      explicitAuthFlows: ['ALLOW_CUSTOM_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH'],
+      readAttributes: [],
+      writeAttributes: ['address'],
+    });
+
+    new cdk.CfnOutput(this, 'UserPoolManagerClientId', {
+      value: userPoolClient.ref,
+      exportName: 'UserPoolManagerClientId',
+    });
+  }
+
+  addTriggerCreateAuthChallenge(
+    signinUrl: string,
+    signinWebUrl: string,
+    signinManagerUrl: string,
+    imagesDomain: string,
+  ) {
     const webClientId = Fn.importValue('UserPoolWebClientId');
     const mobileClientId = Fn.importValue('UserPoolMobileClientId');
+    const managerClientId = Fn.importValue('UserPoolManagerClientId');
 
     const triggerFunction = this.getFunction(
       'cognitoCreateAuthChallenge',
@@ -144,11 +172,13 @@ export class CognitoStack extends cdk.Stack {
       {
         SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
         SES_REGION: 'eu-west-1',
-        SIGNIN_URL: signinUrl,
-        SIGNIN_WEB_URL: signinWebUrl,
         IMAGES_DOMAIN: imagesDomain,
+        SIGNIN_WEB_URL: signinWebUrl,
+        SIGNIN_MOBILE_URL: signinUrl,
+        SIGNIN_MANAGER_URL: signinManagerUrl,
         COGNITO_WEB_CLIENT_ID: webClientId,
         COGNITO_MOBILE_CLIENT_ID: mobileClientId,
+        COGNITO_MANAGER_CLIENT_ID: managerClientId,
       },
     );
 

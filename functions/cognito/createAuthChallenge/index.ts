@@ -4,13 +4,15 @@ import * as fs from 'fs';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
 const {
-  SIGNIN_URL,
-  SIGNIN_WEB_URL,
   SES_FROM_ADDRESS,
   SES_REGION,
   IMAGES_DOMAIN,
+  SIGNIN_WEB_URL = '',
+  SIGNIN_MOBILE_URL = '',
+  SIGNIN_MANAGER_URL = '',
   COGNITO_WEB_CLIENT_ID = '',
   COGNITO_MOBILE_CLIENT_ID = '',
+  COGNITO_MANAGER_CLIENT_ID = '',
 } = process.env;
 AWS.config.update({ region: SES_REGION });
 const ses = new AWS.SES();
@@ -34,11 +36,7 @@ const randomDigits = (len: number): string =>
     .map(() => getRandomInteger(0, 9))
     .join('');
 
-const sendEmail = async (isWeb: boolean, emailAddress: string, secretLoginCode: string) => {
-  const signinUrl = isWeb
-    ? `${SIGNIN_WEB_URL}?code=${secretLoginCode}`
-    : `${SIGNIN_URL}?code=${secretLoginCode}`;
-
+const sendEmail = async (signinUrl: string, emailAddress: string) => {
   const html = getEmailHtml(EMAIL_TEMPLATE, {
     domain: `https://${IMAGES_DOMAIN}`,
     url_signin: signinUrl,
@@ -67,6 +65,17 @@ const sendEmail = async (isWeb: boolean, emailAddress: string, secretLoginCode: 
   await ses.sendEmail(params).promise();
 };
 
+const getSigninUrl = (clientId: string, code: string) => {
+  switch (clientId) {
+    case COGNITO_MANAGER_CLIENT_ID:
+      return `${SIGNIN_MANAGER_URL}?code=${code}`;
+    case COGNITO_WEB_CLIENT_ID:
+      return `${SIGNIN_WEB_URL}?code=${code}`;
+    default:
+      return `${SIGNIN_MOBILE_URL}?code=${code}`;
+  }
+};
+
 export const handler: CognitoUserPoolTriggerHandler = async (event, context) => {
   console.log(JSON.stringify(event, null, 4));
 
@@ -74,14 +83,14 @@ export const handler: CognitoUserPoolTriggerHandler = async (event, context) => 
     callerContext: { clientId },
   } = event;
 
-  const isWeb = clientId === COGNITO_WEB_CLIENT_ID;
-
   let secretLoginCode: string;
   if (!event.request.session || !event.request.session.length) {
     // This is a new auth session
     // Generate a new secret login code and mail it to the user
     secretLoginCode = randomDigits(6);
-    await sendEmail(isWeb, event.request.userAttributes.email, secretLoginCode);
+
+    const signinUrl = getSigninUrl(clientId, secretLoginCode);
+    await sendEmail(signinUrl, event.request.userAttributes.email);
   } else {
     // There's an existing session. Don't generate new digits but
     // re-use the code from the current session. This allows the user to
