@@ -194,12 +194,22 @@ export class CognitoStack extends cdk.Stack {
   }
 
   addTriggerDefineAuthChallenge() {
+    const webClientId = Fn.importValue('UserPoolWebClientId');
+    const mobileClientId = Fn.importValue('UserPoolMobileClientId');
+    const managerClientId = Fn.importValue('UserPoolManagerClientId');
+
     const triggerFunction = this.getFunction(
       'cognito-defineAuthChallenge',
       'cognito-defineAuthChallenge',
       'defineAuthChallenge',
+      {
+        COGNITO_WEB_CLIENT_ID: webClientId,
+        COGNITO_MOBILE_CLIENT_ID: mobileClientId,
+        COGNITO_MANAGER_CLIENT_ID: managerClientId,
+      },
     );
 
+    this.allowCognito(triggerFunction);
     this.userPool.addTrigger(UserPoolOperation.DEFINE_AUTH_CHALLENGE, triggerFunction);
   }
 
@@ -251,6 +261,15 @@ export class CognitoStack extends cdk.Stack {
       sourceArn: sesArn,
       from: 'Tifo <no-reply@tifo-sport.com>',
     };
+  }
+
+  allowCognito(fn: lambda.Function) {
+    const cognitoPolicy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    cognitoPolicy.addActions('cognito-idp:AdminListGroupsForUser', 'cognito-idp:AdminGetUser');
+    cognitoPolicy.addResources('*');
+    fn.addToRolePolicy(cognitoPolicy);
   }
 
   getFunction(id: string, functionName: string, folderName: string, environment?: any) {
