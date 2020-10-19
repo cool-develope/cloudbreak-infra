@@ -1117,8 +1117,13 @@ type MoneyRequestsConnection {
 type Transaction {
   id: ID!
   type: TransactionType
-  amount: String
+  amount: Float
   currency: String
+  createdDate: String
+  transferTypeId: Int
+  balance: Float
+  notes: String
+  status: String
 }
 
 type TransactionsConnection {
