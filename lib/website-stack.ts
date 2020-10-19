@@ -6,7 +6,6 @@ import * as route53tg from '@aws-cdk/aws-route53-targets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import { Certificate, ICertificate } from '@aws-cdk/aws-certificatemanager';
 import { CloudFrontWebDistribution, OriginProtocolPolicy } from '@aws-cdk/aws-cloudfront';
-import { dirname } from 'path';
 
 export interface WebSiteStackProps extends cdk.StackProps {
   bucketName: string;
