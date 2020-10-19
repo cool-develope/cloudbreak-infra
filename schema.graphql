@@ -193,6 +193,10 @@ input MoneyRequestsFilterInput {
   status: MoneyRequestStatus
 }
 
+input TransactionsFilterInput {
+  walletId: String!
+}
+
 input ClubsPrivateFilterInput {
   search: String
 }
@@ -667,6 +671,11 @@ enum NotificationType {
   KycReview
 }
 
+enum TransactionType {
+  Payin
+  Transfer
+}
+
 type Image {
   url: String
 }
@@ -1103,6 +1112,17 @@ type MoneyRequestsConnection {
   items: [MoneyRequest]
 }
 
+type Transaction {
+  id: ID!
+  type: TransactionType
+  amount: String
+  currency: String
+}
+
+type TransactionsConnection {
+  items: [Transaction]
+}
+
 union FeedItem = Event | Post
 
 type Mutation {
@@ -1242,4 +1262,5 @@ type Query {
   userPrivate(userId: ID!): UserPrivate
   notifications(limit: Int): NotificationsConnection!
   moneyRequests(filter: MoneyRequestsFilterInput): MoneyRequestsConnection!
+  transactions(filter: TransactionsFilterInput): TransactionsConnection!
 }
