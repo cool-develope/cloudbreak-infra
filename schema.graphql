@@ -194,7 +194,9 @@ input MoneyRequestsFilterInput {
 }
 
 input TransactionsFilterInput {
-  walletId: String!
+  walletId: String
+  dateFrom: AWSDateTime
+  dateTo: AWSDateTime
 }
 
 input ClubsPrivateFilterInput {
