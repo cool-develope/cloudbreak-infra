@@ -1121,6 +1121,7 @@ type Transaction {
   currency: String
   createdDate: String
   transferTypeId: Int
+  paymentMethodId: Int
   balance: Float
   notes: String
   status: String
