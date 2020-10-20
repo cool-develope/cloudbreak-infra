@@ -1120,10 +1120,28 @@ type Transaction {
   amount: Float
   currency: String
   createdDate: String
+  """
+  | 1 | Wallet to wallet |
+  | 2 | Card transaction |
+  | 3 | Client fees |
+  | 4 | Credit note |
+  """
   transferTypeId: Int
+  """
+  | 3 | Check |
+  | 11 | Card |
+  | 14 | Oneclick card (without payment form) |
+  | 21 | Sepa Direct Debit Core |
+  | 23 | Full Hosted HTML Payment Form |
+  | 24 | IFrame Payment Form |
+  | 25 | Payment made through an SDK |
+  """
   paymentMethodId: Int
   balance: Float
   notes: String
+  """
+  PENDING, CANCELED, VALIDATED
+  """
   status: String
   event: TransactionForEvent
   user: UserPublic
