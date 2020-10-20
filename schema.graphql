@@ -1124,6 +1124,12 @@ type Transaction {
   balance: Float
   notes: String
   status: String
+  event: TransactionForEvent
+  user: UserPublic
+}
+
+type TransactionForEvent {
+  id: String
 }
 
 type TransactionsConnection {
