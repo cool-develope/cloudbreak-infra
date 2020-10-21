@@ -170,7 +170,7 @@ export class CognitoStack extends cdk.Stack {
       'cognito-createAuthChallenge',
       'createAuthChallenge',
       {
-        SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
+        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
         SES_REGION: 'eu-west-1',
         IMAGES_DOMAIN: imagesDomain,
         SIGNIN_WEB_URL: signinWebUrl,
