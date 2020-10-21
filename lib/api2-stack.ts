@@ -93,6 +93,8 @@ export class Api2Stack extends cdk.Stack {
     this.eventOrganizationField();
 
     this.federation();
+
+    this.treezor();
   }
 
   dictionaryQuery() {
@@ -609,6 +611,42 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'federation',
+    });
+  }
+
+  treezor() {
+    const { TREEZOR_BASE_URL, TREEZOR_CLIENT_ID, TREEZOR_CLIENT_SECRET } = process.env;
+
+    const fn = this.getFunction(
+      'treezor',
+      'api-treezor',
+      'treezor',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        ES_DOMAIN: this.esDomain,
+        COGNITO_USERPOOL_ID: this.userPoolId,
+        TREEZOR_BASE_URL,
+        TREEZOR_CLIENT_ID,
+        TREEZOR_CLIENT_SECRET,
+      },
+      360,
+      256,
+    );
+
+    this.allowDynamoDB(fn);
+    this.allowES(fn);
+
+    const cognitoPolicy = new PolicyStatement({ effect: Effect.ALLOW });
+    cognitoPolicy.addActions('cognito-idp:AdminGetUser');
+    cognitoPolicy.addResources('*');
+    fn.addToRolePolicy(cognitoPolicy);
+
+    const dataSource = this.api.addLambdaDataSource('treezorFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'transactions',
     });
   }
 
