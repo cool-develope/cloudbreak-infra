@@ -1138,6 +1138,8 @@ type Transaction {
   """
   paymentMethodId: Int
   balance: Float
+  debitBalance: Float
+  creditBalance: Float
   notes: String
   """
   PENDING, CANCELED, VALIDATED
