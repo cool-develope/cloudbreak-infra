@@ -25,7 +25,7 @@ export enum RepeatType {
 }
 
 export enum Discipline {
-  SOCCER = 'SOCCER',
+  FOOTBALL = 'FOOTBALL',
   TENNIS = 'TENNIS',
   PADEL = 'PADEL',
   BASKETBALL = 'BASKETBALL',
