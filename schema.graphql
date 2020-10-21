@@ -1144,15 +1144,15 @@ type Transaction {
   """
   paymentMethodId: Int
   balance: Float
-  debitBalance: Float
-  creditBalance: Float
   notes: String
   """
   PENDING, CANCELED, VALIDATED
   """
   status: String
+  isIncome: Boolean
   event: TransactionForEvent
-  user: UserPublic
+  fromUser: UserPublic
+  toUser: UserPublic
 }
 
 type TransactionForEvent {
