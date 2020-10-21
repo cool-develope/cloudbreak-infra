@@ -693,6 +693,7 @@ type File {
 }
 
 type Contact {
+  id: ID!
   fullName: String!
   photo: Image!
   email: String!
