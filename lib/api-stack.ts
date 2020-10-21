@@ -590,7 +590,7 @@ export class ApiStack extends cdk.Stack {
         MAIN_TABLE_NAME: this.mainTable.tableName,
         IMAGES_DOMAIN: this.imagesDomain,
         ES_DOMAIN: this.esDomain,
-        SES_FROM_ADDRESS: 'no-reply@tifo-sport.com',
+        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
         SES_REGION: 'eu-west-1',
         INVITATION_URL: process.env.CHILD_INVITATION_URL,
       },
