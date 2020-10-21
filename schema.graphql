@@ -579,7 +579,7 @@ enum UserRole {
 }
 
 enum Discipline {
-  SOCCER
+  FOOTBALL
   TENNIS
   PADEL
   BASKETBALL
