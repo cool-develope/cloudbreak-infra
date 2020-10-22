@@ -1154,6 +1154,10 @@ type Transaction {
   event: TransactionForEvent
   fromUser: UserPublic
   toUser: UserPublic
+  walletDebitId: Int
+  walletCreditId: Int
+  payoutTypeId: Int
+  bankaccountIBAN: String
 }
 
 type TransactionForEvent {
