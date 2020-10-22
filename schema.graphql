@@ -1156,6 +1156,10 @@ type Transaction {
   toUser: UserPublic
   walletDebitId: Int
   walletCreditId: Int
+  """
+  1 - Credit Transfer, 
+  2 - Direct Debit
+  """
   payoutTypeId: Int
   bankaccountIBAN: String
 }
