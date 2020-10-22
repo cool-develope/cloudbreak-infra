@@ -9,7 +9,7 @@ export enum FieldName {
 }
 
 export enum Discipline {
-  SOCCER = 'SOCCER',
+  FOOTBALL = 'FOOTBALL',
   TENNIS = 'TENNIS',
   PADEL = 'PADEL',
   BASKETBALL = 'BASKETBALL',
