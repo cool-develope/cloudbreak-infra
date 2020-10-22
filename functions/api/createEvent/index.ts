@@ -268,15 +268,19 @@ export const handler: Handler = async (event) => {
 
   const field = fieldName as FieldName;
 
-  const errors: string[] = validateInput(FieldName.createPost, input);
-  if (errors.length) {
-    return { errors };
-  }
+  let errors: string[] = [];
 
   if (field === FieldName.createEvent || field === FieldName.updateEvent) {
     /**
      * Mutation createEvent:
      */
+    if (field === FieldName.createEvent) {
+      errors = validateInput(FieldName.createPost, input);
+      if (errors.length) {
+        return { errors };
+      }
+    }
+
     const payload = await createEvent(sub, input);
     return payload;
   } else if (field === FieldName.createPost || field === FieldName.updatePost) {
