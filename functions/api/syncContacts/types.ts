@@ -30,6 +30,7 @@ export interface PhoneContact {
 }
 
 export interface Contact {
+  id: string;
   fullName: string;
   photo: Image;
   email: string;

@@ -174,6 +174,7 @@ const getTypeImage = (image: string = '') => ({
 });
 
 const getTypeContact = (user: any): Contact => ({
+  id: user.pk.replace('user#', ''),
   fullName: `${user.firstName} ${user.lastName}`,
   photo: getTypeImage(user.photo),
   email: user.email,
