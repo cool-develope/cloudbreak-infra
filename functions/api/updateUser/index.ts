@@ -340,6 +340,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
   };
 
   return {
+    id: userId,
     email,
     firstName,
     lastName,
