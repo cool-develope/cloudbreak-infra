@@ -47,21 +47,6 @@ class TeamInvitationModel {
     return Item;
   }
 
-  async incrementInvitationsCount(
-    clubId: string,
-    teamId: string,
-    role: TeamMemberType,
-    isDecrement: boolean = false,
-  ) {
-    const fieldName = role === TeamMemberType.Coach ? 'ciCount' : 'miCount';
-    const pk = `club#${clubId}`;
-    const skClub = `metadata`;
-    const skTeam = `team#${teamId}`;
-
-    await this.dynamoHelper.incrementField(pk, skClub, fieldName, 1, isDecrement);
-    await this.dynamoHelper.incrementField(pk, skTeam, fieldName, 1, isDecrement);
-  }
-
   async sendInvitation(
     userId: string,
     input: SendTeamInvitationInput,
@@ -90,7 +75,6 @@ class TeamInvitationModel {
         clubId,
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
-      await this.incrementInvitationsCount(clubId, teamId, role);
       await this.putEvents('SendTeamInvitation', {
         sub: userId,
         teamId,
@@ -125,7 +109,6 @@ class TeamInvitationModel {
         status: TeamInvitationStatus.Accepted,
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
-      await this.incrementInvitationsCount(clubId, teamId, teamUser.role, true);
       await this.putEvents('AcceptTeamInvitation', {
         sub: userId,
         teamId,
@@ -160,7 +143,6 @@ class TeamInvitationModel {
         status: TeamInvitationStatus.Declined,
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
-      await this.incrementInvitationsCount(clubId, teamId, teamUser.role, true);
       await this.putEvents('DeclineTeamInvitation', {
         sub: userId,
         teamId,
