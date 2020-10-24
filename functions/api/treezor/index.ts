@@ -63,7 +63,7 @@ const treezorClient = new TreezorClient(
 
 export const handler: Handler = async (event: FunctionEvent) => {
   const {
-    arguments: { filter },
+    arguments: { filter = {} },
     identity: { sub, claims },
     info: { fieldName },
     request: {
@@ -72,8 +72,12 @@ export const handler: Handler = async (event: FunctionEvent) => {
   } = event;
 
   console.debug(JSON.stringify(event, null, 4));
-  const { ['custom:trzWalletsId']: trzWalletsId } = claims;
-  const items = await treezorClient.getTransactions(Number(trzWalletsId), token);
+  
+  // TODO: check walletId in my token
+  const { walletId } = filter;
+  // const { ['custom:trzWalletsId']: trzWalletsId } = claims;
+
+  const items = await treezorClient.getTransactions(Number(walletId), token);
 
   return { items };
 };
