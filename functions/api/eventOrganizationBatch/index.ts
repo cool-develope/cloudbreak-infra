@@ -20,6 +20,11 @@ interface EventOrganizationFromBatch {
   walletId: number;
 }
 
+interface NameAndOwner {
+  name: string;
+  ownerUserId: string;
+}
+
 interface EventOrganizationFromSource {
   id: string;
   type: OrganizationType;
@@ -27,7 +32,11 @@ interface EventOrganizationFromSource {
 
 interface ClubRecord {
   name: string;
-  treezorWalletId?: number;
+  ownerUserId: string;
+}
+
+interface UserRecord {
+  treezorWalletId?: null;
 }
 
 const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN, ES_DOMAIN } = process.env;
@@ -35,26 +44,57 @@ const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN, ES_DOMAIN } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
 const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 
-const getTypeEventOrganization = ({
-  name,
-  treezorWalletId: walletId = 0,
-}: ClubRecord): EventOrganizationFromBatch => ({
-  name,
-  walletId,
-});
-
 const getOrganization = (
   organization: EventOrganizationFromSource,
-  batchMap: Map<string, any>,
+  orgOwners: Map<string, NameAndOwner>,
+  userWallets: Map<string, number>,
 ): EventOrganization => {
   const pkPreffix = organization.type === OrganizationType.Federation ? 'federation' : 'club';
   const pk = `${pkPreffix}#${organization.id}`;
-  const orgFromBatch = batchMap.get(pk);
+  const ownerUser = orgOwners.get(pk);
+
+  let name = '';
+  let walletId = 0;
+
+  if (ownerUser) {
+    name = ownerUser.name;
+    walletId = userWallets.get(`user#${ownerUser.ownerUserId}`) || 0;
+  }
 
   return {
     ...organization,
-    ...orgFromBatch,
+    name,
+    walletId,
   };
+};
+
+/**
+ * Set.Key and Map.Key - organization PK, club#111
+ * @param ids
+ */
+const getOrganizationOwner = async (pks: string[]): Promise<Map<string, NameAndOwner>> => {
+  const keys = [...new Set(pks)].map((pk) => ({
+    pk,
+    sk: 'metadata',
+  }));
+
+  return await dynamoHelper.batchGet(keys, 'pk', ({ name, ownerUserId }) => ({
+    name,
+    ownerUserId,
+  }));
+};
+
+/**
+ * Set.Key and Map.Key - user PK, user#111
+ * @param ids
+ */
+const getUserWallet = async (userIds: string[]): Promise<Map<string, number>> => {
+  const keys = [...new Set(userIds)].map((id) => ({
+    pk: `user#${id}`,
+    sk: 'metadata',
+  }));
+
+  return await dynamoHelper.batchGet(keys, 'pk', (item) => item?.treezorWalletId || 0);
 };
 
 export const handler: Handler = async (
@@ -70,30 +110,29 @@ export const handler: Handler = async (
 ) => {
   console.log(JSON.stringify(event, null, 4));
 
-  const ids = event.map(
+  /**
+   * Receive id from event (clubId, federationId)
+   * 1. get ownerUserId from club/federation metadata
+   * 2. get treezorWalletId from user metadata
+   */
+
+  const pks = event.map(
     ({
       source: {
         organization: { id, type },
       },
     }) => `${type === OrganizationType.Federation ? 'federation' : 'club'}#${id}`,
   );
-  const uniqIds = new Set(ids);
-  const arrayOfKeys = [...uniqIds].map((pk) => ({
-    pk,
-    sk: 'metadata',
-  }));
 
-  console.log(arrayOfKeys);
+  const orgOwners = await getOrganizationOwner(pks);
+  const userIds = [...orgOwners.values()].map((item) => item.ownerUserId);
+  const userWallets = await getUserWallet(userIds);
 
-  const batchMap = await dynamoHelper.batchGet(arrayOfKeys, 'pk', (item) =>
-    getTypeEventOrganization(item),
-  );
-
-  console.log(batchMap);
+  console.log({ orgOwners, userWallets });
 
   const result = event.map(({ source: { __typename, organization } }) => ({
     __typename,
-    ...getOrganization(organization, batchMap),
+    ...getOrganization(organization, orgOwners, userWallets),
   }));
 
   return result;
