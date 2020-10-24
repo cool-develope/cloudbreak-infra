@@ -92,6 +92,36 @@ const getTimeDifferenceInHours = (createdAt: string) => {
   return difference;
 };
 
+const acceptChildInvitation = async (sub: string, invitationId: string, pk: string, sk: string) => {
+  const invitationData = {
+    modifiedAt: new Date().toISOString(),
+    inviteStatus: 'accepted',
+  };
+
+  const userData = {
+    modifiedAt: new Date().toISOString(),
+    parentUserId: sub,
+  };
+
+  // Update parent user (me)
+  await updateItemSetAdd(`user#${sub}`, 'metadata', invitationId);
+
+  // Update child user
+  await updateItem(`user#${invitationId}`, 'metadata', userData);
+
+  // Update invitation
+  await updateItem(pk, sk, invitationData);
+};
+
+const declineChildInvitation = async (pk: string, sk: string) => {
+  const data = {
+    modifiedAt: new Date().toISOString(),
+    inviteStatus: 'declined',
+  };
+
+  await updateItem(pk, sk, data);
+};
+
 export const handler: Handler = async (event): Promise<{ errors: string[] }> => {
   const {
     arguments: {
@@ -121,60 +151,38 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
   const { Item: userChild } = await getItem(`user#${invitationId}`, 'metadata');
   const { Item: userParent } = await getItem(`user#${sub}`, 'metadata');
 
-  if (invitation && invitation.inviteStatus === 'pending') {
+  if (!invitation) {
+    errors.push('Invitation not found');
+  } else if (invitation.inviteStatus === 'pending') {
     const hoursFromCreation = getTimeDifferenceInHours(invitation.createdAt);
     const invitationExpired = hoursFromCreation > 168;
 
-    if (invitationExpired) {
-      errors.push('Invitation is expired');
-    } else {
-      if (field === FieldName.acceptChildInvitation) {
-        const invitationData = {
-          modifiedAt: new Date().toISOString(),
-          inviteStatus: 'accepted',
-        };
-
-        const userData = {
-          modifiedAt: new Date().toISOString(),
-          parentUserId: sub,
-        };
-
-        // Update parent user (me)
-        await updateItemSetAdd(`user#${sub}`, 'metadata', invitationId);
-
-        // Update child user
-        await updateItem(`user#${invitationId}`, 'metadata', userData);
-
-        // Update invitation
-        await updateItem(pk, sk, invitationData);
-      } else if (field === FieldName.declineChildInvitation) {
-        const data = {
-          modifiedAt: new Date().toISOString(),
-          inviteStatus: 'declined',
-        };
-
-        await updateItem(pk, sk, data);
+    if (field === FieldName.acceptChildInvitation) {
+      if (invitationExpired) {
+        errors.push('Invitation is expired');
+      } else {
+        await acceptChildInvitation(sub, invitationId, pk, sk);
       }
-
-      const detailType =
-        field === FieldName.acceptChildInvitation
-          ? 'AcceptChildInvitation'
-          : 'DeclineChildInvitation';
-
-      await putEvents(detailType, {
-        childSub: invitationId,
-        childFirstName: userChild.firstName,
-        childLastName: userChild.lastName,
-        childBirthDate: userChild.birthDate,
-        parentSub: sub,
-        parentFirstName: userParent.firstName,
-        parentLastName: userParent.lastName,
-      });
+    } else if (field === FieldName.declineChildInvitation) {
+      await declineChildInvitation(pk, sk);
     }
-  } else if (invitation && invitation.inviteStatus !== 'pending') {
+
+    const detailType =
+      field === FieldName.acceptChildInvitation
+        ? 'AcceptChildInvitation'
+        : 'DeclineChildInvitation';
+
+    await putEvents(detailType, {
+      childSub: invitationId,
+      childFirstName: userChild.firstName,
+      childLastName: userChild.lastName,
+      childBirthDate: userChild.birthDate,
+      parentSub: sub,
+      parentFirstName: userParent.firstName,
+      parentLastName: userParent.lastName,
+    });
+  } else if (invitation.inviteStatus !== 'pending') {
     errors.push('Invitation alredy accepted/declined');
-  } else {
-    errors.push('Invitation not found');
   }
 
   return { errors };
