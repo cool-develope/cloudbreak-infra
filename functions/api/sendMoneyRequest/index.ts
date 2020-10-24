@@ -3,9 +3,8 @@ import * as AWS from 'aws-sdk';
 import * as OneSignal from 'onesignal-node';
 import { Handler } from 'aws-lambda';
 // @ts-ignore
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import DynamoHelper from './dynamoHelper';
-import { error } from 'console';
 
 enum FieldName {
   sendMoneyRequest = 'sendMoneyRequest',
@@ -70,8 +69,8 @@ const putEvents = (type: string, detail: any) => {
 
 const getDeviceIds = async (pk: string) => {
   const getResult = await getItem(pk, 'devices');
-  if (getResult.Item) {
-    return getResult.Item.ids.values;
+  if (getResult.Item && getResult.Item.ids) {
+    return getResult.Item.ids.values.filter((id: string) => uuidValidate(id));
   }
 
   return [];
@@ -162,11 +161,20 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
 
   /**
    * TODO: check treezorWalletId/treezorUserId for sender and receiver
-   * TODO: check receiver devices ids
    */
 
   if (!recipientUser) {
     errors.push('Recipient Not Found');
+    return errors;
+  }
+
+  if (!senderUser.treezorWalletId) {
+    errors.push("You don't have a wallet");
+    return errors;
+  }
+
+  if (!recipientUser.treezorWalletId) {
+    errors.push("Recipient don't have a wallet");
     return errors;
   }
 
@@ -186,13 +194,14 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
       amount,
       note,
     };
+
+    console.log('Push', data, ids);
+
     const res = await sendPushNotifications(ids, data);
-    console.log('Push data', data);
-    console.log('Push ids', ids);
     console.log('Push result', res);
   } catch (e) {
-    errors.push('Error during sending push notification');
-    console.log(e);
+    // errors.push('Error during sending push notification');
+    console.error(e, ids);
   }
 
   const requestPk = `money-request#${uuidv4()}`;
@@ -208,13 +217,13 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
   });
 
   await putEvents('SendMoneyRequest', {
-    senderSub: senderUser.pk.replace('user#', ''),
+    senderSub: senderUserId,
     senderEmail: senderUser.email,
     senderFirstName: senderUser.firstName,
     senderLastName: senderUser.lastName,
     senderPhoto: getImageUrl(senderUser.photo),
     recipientSub: recipientUserId,
-    recipientEmail: email,
+    recipientEmail: recipientUser.email,
     amount,
     note,
   });
@@ -254,8 +263,20 @@ const moneyRequests = async (sub: string, filter: any = {}): Promise<MoneyReques
   const resultItems: MoneyRequest[] = [];
 
   for (const item of Items) {
+    /**
+     * Sergey to Alex - sender=Sergey, recipien=Alex
+     * Alex to Sergey - sender=Alex, recipien=Sergey
+     *
+     * Alex see (Sergey to Alex) - user=sender
+     * Alex see (Alex to Sergey) - user=recipien
+     *
+     * Sergey see (Sergey to Alex) - user=recipien
+     * Sergey see (Alex to Sergey) - user=sender
+     */
+
     const { recipientUserId, senderUserId } = item;
-    const userId = item.senderUserId === sub ? recipientUserId : senderUserId;
+    const fromMe = item.senderUserId === sub;
+    const userId = fromMe ? recipientUserId : senderUserId;
     const { Item: userData } = await dynamoHelper.getItem(`user#${userId}`, 'metadata');
 
     resultItems.push({
@@ -265,11 +286,14 @@ const moneyRequests = async (sub: string, filter: any = {}): Promise<MoneyReques
       status: item.status,
       createDate: item.createdAt,
       user: getTypeUser(userData || {}),
-      fromMe: item.senderUserId === sub,
+      fromMe,
     });
   }
 
-  return resultItems;
+  return resultItems.sort(
+    // @ts-ignore
+    (a, b) => new Date(b.createDate) - new Date(a.createDate),
+  );
 };
 
 export const handler: Handler = async (event): Promise<{ errors?: string[]; items?: any[] }> => {
