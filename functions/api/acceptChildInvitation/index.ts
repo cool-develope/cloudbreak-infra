@@ -123,7 +123,7 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
 
   if (invitation && invitation.inviteStatus === 'pending') {
     const hoursFromCreation = getTimeDifferenceInHours(invitation.createdAt);
-    const invitationExpired = hoursFromCreation > 24;
+    const invitationExpired = hoursFromCreation > 168;
 
     if (invitationExpired) {
       errors.push('Invitation is expired');
