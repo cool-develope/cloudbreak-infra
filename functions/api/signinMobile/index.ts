@@ -1,6 +1,8 @@
 // @ts-ignore
 import * as AWS from 'aws-sdk';
 import { Handler } from 'aws-lambda';
+// @ts-ignore
+import { validate as uuidValidate } from 'uuid';
 
 const db = new AWS.DynamoDB.DocumentClient();
 const { MAIN_TABLE_NAME } = process.env;
@@ -36,8 +38,12 @@ export const handler: Handler = async (event) => {
   const isAdd = mutation === MutationName.signinMobile;
   const pk = `user#${sub}`;
 
-  if (deviceId) {
-    await updateItemSet(pk, 'devices', deviceId, isAdd);
+  try {
+    if (deviceId && uuidValidate(deviceId)) {
+      await updateItemSet(pk, 'devices', deviceId, isAdd);
+    }
+  } catch (err) {
+    console.error(err, deviceId);
   }
 
   return {
