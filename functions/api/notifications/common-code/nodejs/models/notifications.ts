@@ -47,6 +47,9 @@ class NotificationsModel {
         attributes,
         createDate: createdAt,
       }),
+    ).sort(
+      // @ts-ignore
+      (a, b) => new Date(b.createDate) - new Date(a.createDate),
     );
 
     return {
