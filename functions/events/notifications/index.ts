@@ -104,5 +104,19 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
         }),
       });
       break;
+
+    case NotificationType.InviteParent:
+      await notificationsModel.create(detail.childParentSub, {
+        type,
+        attributes: objToKeyValueArray({
+          childUserId: detail.childSub,
+          childEmail: detail.childEmail,
+          childFirstName: detail.childFirstName,
+          childLastName: detail.childLastName,
+          childBirthDate: detail.childBirthDate,
+          childPhoto: detail.childPhoto,
+        }),
+      });
+      break;
   }
 };
