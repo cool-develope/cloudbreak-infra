@@ -65,7 +65,7 @@ export class Api2Stack extends cdk.Stack {
 
     /**
      * Mutation: createClubPrivate, updateClubPrivate
-     * Query: club, clubs
+     * Query: club, clubs, clubsPrivate
      */
     this.clubQuery();
 
@@ -251,6 +251,11 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'clubs',
+    });
+
+    dataSource.createResolver({
+      typeName: 'Query',
+      fieldName: 'clubsPrivate',
     });
   }
 
