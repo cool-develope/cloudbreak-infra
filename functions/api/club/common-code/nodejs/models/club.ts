@@ -13,6 +13,14 @@ import {
   CognitoClaims,
 } from '../types/club';
 
+interface TeamStats {
+  clubId: string;
+  teamId: string;
+  status: string;
+  role: string;
+  count: number;
+}
+
 class ClubModel {
   private readonly es: any;
   private readonly db: any;
@@ -149,17 +157,19 @@ class ClubModel {
     };
 
     const { Attributes } = await this.dynamoHelper.updateItem(pk, 'metadata', metadata);
+    const teamStats = await this.getTeamStats();
 
     return {
       errors: [],
-      club: this.getTypeClub(Attributes),
+      club: this.getTypeClub(Attributes, teamStats),
     };
   }
 
   async getById(clubId: string): Promise<Club | null> {
     const pk = `club#${clubId}`;
     const { Item } = await this.dynamoHelper.getItem(pk, 'metadata');
-    return this.getTypeClub(Item);
+    const teamStats = await this.getTeamStats();
+    return this.getTypeClub(Item, teamStats);
   }
 
   async list(
@@ -170,34 +180,39 @@ class ClubModel {
   ): Promise<ClubsConnection> {
     const query = this.getEsQuery(userId, filter);
     const esResult = await this.esSearch({ query, limit, from });
+    const teamStats = await this.getTeamStats();
 
     const totalCount = esResult.body?.hits.total.value || 0;
     const items = this.prepareEsItems(esResult.body?.hits.hits);
 
     return {
-      items: items.map((item) => this.getTypeClub(item)),
+      items: items.map((item) => this.getTypeClub(item, teamStats)),
       totalCount,
     };
   }
 
-  getTypeClub({
-    pk = '',
-    name = ' ',
-    description = '',
-    cover,
-    logo,
-    code = '',
-    email = '',
-    phone = '',
-    country = '',
-    city = '',
-    address = '',
-    discipline = [],
-    ciCount = 0,
-    miCount = 0,
-  }: ClubRecord): Club {
+  getTypeClub(data: ClubRecord, teamStats: TeamStats[]): Club {
+    const {
+      pk = '',
+      name = ' ',
+      description = '',
+      cover,
+      logo,
+      code = '',
+      email = '',
+      phone = '',
+      country = '',
+      city = '',
+      address = '',
+      discipline = [],
+    } = data;
+
+    const id = pk.replace('club#', '');
+
+    // TODO: upcomingEventsCount
+
     return {
-      id: pk.replace('club#', ''),
+      id,
       name,
       description,
       cover: this.getTypeImage(cover),
@@ -213,9 +228,21 @@ class ClubModel {
       coaches: null,
       members: null,
       friends: null,
-      upcomingEventsCount: 1,
-      coacheInvitationsCount: ciCount || 0,
-      memberInvitationsCount: miCount || 0,
+      upcomingEventsCount: 0,
+      coacheInvitationsCount: this.getClubStats(
+        teamStats,
+        id,
+        null,
+        TeamMemberType.Coach,
+        TeamInvitationStatus.Pending,
+      ),
+      memberInvitationsCount: this.getClubStats(
+        teamStats,
+        id,
+        null,
+        TeamMemberType.Member,
+        TeamInvitationStatus.Pending,
+      ),
     };
   }
 
@@ -229,8 +256,6 @@ class ClubModel {
     return {
       ownerUserId: userId,
       createdAt: new Date().toISOString(),
-      ciCount: 0,
-      miCount: 0,
     };
   }
 
@@ -364,6 +389,97 @@ class ClubModel {
       console.error(JSON.stringify(err, null, 2));
       return { body: null };
     }
+  }
+
+  getClubStats(
+    teams: TeamStats[],
+    clubId: string | null,
+    teamId: string | null,
+    role: string,
+    status: string,
+  ): number {
+    const itemsByClub = clubId ? teams.filter((item) => item.clubId === clubId) : teams;
+    const itemsByTeam = teamId ? itemsByClub.filter((item) => item.teamId === teamId) : itemsByClub;
+    const items = itemsByTeam.filter((item) => item.role === role && item.status === status);
+    const count = items.reduce((prev, { count = 0 }) => prev + count, 0);
+    return count;
+  }
+
+  async getTeamStats(): Promise<TeamStats[]> {
+    const teams = [];
+
+    try {
+      const response = await this.es.search({
+        index: 'users',
+        body: {
+          size: 0,
+          aggs: {
+            teams: {
+              nested: {
+                path: 'teams',
+              },
+              aggs: {
+                club: {
+                  terms: {
+                    field: 'teams.clubId.keyword',
+                    size: 1000,
+                  },
+                  aggs: {
+                    team: {
+                      terms: {
+                        field: 'teams.teamId.keyword',
+                      },
+                      aggs: {
+                        role: {
+                          terms: {
+                            field: 'teams.role.keyword',
+                            size: 1000,
+                          },
+                          aggs: {
+                            status: {
+                              terms: {
+                                field: 'teams.status.keyword',
+                                size: 1000,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      for (const club of response.body.aggregations.teams.club.buckets) {
+        const clubId = club.key;
+        for (const team of club.team.buckets) {
+          const teamId = team.key;
+          for (const role of team.role.buckets) {
+            const roleName = role.key;
+            for (const status of role.status.buckets) {
+              const statusName = status.key;
+              const statusCount = status.doc_count;
+
+              teams.push({
+                clubId,
+                teamId,
+                role: roleName,
+                status: statusName,
+                count: statusCount,
+              });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    return teams;
   }
 }
 
