@@ -67,21 +67,17 @@ export interface Post {
   organization: EventOrganization;
 }
 
+export interface IdName {
+  id: string;
+  name?: string;
+}
+
 export interface EventTarget {
   country?: string;
-  federation?: {
-    id: string;
-    name?: string;
-  }[];
-  club?: {
-    id: string;
-    name?: string;
-  }[];
+  federation?: IdName[];
+  club?: IdName[];
   discipline?: string[];
-  team?: {
-    id: string;
-    name?: string;
-  }[];
+  team?: IdName[];
   userRole?: string[];
 }
 
