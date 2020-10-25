@@ -1288,6 +1288,10 @@ type Query {
 
   club(clubId: ID!): Club
   clubs(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
+  """
+  Deprecated
+  """
+  clubsPrivate(filter: ClubsFilterInput, limit: Int, from: Int): ClubsConnection!
   companyPrivate: Company
   usersPrivate(filter: UsersPrivateFilterInput, limit: Int, from: Int): UsersPrivateConnection!
   userPrivate(userId: ID!): UserPrivate
