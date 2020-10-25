@@ -44,7 +44,7 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
     return await clubModel.update(claims, input);
   } else if (field === FieldName.club) {
     return await clubModel.getById(clubId);
-  } else if (field === FieldName.clubs) {
+  } else if (field === FieldName.clubs || field === FieldName.clubsPrivate) {
     return await clubModel.list(sub, filter, limit, from);
   }
 

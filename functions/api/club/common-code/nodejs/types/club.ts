@@ -3,6 +3,7 @@ export enum FieldName {
   updateClubPrivate = 'updateClubPrivate',
   club = 'club',
   clubs = 'clubs',
+  clubsPrivate = 'clubsPrivate',
 }
 
 export enum Discipline {
