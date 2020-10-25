@@ -61,8 +61,6 @@ export interface TeamRecord {
   federations?: string[];
   ownerUserId?: string;
   modifiedAt?: string;
-  ciCount?: number | null;
-  miCount?: number | null;
 }
 
 export interface Team {
