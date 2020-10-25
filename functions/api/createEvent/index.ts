@@ -179,6 +179,7 @@ const createEvent = async (
   const errors: string[] = [];
   const pk = id ? `event#${id}` : `event#${uuidv4()}`;
   const defaultValues = id ? null : getDefaultValues(userId, EventType.Event);
+  const targetClub: string[] = clubId ? [clubId] : target?.club || [];
 
   const metadata: any = {
     ...defaultValues,
@@ -195,7 +196,7 @@ const createEvent = async (
     repeatType,
     targetCountry: target?.country,
     targetFederation: target?.federation,
-    targetClub: target?.club,
+    targetClub,
     targetDiscipline: target?.discipline,
     targetTeam: target?.team,
     targetUserRole: target?.userRole,
