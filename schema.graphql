@@ -199,10 +199,6 @@ input TransactionsFilterInput {
   dateTo: AWSDateTime
 }
 
-input ClubsPrivateFilterInput {
-  search: String
-}
-
 input FederationsPrivateFilterInput {
   search: String
   discipline: [Discipline]
@@ -1001,12 +997,6 @@ type Author {
   photo: Image
 }
 
-type ClubItemPrivate {
-  id: ID!
-  name: String
-  logo: Image
-}
-
 type EventTarget {
   country: String
   federation: [FederationEventTarget]
@@ -1093,10 +1083,6 @@ type FeedPrivateConnection {
 type TeamsPrivateConnection {
   items: [Team]
   totalCount: Int
-}
-
-type ClubsPrivateConnection {
-  items: [ClubItemPrivate]
 }
 
 type UsersPrivateConnection {
@@ -1293,10 +1279,6 @@ type Query {
 
   team(clubId: String!, teamId: ID!): Team
   teamsPrivate(filter: TeamsPrivateFilterInput, limit: Int, from: Int): TeamsPrivateConnection!
-  """
-  Deprecated
-  """
-  clubsPrivate(filter: ClubsPrivateFilterInput, limit: Int, from: Int): ClubsPrivateConnection!
   federationsPrivate(
     filter: FederationsPrivateFilterInput
     limit: Int
