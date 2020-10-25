@@ -179,10 +179,10 @@ const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) =
   const filterBySearch = getQueryBySearch(search);
   const filterByOwnerUserID = myContent ? getQueryByMatch('ownerUserId', sub) : null;
 
-  const filterByDiscipline = getEsQueryByArray('discipline', discipline);
-  // const filterByFederation = getEsQueryByArray('', federation);
-  // const filterByClub = getEsQueryByArray('', club);
-  // const filterByTeam = getEsQueryByArray('', team);
+  const filterByDiscipline = getEsQueryByArray('targetDiscipline', discipline);
+  const filterByFederation = getEsQueryByArray('targetFederation', federation);
+  const filterByClub = getEsQueryByArray('targetClub', club);
+  const filterByTeam = getEsQueryByArray('targetTeam', team);
 
   const filterByEventType =
     Array.isArray(eventType) && eventType.length === 1
@@ -197,6 +197,9 @@ const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) =
     filterBySearch,
     filterByEventType,
     filterByDiscipline,
+    filterByFederation,
+    filterByClub,
+    filterByTeam,
   ].filter((f) => !!f);
 
   const query = must.length
