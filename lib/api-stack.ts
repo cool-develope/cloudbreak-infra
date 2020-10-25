@@ -122,11 +122,6 @@ export class ApiStack extends cdk.Stack {
     this.eventParticipantsField();
 
     /**
-     * Query: clubsPrivate
-     */
-    this.clubsPrivateQuery();
-
-    /**
      * Query: event, post, eventPrivate, postPrivate
      */
     this.eventQuery();
@@ -522,29 +517,6 @@ export class ApiStack extends cdk.Stack {
 }
 `),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
-    });
-  }
-
-  clubsPrivateQuery() {
-    const clubsPrivateFunction = this.getFunction(
-      'clubsPrivate',
-      'api-clubsPrivate',
-      'clubsPrivate',
-      {
-        MAIN_TABLE_NAME: this.mainTable.tableName,
-        IMAGES_DOMAIN: this.imagesDomain,
-        ES_DOMAIN: this.esDomain,
-      },
-    );
-
-    this.allowDynamoDB(clubsPrivateFunction);
-    this.allowES(clubsPrivateFunction);
-
-    const dataSource = this.api.addLambdaDataSource('clubsPrivateFunction', clubsPrivateFunction);
-
-    dataSource.createResolver({
-      typeName: 'Query',
-      fieldName: 'clubsPrivate',
     });
   }
 
