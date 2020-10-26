@@ -202,6 +202,7 @@ input TransactionsFilterInput {
 input FederationsPrivateFilterInput {
   search: String
   discipline: [Discipline]
+  isParent: Boolean
 }
 
 input AddLikeInput {
@@ -314,24 +315,32 @@ input CreateFederationPrivateInput {
   logo: String
   email: String
   phone: String
-  address: String
-  discipline: [Discipline]!
   country: String!
+  region: String
   city: String
+  district: String
+  address: String
+  discipline: [Discipline]
+  type: FederationType!
+  parentId: String
 }
 
 input UpdateFederationPrivateInput {
   id: ID!
-  name: String
+  name: String!
   description: String
   cover: String
   logo: String
   email: String
   phone: String
+  country: String!
+  region: String
+  city: String
+  district: String
   address: String
   discipline: [Discipline]
-  country: String
-  city: String
+  type: FederationType!
+  parentId: String
 }
 
 input CreateCompanyPrivateInput {
@@ -633,6 +642,13 @@ enum OrganizationType {
   Club
 }
 
+enum FederationType {
+  International
+  National
+  Regional
+  Local
+}
+
 enum OrganizationRole {
   Owner
   Coach
@@ -906,12 +922,16 @@ type Federation {
   logo: Image
   email: String
   phone: String
+  country: String
+  region: String
+  city: String
+  district: String
   address: String
   discipline: [Discipline]
-  country: String
-  city: String
+  type: FederationType
   clubs: ClubShortConnection
   members: UserShortConnection
+  children: [Federation]
 }
 
 type FederationConnection {
