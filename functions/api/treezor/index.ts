@@ -74,8 +74,13 @@ export const handler: Handler = async (event: FunctionEvent) => {
   console.debug(JSON.stringify(event, null, 4));
   
   // TODO: check walletId in my token
-  const { walletId } = filter;
-  // const { ['custom:trzWalletsId']: trzWalletsId } = claims;
+  let { walletId } = filter;
+  const { ['custom:trzWalletsId']: trzWalletsId } = claims;
+
+  if (!walletId) {
+    // if filter is empty, use my walletId
+    walletId = trzWalletsId;
+  }
 
   const items = await treezorClient.getTransactions(Number(walletId), token);
 
