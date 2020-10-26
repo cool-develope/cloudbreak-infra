@@ -420,6 +420,11 @@ input ChangeTeamRolePrivateInput {
   role: TeamMemberType!
 }
 
+input SupportTicketInput {
+  type: SupportTicketType!
+  message: String!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -570,6 +575,10 @@ type UpdateFederationPrivatePayload {
   federation: Federation
 }
 
+type SupportTicketPayload {
+  errors: [String]
+}
+
 enum Gender {
   M
   F
@@ -693,6 +702,12 @@ enum TransactionType {
   Payin
   Payout
   Transfer
+}
+
+enum SupportTicketType {
+  Technical
+  Financial
+  Other
 }
 
 type Image {
@@ -1236,6 +1251,8 @@ type Mutation {
 
   createFederationPrivate(input: CreateFederationPrivateInput!): CreateFederationPrivatePayload!
   updateFederationPrivate(input: UpdateFederationPrivateInput!): UpdateFederationPrivatePayload!
+
+  submitSupportTicket(input: SupportTicketInput!): SupportTicketPayload!
 }
 
 type Query {
