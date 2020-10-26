@@ -40,12 +40,10 @@ export const handler: Handler = async (
     /**
      * Batch
      */
-    // const field = event[0]?.fieldName as FieldName;
-    // if (field === FieldName.parentTeam) {
-    //   return await teamModel.getParentTeamBatch(event);
-    // } else if (field === FieldName.clubTeams) {
-    //   return await teamModel.getClubTeamsBatch(event);
-    // }
+    const field = event[0]?.fieldName as FieldName;
+    if (field === FieldName.childrenFederation) {
+      return await federationModel.getChildrenFederationBatch(event);
+    }
   } else {
     const {
       arguments: { input, filter, limit, from, federationId },

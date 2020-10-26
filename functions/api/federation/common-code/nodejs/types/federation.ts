@@ -3,6 +3,7 @@ export enum FieldName {
   updateFederationPrivate = 'updateFederationPrivate',
   federationsPrivate = 'federationsPrivate',
   federation = 'federation',
+  childrenFederation = 'childrenFederation',
 }
 
 export enum Discipline {
@@ -79,6 +80,7 @@ export interface Federation {
   members: UserShortConnection;
   children: Federation[];
   type: string;
+  parentId?: string;
 }
 
 export interface UserShort {

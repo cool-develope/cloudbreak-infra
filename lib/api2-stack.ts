@@ -617,6 +617,23 @@ export class Api2Stack extends cdk.Stack {
       typeName: 'Query',
       fieldName: 'federation',
     });
+
+    dataSource.createResolver({
+      typeName: 'Federation',
+      fieldName: 'children',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "childrenFederation",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
   }
 
   treezor() {

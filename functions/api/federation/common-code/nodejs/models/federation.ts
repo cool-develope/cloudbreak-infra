@@ -6,6 +6,7 @@ import {
   Federation,
   FederationType,
   UserShort,
+  FunctionEventBatch,
   UpdateFederationPrivateInput,
   UpdateFederationPrivatePayload,
   FederationConnection,
@@ -139,6 +140,30 @@ class FederationModel {
     };
   }
 
+  async getChildrenFederationBatch(event: FunctionEventBatch[]) {
+    const sub = event[0]?.identity.sub;
+
+    /**
+     * - get all team IDs
+     * - search teams by parentTeamID
+     */
+
+    const limit = 100;
+    const teamIds = event.map(({ source: { id } }) => id);
+
+    const arrayOfPromises = teamIds.map((id) => {
+      const filter = {
+        parentId: id,
+      };
+      return this.list(sub, filter, limit);
+    });
+
+    const listResults = await Promise.all(arrayOfPromises);
+    const result = listResults.map((listConnetion) => listConnetion.items);
+    console.debug(result);
+    return result;
+  }
+
   // async getClubTeamsBatch(event: FunctionEventBatch[]) {
   //   const sub = event[0]?.identity.sub;
   //   const clubIds = event.map(({ source: { id } }) => id);
@@ -204,6 +229,7 @@ class FederationModel {
     region = '',
     district = '',
     type = '',
+    parentId,
   }: FederationRecord): Federation {
     return {
       id: pk.replace('federation#', ''),
@@ -220,6 +246,7 @@ class FederationModel {
       region,
       district,
       type,
+      parentId,
       clubs: {
         items: [],
         totalCount: 0,
