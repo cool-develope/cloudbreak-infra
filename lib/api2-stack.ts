@@ -95,6 +95,8 @@ export class Api2Stack extends cdk.Stack {
     this.federation();
 
     this.treezor();
+
+    this.submitSupportTicket();
   }
 
   dictionaryQuery() {
@@ -670,6 +672,36 @@ export class Api2Stack extends cdk.Stack {
       typeName: 'Query',
       fieldName: 'transactions',
     });
+  }
+
+  submitSupportTicket() {
+    const fn = this.getFunction(
+      'submitSupportTicket',
+      'api-submitSupportTicket',
+      'submitSupportTicket',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
+        SES_REGION: 'eu-west-1',
+      },
+    );
+
+    this.allowDynamoDB(fn);
+    this.allowSES(fn);
+
+    const dataSource = this.api.addLambdaDataSource('submitSupportTicketFn', fn);
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'submitSupportTicket',
+    });
+  }
+
+  allowSES(lambdaFunction: lambda.Function) {
+    const sesPolicy = new PolicyStatement({ effect: Effect.ALLOW });
+    sesPolicy.addActions('ses:SendEmail');
+    sesPolicy.addResources('*');
+    lambdaFunction.addToRolePolicy(sesPolicy);
   }
 
   allowDynamoDB(lambdaFunction: lambda.Function) {
