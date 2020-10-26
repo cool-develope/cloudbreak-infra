@@ -28,6 +28,13 @@ export enum Discipline {
   TABLE_TENNIS = 'TABLE_TENNIS',
 }
 
+export enum FederationType {
+  International = 'International',
+  National = 'National',
+  Regional = 'Regional',
+  Local = 'Local',
+}
+
 export interface Image {
   url: string;
 }
@@ -45,9 +52,13 @@ export interface FederationRecord {
   discipline?: string[];
   country?: string;
   city?: string;
+  region?: string;
+  district?: string;
   ownerUserId?: string;
   createdAt?: string;
   modifiedAt?: string;
+  parentId?: string;
+  type?: string;
 }
 
 export interface Federation {
@@ -62,8 +73,12 @@ export interface Federation {
   discipline: string[];
   country: string;
   city: string;
-  clubs: null;
-  members: null;
+  region: string;
+  district: string;
+  clubs: ClubShortConnection;
+  members: UserShortConnection;
+  children: Federation[];
+  type: string;
 }
 
 export interface UserShort {
@@ -84,6 +99,10 @@ export interface UpdateFederationPrivateInput {
   discipline?: string[];
   country?: string;
   city?: string;
+  region?: string;
+  district?: string;
+  parentId?: string;
+  type?: FederationType;
 }
 
 export interface UpdateFederationPrivatePayload {
@@ -117,4 +136,28 @@ export interface FederationConnection {
 export interface FederationsPrivateFilterInput {
   search?: string;
   discipline?: Discipline[];
+  parentId?: string | null;
+  isParent?: boolean | null;
+}
+
+export interface ClubShortConnection {
+  items: ClubShort[];
+  totalCount: number;
+}
+
+export interface ClubShort {
+  id: string;
+  name: string;
+  logo: Image;
+}
+
+export interface UserShortConnection {
+  items: UserShort[];
+  totalCount: number;
+}
+
+export interface UserShort {
+  id: string;
+  name: string;
+  logo: Image;
 }

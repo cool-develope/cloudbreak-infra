@@ -4,6 +4,7 @@ import {
   Image,
   FederationRecord,
   Federation,
+  FederationType,
   UserShort,
   UpdateFederationPrivateInput,
   UpdateFederationPrivatePayload,
@@ -72,6 +73,10 @@ class FederationModel {
       discipline = [],
       country,
       city,
+      region,
+      district,
+      parentId,
+      type,
     } = input;
 
     const isNew = !id;
@@ -91,8 +96,15 @@ class FederationModel {
       discipline,
       country,
       city,
-      modifiedAt: new Date().toISOString(),
+      region,
+      district,
+      parentId,
+      type,
     };
+
+    if (!isNew) {
+      metadata.modifiedAt = new Date().toISOString();
+    }
 
     const { Attributes } = await this.dynamoHelper.updateItem(pk, sk, metadata);
 
@@ -189,6 +201,9 @@ class FederationModel {
     discipline = [],
     country = '',
     city = '',
+    region = '',
+    district = '',
+    type = '',
   }: FederationRecord): Federation {
     return {
       id: pk.replace('federation#', ''),
@@ -202,8 +217,18 @@ class FederationModel {
       discipline,
       country,
       city,
-      clubs: null,
-      members: null,
+      region,
+      district,
+      type,
+      clubs: {
+        items: [],
+        totalCount: 0,
+      },
+      members: {
+        items: [],
+        totalCount: 0,
+      },
+      children: [],
     };
   }
 
