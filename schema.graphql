@@ -327,19 +327,19 @@ input CreateFederationPrivateInput {
 
 input UpdateFederationPrivateInput {
   id: ID!
-  name: String!
+  name: String
   description: String
   cover: String
   logo: String
   email: String
   phone: String
-  country: String!
+  country: String
   region: String
   city: String
   district: String
   address: String
   discipline: [Discipline]
-  type: FederationType!
+  type: FederationType
   parentId: String
 }
 
