@@ -264,11 +264,37 @@ class FederationModel {
       : null;
   }
 
+  getEsQueryByNotExists(field: string) {
+    return {
+      bool: {
+        must_not: {
+          exists: {
+            field,
+          },
+        },
+      },
+    };
+  }
+  getEsQueryByMatch(field: string, value?: string | null) {
+    return !value
+      ? null
+      : {
+          match: {
+            [field]: value,
+          },
+        };
+  }
+
   getEsQuery(userId: string, filter: FederationsPrivateFilterInput = {}) {
-    const { search = '', discipline = [] } = filter;
+    const { search = '', discipline = [], parentId, isParent } = filter;
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByDiscipline = this.getEsQueryByArray('discipline', discipline);
-    const must = [filterBySearch, filterByDiscipline].filter((f) => !!f);
+    const filterByParentTeam = this.getEsQueryByMatch('parentId', parentId);
+    const filterByIsParent = isParent === true ? this.getEsQueryByNotExists('parentId') : null;
+
+    const must = [filterBySearch, filterByDiscipline, filterByIsParent, filterByParentTeam].filter(
+      (f) => !!f,
+    );
 
     const query = must.length
       ? {
