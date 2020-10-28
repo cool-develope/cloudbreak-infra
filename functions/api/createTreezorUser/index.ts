@@ -79,7 +79,7 @@ const updateUserAttributes = ({
       },
       {
         Name: 'custom:trzScopes',
-        Value: 'read_write',
+        Value: 'read_write, legal',
       },
       {
         Name: 'custom:trzChildren',
