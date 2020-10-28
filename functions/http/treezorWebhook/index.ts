@@ -16,6 +16,11 @@ const KYC_REVIEW_NAMES = new Map<string, string>([
   ['3', 'REFUSED'],
 ]);
 
+enum EventSource {
+  TifoTreezor = 'tifo.treezor',
+  TifoApi = 'tifo.api',
+}
+
 const {
   MAIN_TABLE_NAME = '',
   IMAGES_DOMAIN,
@@ -33,11 +38,11 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 const eventbridge = new AWS.EventBridge();
 const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 
-const putEvents = (type: string, detail: any) => {
+const putEvents = (source: EventSource, type: string, detail: any) => {
   const params = {
     Entries: [
       {
-        Source: 'tifo.treezor',
+        Source: source,
         EventBusName: 'default',
         Time: new Date(),
         DetailType: type,
@@ -254,7 +259,7 @@ const updateKycReview = async ({
   });
 
   if (kycReview === KycReview.VALIDATED || kycReview === KycReview.REFUSED) {
-    await putEvents('KycReview', {
+    await putEvents(EventSource.TifoTreezor, 'KycReview', {
       sub: tifoUserId,
       status: kycReviewName,
     });
@@ -298,6 +303,12 @@ const processTransferUpdate = async (transfer: Transfer) => {
 
       await dynamoHelper.updateItem(pk, sk, { a: true, treezorTransferId: transferId });
       await dynamoHelper.incrementField(pk, 'metadata', 'acceptedCount');
+
+      await putEvents(EventSource.TifoApi, 'AcceptedPaidEvent', {
+        sub: userId,
+        eventId,
+        amount,
+      });
     }
   }
 };
