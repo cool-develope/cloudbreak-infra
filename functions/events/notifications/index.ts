@@ -7,16 +7,38 @@ import { v4 as uuidv4 } from 'uuid';
 import { Client } from '@elastic/elasticsearch';
 import { NotificationType, KeyValue } from './common-code/nodejs/types/notifications';
 import { NotificationsModel } from './common-code/nodejs/models';
+import DynamoHelper from './common-code/nodejs/dynamoHelper';
 
 const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN = '', ES_DOMAIN } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
 const es = new Client({ node: ES_DOMAIN });
+const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 
 const objToKeyValueArray = (obj: any): KeyValue[] =>
   Object.keys(obj).map((key) => ({
     Key: key,
     Value: obj[key],
   }));
+
+const getParentUser = async (sub: string) => {
+  try {
+    const { Item: child } = await dynamoHelper.getItem(`user#${sub}`, 'metadata');
+    if (child && child.parentUserId) {
+      const { Item: parent } = await dynamoHelper.getItem(`user#${child.parentUserId}`, 'metadata');
+      if (parent) {
+        return {
+          sub: child.parentUserId,
+        };
+      }
+    }
+  } catch (err) {
+    console.error(err, {
+      sub,
+    });
+  }
+
+  return null;
+};
 
 export const handler: EventBridgeHandler<any, any, any> = async (event) => {
   const { detail } = event;
@@ -60,6 +82,24 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       break;
 
     case NotificationType.SendMoneyRequest:
+      const parent = await getParentUser(detail.senderSub);
+      if (parent) {
+        /**
+         * Add notification for parent
+         */
+        await notificationsModel.create(parent.sub, {
+          type: NotificationType.ChildSendMoneyRequest,
+          attributes: objToKeyValueArray({
+            childFirstName: detail.senderFirstName,
+            childLastName: detail.senderLastName,
+            recipientFirstName: detail.recipientFirstName,
+            recipientLastName: detail.recipientLastName,
+            amount: detail.amount,
+            note: detail.note,
+          }),
+        });
+      }
+
       await notificationsModel.create(detail.recipientSub, {
         type,
         attributes: objToKeyValueArray({

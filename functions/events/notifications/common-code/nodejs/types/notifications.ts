@@ -11,10 +11,11 @@ export enum NotificationType {
   AcceptChildInvitation = 'AcceptChildInvitation',
   DeclineChildInvitation = 'DeclineChildInvitation',
   KycReview = 'KycReview',
+  ChildSendMoneyRequest = 'ChildSendMoneyRequest',
 }
 
 export interface NotificationInput {
-  type: string;
+  type: string | NotificationType;
   attributes: KeyValue[];
 }
 
