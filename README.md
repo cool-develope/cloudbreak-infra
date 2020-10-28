@@ -103,6 +103,7 @@ tifo.api
 - AcceptChildInvitation (childSub, childFirstName, childLastName, childBirthDate, parentSub, parentFirstName, parentLastName)
 - DeclineChildInvitation (childSub, childFirstName, childLastName, childBirthDate, parentSub, parentFirstName, parentLastName)
 - ChildSendMoneyRequest (childFirstName, childLastName, recipientFirstName, recipientLastName, amount, note)
+- ChildAcceptedPaidEvent (childFirstName, childLastName, eventName, price)
 
 tifo.treezor
 - KycReview (sub, status)
