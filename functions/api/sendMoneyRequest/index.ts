@@ -224,6 +224,8 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
     senderPhoto: getImageUrl(senderUser.photo),
     recipientSub: recipientUserId,
     recipientEmail: recipientUser.email,
+    recipientFirstName: recipientUser.firstName,
+    recipientLastName: recipientUser.lastName,
     amount,
     note,
   });
