@@ -697,6 +697,7 @@ enum NotificationType {
   DeclineChildInvitation
   KycReview
   ChildSendMoneyRequest
+  ChildAcceptedPaidEvent
 }
 
 enum TransactionType {

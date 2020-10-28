@@ -13,6 +13,7 @@ const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN = '', ES_DOMAIN } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
 const es = new Client({ node: ES_DOMAIN });
 const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
+const notificationsModel = new NotificationsModel(db, MAIN_TABLE_NAME, IMAGES_DOMAIN, uuidv4, es);
 
 const objToKeyValueArray = (obj: any): KeyValue[] =>
   Object.keys(obj).map((key) => ({
@@ -40,11 +41,31 @@ const getParentUser = async (sub: string) => {
   return null;
 };
 
+const acceptedPaidEventHandler = async (type: NotificationType, detail: any) => {
+  const { sub, eventId, amount } = detail;
+  const { Item: child } = await dynamoHelper.getItem(`user#${sub}`, 'metadata');
+  const { Item: event } = await dynamoHelper.getItem(`event#${eventId}`, 'metadata');
+  const parent = await getParentUser(sub);
+
+  if (parent && child && event) {
+    /**
+     * Add notification for parent
+     */
+    await notificationsModel.create(parent.sub, {
+      type: NotificationType.ChildAcceptedPaidEvent,
+      attributes: objToKeyValueArray({
+        childFirstName: child.firstName,
+        childLastName: child.lastName,
+        eventName: event.title,
+        price: event.price,
+      }),
+    });
+  }
+};
+
 export const handler: EventBridgeHandler<any, any, any> = async (event) => {
   const { detail } = event;
   const type = event['detail-type'];
-
-  const notificationsModel = new NotificationsModel(db, MAIN_TABLE_NAME, IMAGES_DOMAIN, uuidv4, es);
   console.log(type, detail);
 
   switch (type) {
@@ -157,6 +178,10 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
           childPhoto: detail.childPhoto,
         }),
       });
+      break;
+
+    case NotificationType.AcceptedPaidEvent:
+      await acceptedPaidEventHandler(type, detail);
       break;
   }
 };
