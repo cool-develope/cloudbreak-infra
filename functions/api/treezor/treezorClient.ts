@@ -289,11 +289,25 @@ class TreezorClient {
     };
   }
 
+  async getTransfer(transferId: number, treezorToken: string): Promise<TreezorTransfer | null> {
+    const params = this.objToURLSearchParams({ transferId });
+    const headers = { Authorization: `Bearer ${treezorToken}` };
+    const transfersUrl = `${this.baseUrl}/v1/transfers?${params.toString()}`;
+
+    const response = await fetch(transfersUrl, { headers });
+    const json: TreezorTransferResponse = await response.json();
+
+    if (json && json.transfers && json.transfers.length > 0) {
+      return json.transfers[0];
+    }
+
+    return null;
+  }
+
   async getTransactions(walletId: number, treezorToken: string): Promise<Transaction[]> {
     const params = this.objToURLSearchParams({ walletId });
     const headers = { Authorization: `Bearer ${treezorToken}` };
     const transactionsUrl = `${this.baseUrl}/v1/transactions?${params.toString()}`;
-    const transfersUrl = `${this.baseUrl}/v1/transfers?${params.toString()}`;
     const payoutsUrl = `${this.baseUrl}/v1/payouts?${params.toString()}`;
     const payinsUrl = `${this.baseUrl}/v1/payins?${params.toString()}`;
 
@@ -302,34 +316,43 @@ class TreezorClient {
      */
 
     try {
-      const [transactionsJson, transfersJson, payinsJson, payoutsJson]: [
+      const [transactionsJson, payinsJson, payoutsJson]: [
         transactionsJson: TreezorTransactionResponse,
-        transfersJson: TreezorTransferResponse,
         payinsJson: TreezorPayinResponse,
         payoutsJson: TreezorPayoutResponse,
       ] = await Promise.all([
         fetch(transactionsUrl, { headers }).then((r: any) => r.json()),
-        fetch(transfersUrl, { headers }).then((r: any) => r.json()),
         fetch(payinsUrl, { headers }).then((r: any) => r.json()),
         fetch(payoutsUrl, { headers }).then((r: any) => r.json()),
       ]);
 
+      const transactions = transactionsJson?.transactions || [];
+      const payins = payinsJson?.payins || [];
+      const payouts = payoutsJson?.payouts || [];
+
+      // console.debug({
+      //   walletId,
+      //   transactions,
+      //   payins,
+      //   payouts,
+      // });
+
       const result: Transaction[] = [];
 
-      for (const t of transactionsJson.transactions) {
+      for (const t of transactions) {
         const transfer =
           t.transactionType === TransactionType.Transfer
-            ? transfersJson.transfers.find(({ transferId }) => transferId === t.foreignId)
+            ? await this.getTransfer(t.foreignId, treezorToken)
             : null;
 
         const payin =
           t.transactionType === TransactionType.Payin
-            ? payinsJson.payins.find(({ payinId }) => payinId === t.foreignId)
+            ? payins.find(({ payinId }) => payinId === t.foreignId)
             : null;
 
         const payout =
           t.transactionType === TransactionType.Payout
-            ? payoutsJson.payouts.find(({ payoutId }) => payoutId === t.foreignId)
+            ? payouts.find(({ payoutId }) => payoutId === t.foreignId)
             : null;
 
         // console.log({
