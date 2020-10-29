@@ -156,3 +156,19 @@ export interface Card {
   cancellationNumber: string | null;
   physical: string;
 }
+
+export enum TransferTypeId {
+  WalletToWallet = 1,
+  ClientFees = 3,
+  CreditNote = 4,
+}
+
+export interface TransferBody {
+  walletId: number;
+  beneficiaryWalletId: number;
+  transferTag: string;
+  label: string;
+  amount: number;
+  currency: 'EUR';
+  transferTypeId: TransferTypeId;
+}

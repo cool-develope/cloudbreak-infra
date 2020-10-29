@@ -7,7 +7,16 @@ import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import CognitoHelper from './cognitoHelper';
 import DynamoHelper from './dynamoHelper';
-import { Transfer, WebhookEvent, KycReview, Webhook, TransferType, Card } from './types';
+import {
+  Transfer,
+  WebhookEvent,
+  KycReview,
+  Webhook,
+  TransferType,
+  Card,
+  TransferBody,
+  TransferTypeId,
+} from './types';
 
 const KYC_REVIEW_NAMES = new Map<string, string>([
   ['0', 'NONE'],
@@ -31,6 +40,7 @@ const {
   TREEZOR_BASE_URL,
   TREEZOR_CLIENT_ID = '',
   TREEZOR_CLIENT_SECRET = '',
+  TREEZOR_TIFO_WALLET_ID = '',
 } = process.env;
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -162,6 +172,26 @@ const getTreezorToken = async (): Promise<string> => {
   }
 };
 
+const createTransfer = async (treezorToken: string, transferData: TransferBody) => {
+  const url = `${TREEZOR_BASE_URL}/v1/transfers`;
+
+  console.debug('createTransfer', {
+    url,
+    transferData,
+  });
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(transferData),
+    headers: { Authorization: `Bearer ${treezorToken}`, 'Content-Type': 'application/json' },
+  });
+
+  const json = await response.json();
+  console.debug(json);
+
+  return json;
+};
+
 const createTreezorWallet = async (
   treezorToken: string,
   { eventName, userId, tariffId, walletTypeId }: any,
@@ -279,6 +309,39 @@ const getDetailsByTransferTag = (
   return null;
 };
 
+const takeFee = async (walletId: string, amount: string, eventId: string, transferId: string) => {
+  try {
+    //TODO: log transfer if fee not taken
+
+    const treezorToken = await getTreezorToken();
+
+    const amountNumber = Number(amount);
+    const feeAmount = Number((amountNumber / 100).toFixed(2));
+
+    console.debug('TRANSFER_FEE', {
+      walletId,
+      amount,
+      feeAmount,
+      eventId,
+      transferId,
+    });
+
+    const transferData: TransferBody = {
+      walletId: Number(walletId),
+      beneficiaryWalletId: Number(TREEZOR_TIFO_WALLET_ID),
+      transferTag: `fee:${transferId}`,
+      label: 'Fee',
+      amount: feeAmount,
+      currency: 'EUR',
+      transferTypeId: TransferTypeId.ClientFees,
+    };
+
+    await createTransfer(treezorToken, transferData);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 const processTransferUpdate = async (transfer: Transfer) => {
   if (transfer.transferStatus === 'VALIDATED') {
     const { walletId, transferTag, amount, beneficiaryWalletId, transferId } = transfer;
@@ -309,6 +372,8 @@ const processTransferUpdate = async (transfer: Transfer) => {
         eventId,
         amount,
       });
+
+      await takeFee(beneficiaryWalletId, amount, eventId, transferId);
     }
   }
 };

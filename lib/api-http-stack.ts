@@ -68,6 +68,7 @@ export class ApiHttpStack extends cdk.Stack {
       TREEZOR_BASE_URL,
       TREEZOR_CLIENT_ID,
       TREEZOR_CLIENT_SECRET,
+      TREEZOR_TIFO_WALLET_ID,
       ONESIGNAL_API_KEY,
       ONESIGNAL_APP_ID,
     } = process.env;
@@ -82,6 +83,7 @@ export class ApiHttpStack extends cdk.Stack {
         TREEZOR_BASE_URL,
         TREEZOR_CLIENT_ID,
         TREEZOR_CLIENT_SECRET,
+        TREEZOR_TIFO_WALLET_ID,
         ONESIGNAL_APP_ID,
         ONESIGNAL_API_KEY,
       },
