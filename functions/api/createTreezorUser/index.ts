@@ -143,6 +143,7 @@ const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
 
 const getTreezorCompanyData = async (user: any, company: CompanyRecord): Promise<TreezorUser> => {
   const treezorUser: TreezorUser = {
+    // TODO: remove random email
     userTypeId: TreezorUserType.BusinessEntity,
     phone: user.phone,
     firstname: user.firstName,
