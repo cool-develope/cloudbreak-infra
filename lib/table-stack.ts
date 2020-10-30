@@ -129,7 +129,7 @@ export class TableStack extends cdk.Stack {
       logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(120),
-      memorySize: 1024,
+      memorySize: 256,
     });
   }
 }
