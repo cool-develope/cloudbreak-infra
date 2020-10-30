@@ -309,9 +309,19 @@ const getDetailsByTransferTag = (
   return null;
 };
 
+const getFeeDetails = async (transferId: string, walletId: string): Promise<boolean> => {
+  const { Item } = await dynamoHelper.getItem(`fee#${transferId}`, walletId);
+  return Item && Item.pk ? true : false;
+};
+
 const takeFee = async (walletId: string, amount: string, eventId: string, transferId: string) => {
   try {
-    //TODO: log transfer if fee not taken
+    //TODO: log transfer if fee not taken due to exception
+
+    const feeExists = await getFeeDetails(transferId, walletId);
+    if (feeExists) {
+      return;
+    }
 
     const treezorToken = await getTreezorToken();
 
@@ -337,6 +347,12 @@ const takeFee = async (walletId: string, amount: string, eventId: string, transf
     };
 
     await createTransfer(treezorToken, transferData);
+    await dynamoHelper.updateItem(`fee#${transferId}`, walletId, {
+      eventId,
+      amount: Number(amount),
+      fee: feeAmount,
+      createdAt: new Date().toISOString(),
+    });
   } catch (err) {
     console.error(err);
   }
