@@ -121,7 +121,7 @@ const findContacts = async (phoneContacts: PhoneContact[]): Promise<FindResultIt
         ExpressionAttributeValues: {
           ':pk': 'user#',
           ':sk': 'metadata',
-          ':email': email,
+          ':email': email.toLocaleLowerCase(),
         },
         ProjectionExpression: 'pk, email',
       });
