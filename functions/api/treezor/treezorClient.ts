@@ -396,6 +396,9 @@ class TreezorClient {
         result.push(transaction);
       }
 
+      // @ts-ignore
+      result.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+
       return result;
     } catch (err) {
       console.error(err);
