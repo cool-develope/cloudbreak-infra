@@ -209,8 +209,6 @@ class ClubModel {
 
     const id = pk.replace('club#', '');
 
-    // TODO: upcomingEventsCount
-
     return {
       id,
       name,

@@ -211,9 +211,6 @@ class TeamModel {
     const id = sk.replace('team#', '');
     const clubId = pk.replace('club#', '');
 
-    // TODO: federations
-    // TODO: upcomingEventsCount
-
     return {
       id,
       clubId,
