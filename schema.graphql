@@ -851,6 +851,7 @@ type Event {
   image: Image
   startDate: AWSDateTime
   endDate: AWSDateTime
+  createDate: AWSDateTime
   address: String
   discipline: [String]
   price: Float
