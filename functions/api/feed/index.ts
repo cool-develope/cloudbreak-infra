@@ -19,6 +19,8 @@ import {
   AttachmentItemRecord,
   EventOrganization,
   OrganizationType,
+  FunctionEvent,
+  FunctionEventBatch,
 } from './types';
 
 const { MAIN_TABLE_NAME, IMAGES_DOMAIN, ES_DOMAIN } = process.env;
@@ -135,6 +137,42 @@ const getMyEventsQuery = (filter: MyEventsFilterInput = {}, sub: string) => {
     : null;
 
   return query;
+};
+
+const getUpcomingEventsCount = async (clubId: string, teamId: string | null): Promise<number> => {
+  const startDateAfter = new Date().toISOString();
+  const startDateBefore = new Date(2022, 1, 1).toISOString();
+  const filterByStartDate = getQueryByDate('startDate', startDateAfter, startDateBefore);
+  const filterByEventType = getQueryByMatch('eventType', EventType.Event);
+  const filterByClub = getEsQueryByArray('clubId', [clubId]);
+  const filterByTeam = getEsQueryByArray('targetTeam', teamId ? [teamId] : []);
+
+  const must = [filterByStartDate, filterByEventType, filterByClub, filterByTeam].filter(
+    (f) => !!f,
+  );
+
+  const query = must.length
+    ? {
+        bool: {
+          must,
+        },
+      }
+    : null;
+
+  const queryFilter = query ? { query } : null;
+
+  try {
+    const result = await es.count({
+      index: 'events',
+      body: {
+        ...queryFilter,
+      },
+    });
+    return result.body?.count;
+  } catch (err) {
+    console.error(JSON.stringify(err, null, 2));
+    return 0;
+  }
 };
 
 const getUpcomingEventsQuery = () => {
@@ -342,47 +380,90 @@ const getTypeFile = (attachment: any[] = []): File[] =>
     size,
   }));
 
-export const handler: Handler = async (event): Promise<FeedConnection | EventsConnection> => {
-  const {
-    arguments: { filter = {}, limit = 10, from = 0 },
-    identity: { sub },
-    info: { fieldName },
-  } = event;
+const getClubUpcomingEventsCountBatch = async (event: FunctionEventBatch[]) => {
+  const sub = event[0]?.identity.sub;
+  const ids: string[] = event.map(({ source: { id } }) => id);
 
-  const field = fieldName as FieldName;
-  let query: any = null;
-  let sort: any[] = [{ createdAt: 'desc' }, { _id: 'asc' }];
-
-  if (field === FieldName.feed) {
-    query = getFeedQuery(filter, sub);
-  } else if (field === FieldName.feedPrivate) {
-    query = getFeedPrivateQuery(filter, sub);
-  } else if (field === FieldName.myEvents) {
-    // TODO
-    query = getMyEventsQuery(filter, sub);
-    sort = [{ startDate: 'asc' }, { _id: 'asc' }];
-  } else if (field === FieldName.upcomingEventsPrivate) {
-    // TODO
-    query = getUpcomingEventsQuery();
-    sort = [{ startDate: 'asc' }, { _id: 'asc' }];
-  }
-
-  console.log({
-    fieldName,
-    filter: JSON.stringify(filter, null, 2),
-    query: JSON.stringify(query, null, 2),
+  const arrayOfPromises = ids.map((clubId) => {
+    return getUpcomingEventsCount(clubId, null);
   });
 
-  const esResult = await search({ query, limit, from, sort });
-  const totalCount = esResult.body?.hits.total.value || 0;
-  const items = prepareEsItems(esResult.body?.hits.hits);
+  const listResults = await Promise.all(arrayOfPromises);
+  const result = listResults.map((eventCount) => eventCount);
+  return result;
+};
 
-  if (field === FieldName.feed || field === FieldName.feedPrivate) {
-    const result = getEsFeedConnection(items, totalCount);
-    return result;
-  } else if (field === FieldName.myEvents || field === FieldName.upcomingEventsPrivate) {
-    const result = getEsEventsConnection(items, totalCount);
-    return result;
+const getTeamUpcomingEventsCountBatch = async (event: FunctionEventBatch[]) => {
+  const sub = event[0]?.identity.sub;
+  const ids: { clubId: string; id: string }[] = event.map(({ source: { id, clubId } }) => ({
+    id,
+    clubId,
+  }));
+
+  const arrayOfPromises = ids.map(({ id, clubId }) => {
+    return getUpcomingEventsCount(clubId, id);
+  });
+
+  const listResults = await Promise.all(arrayOfPromises);
+  const result = listResults.map((eventCount) => eventCount);
+  return result;
+};
+
+export const handler: Handler = async (
+  event: FunctionEvent | FunctionEventBatch[],
+): Promise<any> => {
+  if (Array.isArray(event)) {
+    /**
+     * Batch
+     */
+    const fieldName = event[0]?.fieldName;
+
+    if (fieldName === FieldName.clubUpcomingEventsCount) {
+      return await getClubUpcomingEventsCountBatch(event);
+    } else if (fieldName === FieldName.teamUpcomingEventsCount) {
+      return await getTeamUpcomingEventsCountBatch(event);
+    }
+  } else {
+    const {
+      arguments: { filter = {}, limit = 10, from = 0 },
+      identity: { sub },
+      info: { fieldName },
+    } = event;
+
+    let query: any = null;
+    let sort: any[] = [{ createdAt: 'desc' }, { _id: 'asc' }];
+
+    if (fieldName === FieldName.feed) {
+      query = getFeedQuery(filter, sub);
+    } else if (fieldName === FieldName.feedPrivate) {
+      query = getFeedPrivateQuery(filter, sub);
+    } else if (fieldName === FieldName.myEvents) {
+      // TODO
+      query = getMyEventsQuery(filter, sub);
+      sort = [{ startDate: 'asc' }, { _id: 'asc' }];
+    } else if (fieldName === FieldName.upcomingEventsPrivate) {
+      // TODO
+      query = getUpcomingEventsQuery();
+      sort = [{ startDate: 'asc' }, { _id: 'asc' }];
+    }
+
+    console.log({
+      fieldName,
+      filter: JSON.stringify(filter, null, 2),
+      query: JSON.stringify(query, null, 2),
+    });
+
+    const esResult = await search({ query, limit, from, sort });
+    const totalCount = esResult.body?.hits.total.value || 0;
+    const items = prepareEsItems(esResult.body?.hits.hits);
+
+    if (fieldName === FieldName.feed || fieldName === FieldName.feedPrivate) {
+      const result = getEsFeedConnection(items, totalCount);
+      return result;
+    } else if (fieldName === FieldName.myEvents || fieldName === FieldName.upcomingEventsPrivate) {
+      const result = getEsEventsConnection(items, totalCount);
+      return result;
+    }
   }
 
   throw Error('Query not supported');

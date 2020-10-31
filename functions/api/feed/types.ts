@@ -3,6 +3,8 @@ export enum FieldName {
   feedPrivate = 'feedPrivate',
   myEvents = 'myEvents',
   upcomingEventsPrivate = 'upcomingEventsPrivate',
+  clubUpcomingEventsCount = 'clubUpcomingEventsCount',
+  teamUpcomingEventsCount = 'teamUpcomingEventsCount',
 }
 
 export enum EventType {
@@ -179,4 +181,20 @@ export interface EventOrganization {
   name?: string;
   type: OrganizationType;
   walletId?: number;
+}
+
+export interface FunctionEvent {
+  arguments: {
+    filter?: any;
+    limit?: number;
+    from?: number;
+  };
+  identity: { sub: string };
+  info: { fieldName: FieldName };
+}
+
+export interface FunctionEventBatch {
+  fieldName: FieldName;
+  source: any;
+  identity: { sub: string; claims: any };
 }
