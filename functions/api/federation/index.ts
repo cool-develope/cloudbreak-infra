@@ -43,6 +43,8 @@ export const handler: Handler = async (
     const field = event[0]?.fieldName as FieldName;
     if (field === FieldName.childrenFederation) {
       return await federationModel.getChildrenFederationBatch(event);
+    } else if (field === FieldName.teamFederations) {
+      return await federationModel.getTeamFederationsBatch(event);
     }
   } else {
     const {

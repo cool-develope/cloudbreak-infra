@@ -11,6 +11,8 @@ import {
   UpdateFederationPrivatePayload,
   FederationConnection,
   FederationsPrivateFilterInput,
+  FederationShortConnection,
+  FederationShort,
 } from '../types/federation';
 
 class FederationModel {
@@ -108,10 +110,11 @@ class FederationModel {
     }
 
     const { Attributes } = await this.dynamoHelper.updateItem(pk, sk, metadata);
+    const federation = await this.getTypeFederation(Attributes);
 
     return {
       errors: [],
-      federation: this.getTypeFederation(Attributes),
+      federation,
     };
   }
 
@@ -134,8 +137,14 @@ class FederationModel {
     const totalCount = esResult.body?.hits.total.value || 0;
     const items = this.prepareEsItems(esResult.body?.hits.hits);
 
+    const federations = [];
+    for (const item of items) {
+      const federation = await this.getTypeFederation(item);
+      federations.push(federation);
+    }
+
     return {
-      items: items.map((item) => this.getTypeFederation(item)),
+      items: federations,
       totalCount,
     };
   }
@@ -160,61 +169,80 @@ class FederationModel {
 
     const listResults = await Promise.all(arrayOfPromises);
     const result = listResults.map((listConnetion) => listConnetion.items);
-    console.debug(result);
     return result;
   }
 
-  // async getClubTeamsBatch(event: FunctionEventBatch[]) {
-  //   const sub = event[0]?.identity.sub;
-  //   const clubIds = event.map(({ source: { id } }) => id);
+  async getTeamFederationsBatch(event: FunctionEventBatch[]) {
+    const sub = event[0]?.identity.sub;
 
-  //   return await this.getTeamsByClubs(sub, clubIds);
-  // }
+    const limit = 100;
+    const arrayOfIds: string[][] = event.map(({ source: { federations } }) => federations);
 
-  // async getParentTeamBatch(event: FunctionEventBatch[]) {
-  //   const sub = event[0]?.identity.sub;
+    const arrayOfPromises = arrayOfIds.map((ids) => {
+      const filter = {
+        ids,
+      };
+      return this.list(sub, filter, limit);
+    });
 
-  //   const arrayOfKeys = event
-  //     .filter((item) => item.source.parentTeam?.id)
-  //     .map(({ source: { parentTeam, clubId } }) => ({
-  //       pk: `club#${clubId}`,
-  //       sk: `team#${parentTeam.id}`,
-  //     }));
-  //   const teams = await this.getTeamsByKeys(arrayOfKeys);
+    const listResults = await Promise.all(arrayOfPromises);
+    const result = listResults.map((listConnetion) => listConnetion);
+    return result;
+  }
 
-  //   const result = event.map(({ source: { parentTeam } }) =>
-  //     parentTeam?.id
-  //       ? {
-  //           ...teams.get(`team#${parentTeam?.id}`),
-  //         }
-  //       : null,
-  //   );
+  async getTeams(federationId: string): Promise<{ id: string; clubId: string }[]> {
+    try {
+      const result = await this.es.search({
+        index: 'teams',
+        body: {
+          size: 100,
+          query: {
+            match: {
+              federations: federationId,
+            },
+          },
+        },
+      });
 
-  //   return result;
-  // }
+      return result.body?.hits.hits.map(({ _id, _source }: any) => ({
+        id: _id,
+        clubId: _source.clubId,
+      }));
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2));
+      return [];
+    }
+  }
 
-  // async getTeamsByClubs(userId: string, clubIds: string[]): Promise<TeamsConnection[]> {
-  //   const limit = 10;
+  async getMembers(teamIds: string[]): Promise<number> {
+    const filterByTeams = this.getEsQueryTeams(null, teamIds, null);
+    const must = [filterByTeams].filter((f) => !!f);
 
-  //   const arrayOfPromises = clubIds.map((id) => {
-  //     const filter = {
-  //       clubIds: [id],
-  //     };
-  //     return this.list(userId, filter, limit);
-  //   });
+    const query = must.length
+      ? {
+          bool: {
+            must,
+          },
+        }
+      : null;
 
-  //   const listResults = await Promise.all(arrayOfPromises);
-  //   return listResults;
-  // }
+    const queryFilter = query ? { query } : null;
 
-  // async getTeamsByKeys(arrayOfKeys: { pk: string; sk: string }[]): Promise<Map<string, Team>> {
-  //   const result = await this.dynamoHelper.batchGet(arrayOfKeys, 'sk', (item) =>
-  //     this.getTypeTeam(item),
-  //   );
-  //   return result;
-  // }
+    try {
+      const result = await this.es.count({
+        index: 'users',
+        body: {
+          ...queryFilter,
+        },
+      });
+      return result.body?.count;
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2));
+      return 0;
+    }
+  }
 
-  getTypeFederation({
+  async getTypeFederation({
     pk = '',
     name = '',
     description = '',
@@ -230,9 +258,16 @@ class FederationModel {
     district = '',
     type = '',
     parentId,
-  }: FederationRecord): Federation {
+  }: FederationRecord): Promise<Federation> {
+    const federationId = pk.replace('federation#', '');
+    const teams = await this.getTeams(federationId);
+    const clubIds = teams.map(({ clubId }) => clubId);
+    const teamIds = teams.map(({ id }) => id);
+    const cloubsCount = new Set(clubIds).size;
+    const membersCount = teamIds.length ? await this.getMembers(teamIds) : 0;
+
     return {
-      id: pk.replace('federation#', ''),
+      id: federationId,
       name,
       description,
       cover: this.getTypeImage(cover),
@@ -249,11 +284,11 @@ class FederationModel {
       parentId,
       clubs: {
         items: [],
-        totalCount: 0,
+        totalCount: cloubsCount,
       },
       members: {
         items: [],
-        totalCount: 0,
+        totalCount: membersCount,
       },
       children: [],
     };
@@ -327,6 +362,54 @@ class FederationModel {
       },
     };
   }
+
+  getEsQueryTeams(clubId: string | null, teamIds: string[], role: string | null) {
+    const must: any = [
+      {
+        match: {
+          'teams.status': 'Accepted',
+        },
+      },
+    ];
+
+    if (clubId) {
+      must.push({
+        match: {
+          'teams.clubId': clubId,
+        },
+      });
+    }
+
+    must.push({
+      bool: {
+        should: teamIds.map((id) => ({
+          match: {
+            'teams.teamId': id,
+          },
+        })),
+      },
+    });
+
+    if (role) {
+      must.push({
+        match: {
+          'teams.role': role,
+        },
+      });
+    }
+
+    return {
+      nested: {
+        path: 'teams',
+        query: {
+          bool: {
+            must,
+          },
+        },
+      },
+    };
+  }
+
   getEsQueryByMatch(field: string, value?: string | null) {
     return !value
       ? null
@@ -338,15 +421,20 @@ class FederationModel {
   }
 
   getEsQuery(userId: string, filter: FederationsPrivateFilterInput = {}) {
-    const { search = '', discipline = [], parentId, isParent } = filter;
+    const { search = '', discipline = [], parentId, isParent, ids = [] } = filter;
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByDiscipline = this.getEsQueryByArray('discipline', discipline);
     const filterByParentTeam = this.getEsQueryByMatch('parentId', parentId);
+    const filterByIds = this.getEsQueryByArray('_id', ids);
     const filterByIsParent = isParent === true ? this.getEsQueryByNotExists('parentId') : null;
 
-    const must = [filterBySearch, filterByDiscipline, filterByIsParent, filterByParentTeam].filter(
-      (f) => !!f,
-    );
+    const must = [
+      filterBySearch,
+      filterByDiscipline,
+      filterByIsParent,
+      filterByParentTeam,
+      filterByIds,
+    ].filter((f) => !!f);
 
     const query = must.length
       ? {

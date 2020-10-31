@@ -4,6 +4,7 @@ export enum FieldName {
   federationsPrivate = 'federationsPrivate',
   federation = 'federation',
   childrenFederation = 'childrenFederation',
+  teamFederations = 'teamFederations',
 }
 
 export enum Discipline {
@@ -140,6 +141,7 @@ export interface FederationsPrivateFilterInput {
   discipline?: Discipline[];
   parentId?: string | null;
   isParent?: boolean | null;
+  ids?: string[];
 }
 
 export interface ClubShortConnection {
@@ -162,4 +164,15 @@ export interface UserShort {
   id: string;
   name: string;
   logo: Image;
+}
+
+export interface FederationShort {
+  id: string;
+  name: string;
+  logo: Image;
+}
+
+export interface FederationShortConnection {
+  items: FederationShort[];
+  totalCount: number;
 }
