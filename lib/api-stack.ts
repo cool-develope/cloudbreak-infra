@@ -319,6 +319,40 @@ export class ApiStack extends cdk.Stack {
       typeName: 'Query',
       fieldName: 'upcomingEventsPrivate',
     });
+
+    dataSource.createResolver({
+      typeName: 'Club',
+      fieldName: 'upcomingEventsCount',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "clubUpcomingEventsCount",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'Team',
+      fieldName: 'upcomingEventsCount',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "teamUpcomingEventsCount",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
   }
 
   syncContactsMutation() {
