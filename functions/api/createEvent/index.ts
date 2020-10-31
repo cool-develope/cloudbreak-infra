@@ -107,6 +107,7 @@ const getTypeEvent = (metadata: EventRecord): Event => ({
   image: getTypeImage(metadata.image),
   startDate: metadata.startDate,
   endDate: metadata.endDate,
+  createDate: metadata.createdAt,
   address: metadata.address,
   discipline: metadata.discipline || [],
   price: metadata.price,

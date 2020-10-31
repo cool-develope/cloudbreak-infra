@@ -70,6 +70,7 @@ export interface Event {
   image: Image;
   startDate: string;
   endDate: string;
+  createDate: string;
   address: string;
   discipline: string[];
   price: number;
