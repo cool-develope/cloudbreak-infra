@@ -232,16 +232,7 @@ class TeamModel {
       coaches: null,
       members: null,
       friends: null,
-      federations: {
-        items: [
-          {
-            id: '111',
-            name: 'Federation Name',
-            logo: this.getTypeImage('club/i/logo2.jpg'),
-          },
-        ],
-        totalCount: 1,
-      },
+      federations: null,
       upcomingEventsCount: 0,
       coacheInvitationsCount: this.getClubStats(
         teamStats,
