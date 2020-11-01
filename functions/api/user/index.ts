@@ -29,13 +29,11 @@ export const handler: Handler = async (
       info: { fieldName },
     } = event;
 
-    const field = fieldName as FieldName;
-
-    if (field === FieldName.usersPrivate) {
+    if (fieldName === FieldName.usersPrivate) {
       return await userModel.list(sub, filter, limit, from);
-    } else if (field === FieldName.userPrivate) {
+    } else if (fieldName === FieldName.userPrivate) {
       return await userModel.getById(userId);
-    } else if (field === FieldName.updateUserPrivate) {
+    } else if (fieldName === FieldName.updateUserPrivate) {
       return await userModel.updateUserPrivate(sub, input);
     }
   }
