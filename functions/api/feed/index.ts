@@ -40,13 +40,9 @@ const getFeedQuery = (filter: FeedFilterInput = {}, sub: string) => {
   }
 
   const { eventType, clubId, teamId } = filter;
-
-  const filterByClub = getQueryByMatch('targetClub', clubId);
-  const filterByTeam = getQueryByMatch('targetTeam', teamId);
-  const filterByEventType =
-    eventType && Array.isArray(eventType) && eventType.length === 1
-      ? getQueryByMatch('eventType', eventType[0])
-      : null;
+  const filterByClub = getEsQueryByArray('clubId', clubId ? [clubId] : []);
+  const filterByTeam = getEsQueryByArray('targetTeam', teamId ? [teamId] : []);
+  const filterByEventType = getQueryByMatch('eventType', eventType);
 
   const must = [filterByClub, filterByTeam, filterByEventType].filter((f) => !!f);
 
