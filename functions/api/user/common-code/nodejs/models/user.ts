@@ -39,7 +39,7 @@ class UserModel {
   }
 
   async listBatch(event: FunctionEventBatch[]): Promise<any> {
-    const field = event[0]?.fieldName as FieldName;
+    const field = event[0]?.fieldName;
     const sub = event[0]?.identity?.sub;
 
     if (

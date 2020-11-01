@@ -74,7 +74,7 @@ export interface FunctionEvent {
     input: UpdateUserPrivateInput;
   };
   identity: { sub: string };
-  info: { fieldName: string };
+  info: { fieldName: FieldName };
 }
 
 export interface UpdateUserPrivateInput {
@@ -87,7 +87,7 @@ export interface UpdateUserPrivateInput {
 }
 
 export interface FunctionEventBatch {
-  fieldName: string;
+  fieldName: FieldName;
   source: any;
   identity: { sub: string; claims: any };
 }
