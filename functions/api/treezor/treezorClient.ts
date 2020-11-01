@@ -370,6 +370,11 @@ class TreezorClient {
         const eventId = this.getEvenId(transferTag);
         const event = eventId ? { id: eventId } : null;
         const isIncome = t.walletCreditId === walletId;
+        const balance =
+          t.walletCreditId === walletId
+            ? Number(t.walletCreditBalance)
+            : Number(t.walletDebitBalance);
+
         const { fromUser, toUser } = await this.getFromAndToUsersData(walletId, transferTag, t);
 
         const transaction: Transaction = {
@@ -380,7 +385,7 @@ class TreezorClient {
           transferTypeId,
           paymentMethodId,
           createdDate: new Date(t.createdDate).toISOString(),
-          balance: Number(t.walletCreditBalance),
+          balance,
           notes,
           status,
           event,
