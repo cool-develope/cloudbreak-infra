@@ -219,6 +219,11 @@ const createWallet = async (treezorUserId: string) => {
    * 1. Get user info
    */
   const user = await getUserByTreezorUserId(treezorUserId);
+
+  if (!user) {
+    throw Error(`Can't find user: ${treezorUserId}`);
+  }
+
   const tifoUserId: string = user.pk.replace('user#', '');
   const fullName = `${user.firstName} ${user.lastName}`;
 
