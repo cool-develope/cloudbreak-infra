@@ -311,10 +311,6 @@ class TreezorClient {
     const payoutsUrl = `${this.baseUrl}/v1/payouts?${params.toString()}`;
     const payinsUrl = `${this.baseUrl}/v1/payins?${params.toString()}`;
 
-    /**
-     * TODO: payout
-     */
-
     try {
       const [transactionsJson, payinsJson, payoutsJson]: [
         transactionsJson: TreezorTransactionResponse,
