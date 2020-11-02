@@ -451,8 +451,14 @@ const processWebhook = async (h: Webhook) => {
       break;
     case WebhookEvent.transfer_update:
       await processTransferUpdate(h.object_payload.transfers[0]);
+      break;
     case WebhookEvent.card_createvirtual:
-      await processCreateVirtualCard(h.object_payload.cards[0]);
+      const card = h.object_payload.cards[0];
+      if (!card) {
+        console.error('Empty body.', JSON.stringify(h.object_payload));
+      }
+      await processCreateVirtualCard(card);
+      break;
   }
 };
 
