@@ -82,6 +82,12 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
     --user-pool-id XXX-XXX \
     --max-results 20\
     --profile tifo-$TIFO_ENV
+
+  # LIST
+  aws cognito-idp list-users --user-pool-id XXX-XXX --max-items 300 --profile tifo-$TIFO_ENV
+  
+  # DELETE
+  aws cognito-idp admin-delete-user --user-pool-id XXX-XXX --profile tifo-$TIFO_ENV --username ХХХ-ХХХХ;
   ```
 
 - ACM
@@ -102,6 +108,9 @@ tifo.api
 - InviteParent (invitationUrl, childSub, childEmail, childFirstName, childLastName, childPhoto, childBirthDate, childParentSub, parentEmail)
 - AcceptChildInvitation (childSub, childFirstName, childLastName, childBirthDate, parentSub, parentFirstName, parentLastName)
 - DeclineChildInvitation (childSub, childFirstName, childLastName, childBirthDate, parentSub, parentFirstName, parentLastName)
+- ChildMonthlyLimit ()
+- ChildSendMoneyRequest ()
+- ChildSendTeamInvitation ()
 - ChildSendMoneyRequest (childFirstName, childLastName, recipientFirstName, recipientLastName, amount, note)
 - ChildAcceptedPaidEvent (childFirstName, childLastName, eventName, price)
 
