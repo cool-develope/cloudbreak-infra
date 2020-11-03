@@ -304,6 +304,22 @@ class TreezorClient {
     return null;
   }
 
+  async fetchData(headers: any, url: string, propertyName: string): Promise<any[]> {
+    try {
+      const response = await fetch(url, { headers });
+      const json = await response.json();
+      const result = json ? json[propertyName] || [] : [];
+      return result;
+    } catch (err) {
+      console.error({
+        url,
+        err,
+      });
+    }
+
+    return [];
+  }
+
   async getTransactions(walletId: number, treezorToken: string): Promise<Transaction[]> {
     const params = this.objToURLSearchParams({ walletId });
     const headers = { Authorization: `Bearer ${treezorToken}` };
@@ -312,19 +328,15 @@ class TreezorClient {
     const payinsUrl = `${this.baseUrl}/v1/payins?${params.toString()}`;
 
     try {
-      const [transactionsJson, payinsJson, payoutsJson]: [
-        transactionsJson: TreezorTransactionResponse,
-        payinsJson: TreezorPayinResponse,
-        payoutsJson: TreezorPayoutResponse,
+      const [transactions, payins, payouts]: [
+        transactions: TreezorTransaction[],
+        payins: TreezorPayin[],
+        payouts: TreezorPayout[],
       ] = await Promise.all([
-        fetch(transactionsUrl, { headers }).then((r: any) => r.json()),
-        fetch(payinsUrl, { headers }).then((r: any) => r.json()),
-        fetch(payoutsUrl, { headers }).then((r: any) => r.json()),
+        this.fetchData(headers, transactionsUrl, 'transactions'),
+        this.fetchData(headers, payinsUrl, 'payins'),
+        this.fetchData(headers, payoutsUrl, 'payouts'),
       ]);
-
-      const transactions = transactionsJson?.transactions || [];
-      const payins = payinsJson?.payins || [];
-      const payouts = payoutsJson?.payouts || [];
 
       // console.debug({
       //   walletId,
