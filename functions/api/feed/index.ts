@@ -207,6 +207,8 @@ const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) =
     endDateBefore,
   } = filter;
 
+  const eventTypeValue = eventType?.length === 1 ? eventType[0]: undefined;
+
   const filterByStartDate = getQueryByDate('startDate', startDateAfter, startDateBefore);
   const filterByEndDate = getQueryByDate('endDate', endDateAfter, endDateBefore);
   const filterByCreatedAt = getQueryByDate('createdAt', createDateAfter, createDateBefore);
@@ -216,7 +218,7 @@ const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) =
   const filterByFederation = getEsQueryByArray('federationId', federation);
   const filterByClub = getEsQueryByArray('clubId', club);
   const filterByTeam = getEsQueryByArray('targetTeam', team);
-  const filterByEventType = getQueryByMatch('eventType', eventType);
+  const filterByEventType = getQueryByMatch('eventType', eventTypeValue);
 
   const must = [
     filterByOwnerUserID,

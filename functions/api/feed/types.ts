@@ -114,7 +114,7 @@ export interface EventsConnection {
 export interface FeedPrivateFilterInput {
   search?: string;
   myContent?: Boolean;
-  eventType?: EventType;
+  eventType?: EventType[];
   federation?: string[];
   club?: string[];
   team?: string[];
