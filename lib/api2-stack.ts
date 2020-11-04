@@ -7,6 +7,7 @@ import { Fn } from '@aws-cdk/core';
 import { MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
+import { Duration } from '@aws-cdk/core';
 
 export interface Api2StackProps extends cdk.StackProps {
   imagesDomain: string;
@@ -762,6 +763,10 @@ export class Api2Stack extends cdk.Stack {
       handler: 'index.handler',
       environment,
       logRetention: RetentionDays.THREE_DAYS,
+      logRetentionRetryOptions: {
+        base: Duration.millis(200),
+        maxRetries: 10,
+      },
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(timeoutSeconds),
       memorySize,
