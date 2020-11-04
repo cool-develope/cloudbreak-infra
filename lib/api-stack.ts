@@ -8,6 +8,7 @@ import { Fn } from '@aws-cdk/core';
 import { UserPoolDefaultAction, MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
+import { Duration } from '@aws-cdk/core';
 
 const SCHEMA_FILE = '../schema.graphql';
 
@@ -746,6 +747,10 @@ export class ApiStack extends cdk.Stack {
       handler: 'index.handler',
       environment,
       logRetention: RetentionDays.THREE_DAYS,
+      logRetentionRetryOptions: {
+        base: Duration.millis(200),
+        maxRetries: 10,
+      },
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(timeoutSeconds),
       memorySize,
