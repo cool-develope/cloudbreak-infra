@@ -36,6 +36,7 @@ export class TableStack extends cdk.Stack {
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     });
 
     this.mainTable.addGlobalSecondaryIndex({
@@ -49,8 +50,6 @@ export class TableStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
-      readCapacity: 5,
-      writeCapacity: 5,
     });
 
     const dynamoStreamMainFunction = this.getFunction(
