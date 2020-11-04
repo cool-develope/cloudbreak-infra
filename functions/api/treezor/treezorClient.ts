@@ -409,6 +409,31 @@ class TreezorClient {
         result.push(transaction);
       }
 
+      for (const payout of payouts) {
+        const transaction: Transaction = {
+          id: String(payout.payoutId),
+          type: TransactionType.Payout,
+          amount: Number(payout.amount),
+          currency: payout.currency,
+          transferTypeId: null,
+          paymentMethodId: null,
+          createdDate: new Date(payout.createdDate).toISOString(),
+          balance: 0,
+          notes: payout.label,
+          status: payout.payoutStatus,
+          event: null,
+          isIncome: false,
+          fromUser: null,
+          toUser: null,
+          walletDebitId: 0,
+          walletCreditId: 0,
+          payoutTypeId: payout.payoutTypeId,
+          bankaccountIBAN: payout.bankaccountIBAN,
+        };
+
+        result.push(transaction);
+      }
+
       // @ts-ignore
       result.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
 
