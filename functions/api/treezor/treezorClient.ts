@@ -25,10 +25,6 @@ interface UserPublic {
   photo: Image | null;
 }
 
-interface TransactionForEvent {
-  id: string;
-}
-
 interface TreezorTransactionResponse {
   transactions: TreezorTransaction[];
 }
@@ -146,6 +142,25 @@ interface TreezorPayout {
   partnerFee: string;
   createdDate: string;
   modifiedDate: string;
+}
+
+interface TransactionForEvent {
+  id: string;
+  title: string;
+  organization?: EventOrganization;
+}
+
+enum OrganizationType {
+  Federation = 'Federation',
+  Club = 'Club',
+}
+
+interface EventOrganization {
+  id: string;
+  name: string;
+  type: OrganizationType;
+  logo: Image;
+  walletId?: number;
 }
 
 class TreezorClient {
@@ -320,6 +335,41 @@ class TreezorClient {
     return [];
   }
 
+  async getEvent(eventId: string | null): Promise<TransactionForEvent | null> {
+    let event: TransactionForEvent | null = null;
+    if (eventId) {
+      const { Item: eventData } = await this.dynamoHelper.getItem(`event#${eventId}`, 'metadata');
+      if (eventData) {
+        const { clubId, federationId, title } = eventData;
+        event = { id: eventId, title };
+
+        if (clubId) {
+          const { Item: clubData } = await this.dynamoHelper.getItem(`club#${clubId}`, 'metadata');
+          event.organization = {
+            id: clubId,
+            name: clubData.name,
+            logo: this.getTypeImage(clubData.logo),
+            type: OrganizationType.Club,
+          };
+        } else if (federationId) {
+          const { Item: federationData } = await this.dynamoHelper.getItem(
+            `federation#${federationId}`,
+            'metadata',
+          );
+
+          event.organization = {
+            id: federationId,
+            name: federationData.name,
+            logo: this.getTypeImage(federationData.logo),
+            type: OrganizationType.Federation,
+          };
+        }
+      }
+    }
+
+    return event;
+  }
+
   async getTransactions(walletId: number, treezorToken: string): Promise<Transaction[]> {
     const params = this.objToURLSearchParams({ walletId });
     const headers = { Authorization: `Bearer ${treezorToken}` };
@@ -376,7 +426,7 @@ class TreezorClient {
           transfer?.transferStatus || payin?.payinStatus || payout?.payoutStatus || null;
         const transferTag = transfer?.transferTag || '';
         const eventId = this.getEvenId(transferTag);
-        const event = eventId ? { id: eventId } : null;
+        const event = await this.getEvent(eventId);
         const isIncome = t.walletCreditId === walletId;
         const balance =
           t.walletCreditId === walletId
@@ -461,7 +511,7 @@ class TreezorClient {
       const { access_token } = await res.json();
       return access_token;
     } catch (err) {
-      console.log('ERROR getTreezorToken', {
+      console.error('ERROR getTreezorToken', {
         params,
         err,
       });
