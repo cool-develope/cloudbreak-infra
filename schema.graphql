@@ -746,6 +746,7 @@ type Organization {
 type EventOrganization {
   id: String
   name: String
+  logo: Image
   type: OrganizationType
   walletId: Int
 }
@@ -1190,6 +1191,8 @@ type Transaction {
 
 type TransactionForEvent {
   id: String
+  name: String
+  organization: EventOrganization
 }
 
 type TransactionsConnection {
