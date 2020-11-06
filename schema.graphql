@@ -1191,7 +1191,7 @@ type Transaction {
 
 type TransactionForEvent {
   id: String
-  name: String
+  title: String
   organization: EventOrganization
 }
 
