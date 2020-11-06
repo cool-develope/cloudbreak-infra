@@ -79,11 +79,7 @@ export const handler: Handler = async (event): Promise<{ errors: string[]; event
       await updateItem(pk, sk, { a: true });
     }
   } else if (field === FieldName.declineEvent) {
-    if (eventMetadata.price > 0) {
-      errors.push("You can't decline already paid Event");
-    } else {
-      await updateItem(pk, sk, { a: false });
-    }
+    await updateItem(pk, sk, { a: false });
   }
 
   return {
