@@ -178,7 +178,7 @@ class ClubModel {
     limit: number = 10,
     from: number = 0,
   ): Promise<ClubsConnection> {
-    const query = this.getEsQuery(userId, filter);
+    const query = await this.getEsQuery(userId, filter);
     const esResult = await this.esSearch({ query, limit, from });
     const teamStats = await this.getTeamStats();
 
@@ -347,15 +347,50 @@ class ClubModel {
       : null;
   }
 
-  getEsQuery(userId: string, filter: ClubsFilterInput = {}) {
-    const { search = '', city = '', discipline = [], clubIds } = filter;
+  getEsQueryByNearMe(country: string, city: string) {
+    return {
+      function_score: {
+        query: { match_all: {} },
+        boost: '5',
+        functions: [
+          {
+            filter: { match: { country } },
+            weight: 10,
+          },
+          {
+            filter: { match: { city } },
+            weight: 100,
+          },
+        ],
+        max_boost: 100,
+        score_mode: 'max',
+        boost_mode: 'multiply',
+        min_score: 5,
+      },
+    };
+  }
+
+  async getEsQuery(userId: string, filter: ClubsFilterInput = {}) {
+    const { search = '', city = '', discipline = [], clubIds, nearMe } = filter;
+
+    let filterByNearMe = null;
+    if (userId && nearMe === true) {
+      const { Item: userData } = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
+      filterByNearMe = this.getEsQueryByNearMe(userData.country, userData.city);
+    }
 
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByCity = this.getEsQueryByMatch('city', city);
     const filterById = this.getEsQueryByArray('_id', clubIds);
     const filterByDiscipline = this.getEsQueryByDiscipline(discipline);
 
-    const must = [filterBySearch, filterByCity, filterByDiscipline, filterById].filter((f) => !!f);
+    const must = [
+      filterBySearch,
+      filterByCity,
+      filterByDiscipline,
+      filterById,
+      filterByNearMe,
+    ].filter((f) => !!f);
 
     const query = must.length
       ? {
@@ -364,6 +399,8 @@ class ClubModel {
           },
         }
       : null;
+
+    console.log(JSON.stringify(query, null, 2));
 
     return query;
   }
