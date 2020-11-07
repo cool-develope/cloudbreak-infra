@@ -132,6 +132,7 @@ export interface ClubsFilterInput {
   discipline?: string[];
   clubIds?: string[];
   city?: string;
+  nearMe?: boolean;
 }
 
 export interface ClubsConnection {
