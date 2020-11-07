@@ -351,7 +351,7 @@ class ClubModel {
     return {
       function_score: {
         query: { match_all: {} },
-        boost: '5',
+        boost: 1,
         functions: [
           {
             filter: { match: { country } },
@@ -365,7 +365,7 @@ class ClubModel {
         max_boost: 100,
         score_mode: 'max',
         boost_mode: 'multiply',
-        min_score: 5,
+        min_score: 10,
       },
     };
   }
