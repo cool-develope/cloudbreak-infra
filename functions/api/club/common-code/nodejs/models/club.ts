@@ -179,7 +179,12 @@ class ClubModel {
     from: number = 0,
   ): Promise<ClubsConnection> {
     const query = await this.getEsQuery(userId, filter);
-    const esResult = await this.esSearch({ query, limit, from });
+    let sort = [{ 'country.keyword': 'asc', 'city.keyword': 'asc', 'name.keyword': 'asc' }];
+    if (filter.nearMe === true) {
+      sort = [];
+    }
+
+    const esResult = await this.esSearch({ query, limit, from, sort });
     const teamStats = await this.getTeamStats();
 
     const totalCount = esResult.body?.hits.total.value || 0;
@@ -405,7 +410,17 @@ class ClubModel {
     return query;
   }
 
-  async esSearch({ query, limit, from }: { query: any; limit: number; from: number }) {
+  async esSearch({
+    query,
+    limit,
+    from,
+    sort,
+  }: {
+    query: any;
+    limit: number;
+    from: number;
+    sort: Object[];
+  }) {
     try {
       const queryFilter = query ? { query } : null;
 
@@ -415,7 +430,7 @@ class ClubModel {
           from,
           size: limit,
           ...queryFilter,
-          sort: [{ _id: 'asc' }],
+          sort,
         },
       });
 
