@@ -89,6 +89,51 @@ class TeamInvitationModel {
     };
   }
 
+  async addParentToTeam(clubId: string, teamId: string, userId: string, teamDetails: any) {
+    const { Item: userData } = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
+    const { parentUserId } = userData;
+    if (parentUserId) {
+      // I have a parent
+      const pk = `team#${teamId}`;
+      const sk = `user#${parentUserId}`;
+      const { Item: team } = await this.dynamoHelper.getItem(pk, sk);
+
+      if (team && team.status === TeamInvitationStatus.Accepted) {
+        // Parent already accepted to the team
+        return;
+      } else {
+        // Add or accept parent
+        const data: TeamUserRecord = {
+          role: TeamMemberType.Member,
+          createdAt: new Date().toISOString(),
+          status: TeamInvitationStatus.Accepted,
+          clubId,
+        };
+
+        try {
+          await this.dynamoHelper.updateItem(pk, sk, data);
+
+          await this.putEvents('AcceptTeamInvitation', {
+            sub: parentUserId,
+            teamId,
+            clubId,
+            teamName: teamDetails?.name,
+            role: TeamMemberType.Member,
+          });
+
+          console.log('addParentToTeam', {
+            userId,
+            parentUserId,
+            clubId,
+            teamId,
+          });
+        } catch (err) {
+          console.error('addParentToTeam', err);
+        }
+      }
+    }
+  }
+
   async acceptInvitation(
     sub: string,
     input: AcceptTeamInvitationPrivateInput,
@@ -116,6 +161,8 @@ class TeamInvitationModel {
         teamName: teamDetails?.name,
         role: teamUser.role,
       });
+
+      await this.addParentToTeam(clubId, teamId, userId, teamDetails);
     }
 
     return {
