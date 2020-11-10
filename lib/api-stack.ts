@@ -238,6 +238,11 @@ export class ApiStack extends cdk.Stack {
       typeName: 'Query',
       fieldName: 'me',
     });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'setPin',
+    });
   }
 
   createEventMutation() {
