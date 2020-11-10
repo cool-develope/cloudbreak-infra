@@ -1,6 +1,9 @@
 export enum FieldName {
   updateUser = 'updateUser',
   me = 'me',
+  setPin = 'setPin',
+  verifyPin = 'verifyPin',
+  changePin = 'changePin',
 }
 
 export enum Gender {
@@ -129,4 +132,17 @@ export interface Organization {
   id: String;
   name: String;
   logo: Image;
+}
+
+export interface SetPinPayload {
+  errors: string[];
+}
+
+export interface VerifyPinPayload {
+  errors: string[];
+  verified: boolean;
+}
+
+export interface ChangePinPayload {
+  errors: string[];
 }
