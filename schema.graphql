@@ -426,6 +426,19 @@ input SupportTicketInput {
   message: String!
 }
 
+input SetPinInput {
+  pin: String!
+}
+
+input VerifyPinInput {
+  pin: String!
+}
+
+input ChangePin {
+  currentPin: String!
+  newPin: String!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -577,6 +590,19 @@ type UpdateFederationPrivatePayload {
 }
 
 type SupportTicketPayload {
+  errors: [String]
+}
+
+type SetPinPayload {
+  errors: [String]
+}
+
+type VerifyPinPayload {
+  errors: [String]
+  verified: Boolean
+}
+
+type ChangePinPayload {
   errors: [String]
 }
 
@@ -1260,6 +1286,10 @@ type Mutation {
   updateFederationPrivate(input: UpdateFederationPrivateInput!): UpdateFederationPrivatePayload!
 
   submitSupportTicket(input: SupportTicketInput!): SupportTicketPayload!
+
+  setPin(input: SetPinInput!): SetPinPayload
+  verifyPin(input: VerifyPinInput!): VerifyPinPayload
+  changePin(input: ChangePin!): ChangePinPayload
 }
 
 type Query {
