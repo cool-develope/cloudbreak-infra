@@ -1,6 +1,7 @@
 // @ts-ignore
 import * as AWS from 'aws-sdk';
 import { Handler } from 'aws-lambda';
+import * as crypto from 'crypto';
 import * as OneSignal from 'onesignal-node';
 import {
   UpdateUserInput,
@@ -414,6 +415,25 @@ const updateUser = async (pk: string, input: UpdateUserInput) => {
   return user;
 };
 
+const generateSalt = (rounds: number) => {
+  return crypto
+    .randomBytes(Math.ceil(rounds / 2))
+    .toString('hex')
+    .slice(0, rounds);
+};
+
+const getHash = (pin: string, salt: string) => {
+  return crypto.createHmac('sha256', salt).update(pin).digest('hex');
+};
+
+const compare = (pin: string, salt: string, hash: string) => {
+  const newHash = getHash(pin, salt);
+
+  if (hash && newHash === hash) {
+    return true;
+  }
+  return false;
+};
 export const handler: Handler = async (event) => {
   const {
     arguments: { input = {} },
