@@ -248,6 +248,11 @@ export class ApiStack extends cdk.Stack {
       typeName: 'Mutation',
       fieldName: 'verifyPin',
     });
+
+    dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'changePin',
+    });
   }
 
   createEventMutation() {
