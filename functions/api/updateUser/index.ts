@@ -20,6 +20,9 @@ import {
   TeamInvitationStatus,
   Organization,
   TreezorUser,
+  SetPinPayload,
+  VerifyPinPayload,
+  ChangePinPayload,
 } from './types';
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -434,6 +437,73 @@ const compare = (pin: string, salt: string, hash: string) => {
   }
   return false;
 };
+
+const setPin = async (
+  sub: string,
+  input: { pin: string },
+  checkExists = true,
+): Promise<SetPinPayload> => {
+  const errors: string[] = [];
+  const pk = `user#${sub}`;
+  const sk = 'pin';
+  const { Item } = await getItem(pk, sk);
+  if (!input.pin || input.pin.length < 4) {
+    errors.push('Pin is to short.');
+  } else if (Item && checkExists) {
+    errors.push('Pin is already set.');
+  } else {
+    const salt = generateSalt(12);
+    const hash = getHash(input.pin, salt);
+    await updateItem(pk, sk, {
+      pin: hash,
+      salt,
+      modifiedAt: new Date().toISOString(),
+    });
+  }
+
+  return {
+    errors,
+  };
+};
+
+const verifyPin = async (sub: string, input: { pin: string }): Promise<VerifyPinPayload> => {
+  const errors: string[] = [];
+  let verified = false;
+  const pk = `user#${sub}`;
+  const sk = 'pin';
+  const { Item } = await getItem(pk, sk);
+  if (Item) {
+    const { pin, salt } = Item;
+    verified = compare(input.pin, salt, pin);
+  } else {
+    errors.push('Pin is empty');
+  }
+
+  return {
+    errors,
+    verified,
+  };
+};
+
+const changePin = async (
+  sub: string,
+  input: { currentPin: string; newPin: string },
+): Promise<ChangePinPayload> => {
+  const { currentPin, newPin } = input;
+  const errors: string[] = [];
+
+  const { verified } = await verifyPin(sub, { pin: currentPin });
+  if (verified === true) {
+    await setPin(sub, { pin: newPin }, false);
+  } else {
+    errors.push('Pin not verified');
+  }
+
+  return {
+    errors,
+  };
+};
+
 export const handler: Handler = async (event) => {
   const {
     arguments: { input = {} },
@@ -474,6 +544,12 @@ export const handler: Handler = async (event) => {
     } else {
       return null;
     }
+  } else if (field === FieldName.setPin) {
+    return await setPin(sub, input);
+  } else if (field === FieldName.verifyPin) {
+    return await verifyPin(sub, input);
+  } else if (field === FieldName.changePin) {
+    return await changePin(sub, input);
   }
 
   throw Error('Query not supported');
