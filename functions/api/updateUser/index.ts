@@ -513,6 +513,7 @@ export const handler: Handler = async (event) => {
 
   const field = fieldName as FieldName;
   const pk = `user#${sub}`;
+  const sk = 'metadata';
 
   if (field === FieldName.updateUser) {
     // const ids = await getDeviceIds(pk);
@@ -537,7 +538,7 @@ export const handler: Handler = async (event) => {
     /**
      * Query me:
      */
-    const { Item: userData } = await getItem(pk, 'metadata');
+    const { Item: userData } = await getItem(pk, sk);
     if (userData) {
       const user = await getTypeUser(userData);
       return user;
@@ -545,7 +546,18 @@ export const handler: Handler = async (event) => {
       return null;
     }
   } else if (field === FieldName.setPin) {
-    return await setPin(sub, input);
+    let checkExists = true;
+
+    /**
+     * If user don't have a wallet,
+     * allow to set PIN even if it exists
+     */
+    const { Item: userData } = await getItem(pk, sk);
+    if (userData && !userData.treezorWalletId) {
+      checkExists = false;
+    }
+    
+    return await setPin(sub, input, checkExists);
   } else if (field === FieldName.verifyPin) {
     return await verifyPin(sub, input);
   } else if (field === FieldName.changePin) {
