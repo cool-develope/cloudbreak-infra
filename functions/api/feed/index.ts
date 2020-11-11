@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as AWS_RAW from 'aws-sdk';
 import { Handler } from 'aws-lambda';
-import { Client, ApiResponse, RequestParams } from '@elastic/elasticsearch';
+import { Client } from '@elastic/elasticsearch';
 import * as AWSXRay from 'aws-xray-sdk-core';
 import {
   EventType,
@@ -21,6 +21,7 @@ import {
   OrganizationType,
   FunctionEvent,
   FunctionEventBatch,
+  CognitoClaims,
 } from './types';
 
 const { MAIN_TABLE_NAME, IMAGES_DOMAIN, ES_DOMAIN } = process.env;
@@ -171,13 +172,21 @@ const getUpcomingEventsCount = async (clubId: string, teamId: string | null): Pr
   }
 };
 
-const getUpcomingEventsQuery = () => {
+const getUpcomingEventsQuery = (claims: CognitoClaims) => {
+  const { sub, clubId, federationId } = getClaimsData(claims);
+  const club = clubId ? [clubId] : [];
+  const federation = federationId ? [federationId] : [];
+
   const startDateAfter = new Date().toISOString();
   const startDateBefore = new Date(2022, 1, 1).toISOString();
   const filterByStartDate = getQueryByDate('startDate', startDateAfter, startDateBefore);
   const filterByEventType = getQueryByMatch('eventType', EventType.Event);
+  const filterByFederation = getEsQueryByArray('federationId', federation);
+  const filterByClub = getEsQueryByArray('clubId', club);
 
-  const must = [filterByStartDate, filterByEventType].filter((f) => !!f);
+  const must = [filterByStartDate, filterByEventType, filterByFederation, filterByClub].filter(
+    (f) => !!f,
+  );
 
   const query = must.length
     ? {
@@ -190,8 +199,8 @@ const getUpcomingEventsQuery = () => {
   return query;
 };
 
-const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) => {
-  const {
+const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, claims: CognitoClaims) => {
+  let {
     search = '',
     myContent,
     eventType,
@@ -207,7 +216,19 @@ const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, sub: string) =
     endDateBefore,
   } = filter;
 
-  const eventTypeValue = eventType?.length === 1 ? eventType[0]: undefined;
+  const { sub, clubId, federationId } = getClaimsData(claims);
+  const filterByClubIsEmpty = (club || []).length === 0;
+  const filterByFederationIsEmpty = (federation || []).length === 0;
+
+  if (clubId && filterByClubIsEmpty) {
+    club = [clubId];
+  }
+
+  if (federationId && filterByFederationIsEmpty) {
+    federation = [federationId];
+  }
+
+  const eventTypeValue = eventType?.length === 1 ? eventType[0] : undefined;
 
   const filterByStartDate = getQueryByDate('startDate', startDateAfter, startDateBefore);
   const filterByEndDate = getQueryByDate('endDate', endDateAfter, endDateBefore);
@@ -402,6 +423,28 @@ const getTeamUpcomingEventsCountBatch = async (event: FunctionEventBatch[]) => {
   return result;
 };
 
+const getClaimsData = (
+  claims: CognitoClaims,
+): { sub: string; groups: string[]; clubId: string | null; federationId: string | null } => {
+  const {
+    sub,
+    ['cognito:groups']: groups = [],
+    ['custom:clubs']: clubs = null,
+    ['custom:federations']: federations = null,
+  } = claims;
+
+  const clubId = clubs && clubs.includes(',') ? clubs.split(', ')[0] : clubs || null;
+  let federationId =
+    federations && federations.includes(',') ? federations.split(', ')[0] : federations || null;
+
+  return {
+    sub,
+    groups,
+    clubId,
+    federationId,
+  };
+};
+
 export const handler: Handler = async (
   event: FunctionEvent | FunctionEventBatch[],
 ): Promise<any> => {
@@ -419,7 +462,7 @@ export const handler: Handler = async (
   } else {
     const {
       arguments: { filter = {}, limit = 10, from = 0 },
-      identity: { sub },
+      identity: { sub, claims },
       info: { fieldName },
     } = event;
 
@@ -429,14 +472,12 @@ export const handler: Handler = async (
     if (fieldName === FieldName.feed) {
       query = getFeedQuery(filter, sub);
     } else if (fieldName === FieldName.feedPrivate) {
-      query = getFeedPrivateQuery(filter, sub);
+      query = getFeedPrivateQuery(filter, claims);
     } else if (fieldName === FieldName.myEvents) {
-      // TODO
       query = getMyEventsQuery(filter, sub);
       sort = [{ startDate: 'asc' }, { _id: 'asc' }];
     } else if (fieldName === FieldName.upcomingEventsPrivate) {
-      // TODO
-      query = getUpcomingEventsQuery();
+      query = getUpcomingEventsQuery(claims);
       sort = [{ startDate: 'asc' }, { _id: 'asc' }];
     }
 
