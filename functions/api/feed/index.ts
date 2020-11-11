@@ -440,12 +440,6 @@ export const handler: Handler = async (
       sort = [{ startDate: 'asc' }, { _id: 'asc' }];
     }
 
-    console.log({
-      fieldName,
-      filter: JSON.stringify(filter, null, 2),
-      query: JSON.stringify(query, null, 2),
-    });
-
     const esResult = await search({ query, limit, from, sort });
     const totalCount = esResult.body?.hits.total.value || 0;
     const items = prepareEsItems(esResult.body?.hits.hits);
