@@ -142,14 +142,14 @@ export interface FunctionEvent {
     limit?: number;
     from?: number;
   };
-  identity: { sub: string };
+  identity: { sub: string; claims: CognitoClaims };
   info: { fieldName: string };
 }
 
 export interface FunctionEventBatch {
   fieldName: string;
   source: any;
-  identity: { sub: string; claims: any };
+  identity: { sub: string; claims: CognitoClaims };
 }
 
 export interface TeamsFilterInput {
@@ -163,4 +163,20 @@ export interface TeamsFilterInput {
 export interface TeamsConnection {
   items: Team[];
   totalCount: number;
+}
+
+export interface CognitoClaims {
+  sub: string;
+  aud: string;
+  token_use: string;
+  email: string;
+  'cognito:groups': string[];
+  'cognito:username': string;
+  'custom:trzUserId': string;
+  'custom:clubs': string;
+  'custom:federations': string;
+  'custom:trzWalletsId': string;
+  'custom:trzScopes': string;
+  'custom:trzCardsId': string;
+  'custom:trzChildren': string;
 }
