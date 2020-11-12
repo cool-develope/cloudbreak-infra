@@ -549,11 +549,11 @@ export const handler: Handler = async (event) => {
     let checkExists = true;
 
     /**
-     * If user don't have a wallet,
+     * If user don't start KYC,
      * allow to set PIN even if it exists
      */
     const { Item: userData } = await getItem(pk, sk);
-    if (userData && !userData.treezorWalletId) {
+    if (userData && !userData.kycReview) {
       checkExists = false;
     }
     
