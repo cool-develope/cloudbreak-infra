@@ -218,8 +218,6 @@ export class ApiStack extends cdk.Stack {
       {
         MAIN_TABLE_NAME: this.mainTable.tableName,
         IMAGES_DOMAIN: this.imagesDomain,
-        ONESIGNAL_APP_ID: process.env.ONESIGNAL_APP_ID,
-        ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
       },
       30,
       256,
