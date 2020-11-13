@@ -21,7 +21,7 @@ export class EventsStack extends cdk.Stack {
     super(scope, id, props);
 
     const { imagesDomain, commonModulesLayerArn } = props;
-    const { MAIN_TABLE_NAME = '' } = process.env;
+    const { MAIN_TABLE_NAME = '', ONESIGNAL_APP_ID = '', ONESIGNAL_API_KEY = '' } = process.env;
 
     const mainTable = dynamodb.Table.fromTableName(this, 'MTable', MAIN_TABLE_NAME);
     this.userPoolId = Fn.importValue('UserPoolId');
@@ -50,6 +50,8 @@ export class EventsStack extends cdk.Stack {
         MAIN_TABLE_NAME: mainTable.tableName,
         IMAGES_DOMAIN: imagesDomain,
         ES_DOMAIN: esDomain,
+        ONESIGNAL_APP_ID,
+        ONESIGNAL_API_KEY,
       },
     );
 
