@@ -2,7 +2,7 @@
 import * as AWS from 'aws-sdk';
 import { Handler } from 'aws-lambda';
 import * as crypto from 'crypto';
-import * as OneSignal from 'onesignal-node';
+import DynamoHelper from './dynamoHelper';
 import {
   UpdateUserInput,
   User,
@@ -25,13 +25,10 @@ import {
   ChangePinPayload,
 } from './types';
 
+const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN } = process.env;
+
 const db = new AWS.DynamoDB.DocumentClient();
-const {
-  MAIN_TABLE_NAME = '',
-  IMAGES_DOMAIN,
-  ONESIGNAL_APP_ID = '',
-  ONESIGNAL_API_KEY = '',
-} = process.env;
+const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 
 const getUniqItemsFromArray = (arr: { pk: string; sk: string }[]) => {
   // TODO
@@ -77,22 +74,6 @@ const batchGet = async (
   }
 
   return result;
-};
-
-const getUpdateExpression = (attributes: any = {}) =>
-  Object.keys(attributes)
-    .map((key) =>
-      attributes[key] !== undefined && attributes[key] !== null ? `${key} = :${key}` : null,
-    )
-    .filter((attr) => !!attr)
-    .join(', ');
-
-const getExpressionAttributeValues = (attributes = {}) => {
-  const obj: any = {};
-  Object.entries(attributes).forEach(([key, value]) =>
-    value !== undefined && value !== null ? (obj[`:${key}`] = value) : null,
-  );
-  return obj;
 };
 
 const queryItemsByIndex = (sk: string, pk: string, indexName: string) => {
@@ -141,39 +122,6 @@ const queryItems = (pk: string, sk: string) => {
   };
 
   return db.query(params).promise();
-};
-
-const updateItem = (pk: string, sk: string, attributes: any) => {
-  const condition = 'SET ' + getUpdateExpression(attributes);
-  const values = getExpressionAttributeValues(attributes);
-
-  const params = {
-    TableName: MAIN_TABLE_NAME,
-    Key: { pk, sk },
-    UpdateExpression: condition,
-    ExpressionAttributeValues: values,
-    ReturnValues: 'ALL_NEW',
-  };
-
-  return db.update(params).promise();
-};
-
-const getItem = (pk: string, sk: string) => {
-  const params = {
-    TableName: MAIN_TABLE_NAME,
-    Key: { pk, sk },
-  };
-
-  return db.get(params).promise();
-};
-
-const getDeviceIds = async (pk: string) => {
-  const getResult = await getItem(pk, 'devices');
-  if (getResult.Item) {
-    return getResult.Item.ids.values;
-  }
-
-  return [];
 };
 
 const getChildren = async ({ children }: { children: any }): Promise<UserChild[]> => {
@@ -251,7 +199,7 @@ const getMyClub = async (teams: TeamMember[]): Promise<any | null> => {
 
   if (coachInTeam) {
     const { clubId } = coachInTeam;
-    const { Item: club } = await getItem(`club#${clubId}`, 'metadata');
+    const { Item: club } = await dynamoHelper.getItem(`club#${clubId}`, 'metadata');
     return club;
   }
 
@@ -260,7 +208,7 @@ const getMyClub = async (teams: TeamMember[]): Promise<any | null> => {
 
 const getParent = async ({ parentUserId }: any): Promise<UserChild | null> => {
   if (parentUserId) {
-    const { Item } = await getItem(`user#${parentUserId}`, 'metadata');
+    const { Item } = await dynamoHelper.getItem(`user#${parentUserId}`, 'metadata');
     return getTypeUserChild(Item);
   }
 
@@ -399,21 +347,8 @@ const getTypeImage = (photo: string = '') => ({
   url: photo ? `https://${IMAGES_DOMAIN}/${photo}` : '',
 });
 
-const sendPushNotifications = (player_ids?: [string]) => {
-  const client = new OneSignal.Client(ONESIGNAL_APP_ID, ONESIGNAL_API_KEY);
-
-  const notification = {
-    contents: {
-      en: 'Update user notification!',
-    },
-    include_player_ids: player_ids,
-  };
-
-  return client.createNotification(notification);
-};
-
 const updateUser = async (pk: string, input: UpdateUserInput) => {
-  const { Attributes: userData } = await updateItem(pk, 'metadata', input);
+  const { Attributes: userData } = await dynamoHelper.updateItem(pk, 'metadata', input);
   const user = await getTypeUser(userData);
   return user;
 };
@@ -446,7 +381,7 @@ const setPin = async (
   const errors: string[] = [];
   const pk = `user#${sub}`;
   const sk = 'pin';
-  const { Item } = await getItem(pk, sk);
+  const { Item } = await dynamoHelper.getItem(pk, sk);
   if (!input.pin || input.pin.length < 4) {
     errors.push('Pin is to short.');
   } else if (Item && checkExists) {
@@ -454,7 +389,7 @@ const setPin = async (
   } else {
     const salt = generateSalt(12);
     const hash = getHash(input.pin, salt);
-    await updateItem(pk, sk, {
+    await dynamoHelper.updateItem(pk, sk, {
       pin: hash,
       salt,
       modifiedAt: new Date().toISOString(),
@@ -471,7 +406,7 @@ const verifyPin = async (sub: string, input: { pin: string }): Promise<VerifyPin
   let verified = false;
   const pk = `user#${sub}`;
   const sk = 'pin';
-  const { Item } = await getItem(pk, sk);
+  const { Item } = await dynamoHelper.getItem(pk, sk);
   if (Item) {
     const { pin, salt } = Item;
     verified = compare(input.pin, salt, pin);
@@ -516,14 +451,6 @@ export const handler: Handler = async (event) => {
   const sk = 'metadata';
 
   if (field === FieldName.updateUser) {
-    // const ids = await getDeviceIds(pk);
-    // try {
-    //   const res = await sendPushNotifications(ids);
-    //   console.log(res);
-    // } catch (e) {
-    //   console.log(e);
-    // }
-
     /**
      * Mutation updateUser:
      */
@@ -538,7 +465,7 @@ export const handler: Handler = async (event) => {
     /**
      * Query me:
      */
-    const { Item: userData } = await getItem(pk, sk);
+    const { Item: userData } = await dynamoHelper.getItem(pk, sk);
     if (userData) {
       const user = await getTypeUser(userData);
       return user;
@@ -552,11 +479,11 @@ export const handler: Handler = async (event) => {
      * If user don't start KYC,
      * allow to set PIN even if it exists
      */
-    const { Item: userData } = await getItem(pk, sk);
+    const { Item: userData } = await dynamoHelper.getItem(pk, sk);
     if (userData && !userData.kycReview) {
       checkExists = false;
     }
-    
+
     return await setPin(sub, input, checkExists);
   } else if (field === FieldName.verifyPin) {
     return await verifyPin(sub, input);
