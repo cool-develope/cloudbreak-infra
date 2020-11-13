@@ -6,5 +6,8 @@
   "scripts": {},
   "keywords": [],
   "author": "Sergey Onufrienko <sergey@onufrienko.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "onesignal-node": "^3.2.0"
+  }
 }
