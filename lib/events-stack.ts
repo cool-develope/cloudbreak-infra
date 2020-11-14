@@ -144,6 +144,7 @@ export class EventsStack extends cdk.Stack {
       logRetention: RetentionDays.THREE_DAYS,
       tracing: lambda.Tracing.ACTIVE,
       layers: [this.commonModulesLayer],
+      timeout: cdk.Duration.seconds(120),
     });
   }
 }
