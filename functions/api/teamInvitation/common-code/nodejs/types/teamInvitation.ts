@@ -76,3 +76,14 @@ export interface TeamRecord {
   ownerUserId?: string;
   modifiedAt?: string;
 }
+
+export interface NotificationTeamInvitation {
+  sub: string;
+  teamId: string;
+  clubId: string;
+  teamName: string;
+  teamLogo: string;
+  role?: TeamMemberType;
+  fromRole?: TeamMemberType;
+  toRole?: TeamMemberType;
+}
