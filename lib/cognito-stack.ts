@@ -281,6 +281,7 @@ export class CognitoStack extends cdk.Stack {
       environment,
       logRetention: RetentionDays.ONE_WEEK,
       tracing: lambda.Tracing.ACTIVE,
+      timeout: cdk.Duration.seconds(60),
     });
   }
 }
