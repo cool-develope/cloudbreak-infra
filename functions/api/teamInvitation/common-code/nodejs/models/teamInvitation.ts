@@ -9,6 +9,7 @@ import {
   ChangeTeamRolePrivateInput,
   SendTeamInvitationPayload,
   TeamRecord,
+  NotificationTeamInvitation,
 } from '../types/teamInvitation';
 
 class TeamInvitationModel {
@@ -79,7 +80,8 @@ class TeamInvitationModel {
         sub: userId,
         teamId,
         clubId,
-        teamName: teamDetails?.name,
+        teamName: teamDetails?.name || '',
+        teamLogo: teamDetails?.logo || '',
         role,
       });
     }
@@ -118,6 +120,7 @@ class TeamInvitationModel {
             teamId,
             clubId,
             teamName: teamDetails?.name,
+            teamLogo: teamDetails?.logo,
             role: TeamMemberType.Member,
           });
 
@@ -158,7 +161,8 @@ class TeamInvitationModel {
         sub: userId,
         teamId,
         clubId,
-        teamName: teamDetails?.name,
+        teamName: teamDetails?.name || '',
+        teamLogo: teamDetails?.logo || '',
         role: teamUser.role,
       });
 
@@ -194,7 +198,8 @@ class TeamInvitationModel {
         sub: userId,
         teamId,
         clubId,
-        teamName: teamDetails?.name,
+        teamName: teamDetails?.name || '',
+        teamLogo: teamDetails?.logo || '',
         role: teamUser.role,
       });
     }
@@ -220,13 +225,14 @@ class TeamInvitationModel {
       sub: userId,
       teamId,
       clubId,
-      teamName: teamDetails?.name,
+      teamName: teamDetails?.name || '',
+      teamLogo: teamDetails?.logo || '',
       fromRole: teamUser?.role,
       toRole: role,
     });
   }
 
-  putEvents(type: string, detail: any) {
+  putEvents(type: string, detail: NotificationTeamInvitation) {
     const params = {
       Entries: [
         {
@@ -239,7 +245,6 @@ class TeamInvitationModel {
       ],
     };
 
-    console.log(type, detail);
     return this.eventbridge.putEvents(params).promise();
   }
 }
