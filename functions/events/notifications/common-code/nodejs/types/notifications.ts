@@ -16,6 +16,18 @@ export enum NotificationType {
   ChildAcceptedPaidEvent = 'ChildAcceptedPaidEvent',
 }
 
+export enum KycStatus {
+  NONE = 'NONE',
+  PENDING = 'PENDING',
+  VALIDATED = 'VALIDATED',
+  REFUSED = 'REFUSED',
+}
+
+export enum TeamMemberType {
+  Member = 'Member',
+  Coach = 'Coach',
+}
+
 export interface NotificationInput {
   type: string | NotificationType;
   attributes: KeyValue[];
@@ -43,4 +55,56 @@ export interface Notification {
   createDate: string;
   type: NotificationType;
   attributes: KeyValue[];
+}
+
+export interface NotificationTeamInvitation {
+  sub: string;
+  teamId: string;
+  clubId: string;
+  teamName: string;
+  teamLogo: string;
+  role?: TeamMemberType;
+  fromRole?: TeamMemberType;
+  toRole?: TeamMemberType;
+}
+
+export interface NotificationKycReview {
+  sub: string;
+  status: KycStatus;
+}
+
+export interface NotificationInviteParent {
+  invitationUrl: string;
+  childSub: string;
+  childEmail: string;
+  childFirstName: string;
+  childLastName: string;
+  childPhoto: string;
+  childBirthDate: string;
+  childParentSub: string;
+  parentEmail: string;
+}
+
+export interface NotificationChildInvitation {
+  childSub: string;
+  childFirstName: string;
+  childLastName: string;
+  childBirthDate: string;
+  parentSub: string;
+  parentFirstName: string;
+  parentLastName: string;
+}
+
+export interface NotificationSendMoneyRequest {
+  senderSub: string;
+  senderEmail: string;
+  senderFirstName: string;
+  senderLastName: string;
+  senderPhoto: string;
+  recipientSub: string;
+  recipientEmail: string;
+  recipientFirstName: string;
+  recipientLastName: string;
+  amount: string;
+  note: string;
 }
