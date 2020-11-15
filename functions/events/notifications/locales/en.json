@@ -1,0 +1,16 @@
+{
+  "notification": {
+    "acceptedTeamInvitation": "Your connection request to the \"{{teamName}}\" has been Approved",
+    "declinedTeamInvitation": "Your connection request to the \"{{teamName}}\" has been Rejected",
+    "familyRequest": "Family request",
+    "familyRequestAccepted": "{{name}} accepted your family request",
+    "familyRequestMessage": "{{name}} invites you as a parent.",
+    "familyRequestRejected": "{{name} rejected your family request",
+    "moneyRequest": "Money request",
+    "moneyRequestMessage": "{{name}} has requested {{amount}}. {{note}}.",
+    "teamRequest": "Request to the team",
+    "verification": "Verification",
+    "verificationApproved": "Your verification status has been updated to Approved",
+    "verificationRejected": "Your verification status has been updated to Rejected"
+  }
+}
