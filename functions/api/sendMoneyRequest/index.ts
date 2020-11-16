@@ -99,23 +99,6 @@ const getAllMoneyRequests = (userId: string, status: MoneyRequestStatus) => {
   return db.query(params).promise();
 };
 
-const sendPushNotifications = (player_ids: string[] = [], data: any) => {
-  const client = new OneSignal.Client(ONESIGNAL_APP_ID, ONESIGNAL_API_KEY);
-
-  const notification = {
-    headings: {
-      en: 'Money Request',
-    },
-    contents: {
-      en: `${data.firstName} ${data.lastName}, €${data.amount}`,
-    },
-    data,
-    include_player_ids: player_ids,
-  };
-
-  return client.createNotification(notification);
-};
-
 const scanItems = (pk: string, sk: string, email: string) => {
   const params = {
     TableName: MAIN_TABLE_NAME,
@@ -178,32 +161,8 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
     return errors;
   }
 
-  const ids = await getDeviceIds(recipientUser.pk);
   const senderUserId = sub;
   const recipientUserId = recipientUser.pk.replace('user#', '');
-
-  try {
-    const data = {
-      type: 'money-request',
-      firstName: senderUser.firstName,
-      lastName: senderUser.lastName,
-      photo: getImageUrl(senderUser.photo),
-      treezorUserId: senderUser.treezorUserId || null,
-      treezorWalletId: senderUser.treezorWalletId || null,
-      email,
-      amount,
-      note,
-    };
-
-    console.log('Push', data, ids);
-
-    const res = await sendPushNotifications(ids, data);
-    console.log('Push result', res);
-  } catch (e) {
-    // errors.push('Error during sending push notification');
-    console.error(e, ids);
-  }
-
   const requestPk = `money-request#${uuidv4()}`;
   const requestSk = 'metadata';
 
