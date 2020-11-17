@@ -176,8 +176,13 @@ const getTypeImage = (image: string = '') => ({
 const getTypeContact = (user: any): Contact => ({
   id: user.pk.replace('user#', ''),
   fullName: `${user.firstName} ${user.lastName}`,
+  firstName: user.firstName,
+  lastName: user.lastName,
   photo: getTypeImage(user.photo),
   email: user.email,
+  birthDate: user.birthDate,
+  gender: user.gender,
+  phone: user.phone,
   treezor: {
     userId: user.treezorUserId || null,
     walletId: user.treezorWalletId || null,

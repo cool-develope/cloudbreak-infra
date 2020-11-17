@@ -19,8 +19,8 @@ export interface FindResultItem {
 }
 
 export interface TreezorUser {
-  userId: number;
-  walletId: number;
+  userId: number | null;
+  walletId: number | null;
 }
 
 export interface PhoneContact {
@@ -34,5 +34,10 @@ export interface Contact {
   fullName: string;
   photo: Image;
   email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  birthDate: string;
+  gender: string;
   treezor: TreezorUser;
 }
