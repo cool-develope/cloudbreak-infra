@@ -20,6 +20,7 @@ interface Image {
 }
 
 interface UserPublic {
+  id: string;
   firstName: string;
   lastName: string;
   photo: Image | null;
@@ -204,8 +205,9 @@ class TreezorClient {
     return null;
   }
 
-  private getTypeUser({ firstName, lastName, photo }: any): UserPublic {
+  private getTypeUser({ pk, firstName, lastName, photo }: any): UserPublic {
     return {
+      id: pk.replace('user#', ''),
       firstName,
       lastName,
       photo: this.getTypeImage(photo),
