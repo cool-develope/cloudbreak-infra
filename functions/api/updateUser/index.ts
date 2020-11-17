@@ -249,6 +249,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
     firstName = '',
     lastName = '',
     country,
+    language = 'en',
     photo,
     phone,
     phoneCountry,
@@ -297,6 +298,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
     firstName,
     lastName,
     country,
+    language,
     photo: getTypeImage(photo),
     phone,
     phoneCountry,
@@ -320,6 +322,7 @@ const getTypeUser = async (userData: any): Promise<User> => {
 };
 
 const getTypeUserChild = ({
+  pk,
   firstName = '',
   lastName = '',
   photo = '',
@@ -327,9 +330,10 @@ const getTypeUserChild = ({
   birthDate = '',
   gender = '',
   phone = '',
-  treezorUserId = '',
-  treezorWalletId = '',
+  treezorUserId,
+  treezorWalletId,
 }: any) => ({
+  id: pk.replace('user#', ''),
   firstName,
   lastName,
   photo: getTypeImage(photo),

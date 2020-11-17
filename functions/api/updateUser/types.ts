@@ -62,6 +62,7 @@ export interface UpdateUserInput {
 }
 
 export interface UserChild {
+  id: string;
   firstName: string;
   lastName: string;
   photo: Image;
@@ -85,6 +86,7 @@ export interface User {
   country?: string;
   photo?: Image;
   phone?: string;
+  language: string;
   phoneCountry?: string;
   birthDate?: string;
   birthCountry?: string;
