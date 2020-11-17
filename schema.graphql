@@ -855,6 +855,7 @@ type UserPrivate {
 }
 
 type UserPublic {
+  id: String
   firstName: String
   lastName: String
   photo: Image
