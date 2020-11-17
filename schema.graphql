@@ -789,6 +789,7 @@ type User {
   firstName: String
   lastName: String
   country: String
+  language: String
   photo: Image
   phone: String
   phoneCountry: String
