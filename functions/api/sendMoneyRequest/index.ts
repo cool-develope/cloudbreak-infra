@@ -33,6 +33,7 @@ interface Image {
 }
 
 interface UserPublic {
+  id: string;
   firstName?: string;
   lastName?: string;
   photo?: Image;
@@ -124,7 +125,8 @@ const getItem = (pk: string, sk: string) => {
 
 const getImageUrl = (photo: string = '') => (photo ? `https://${IMAGES_DOMAIN}/${photo}` : '');
 
-const getTypeUser = ({ firstName, lastName, photo }: any): UserPublic => ({
+const getTypeUser = ({ pk, firstName, lastName, photo }: any): UserPublic => ({
+  id: pk.replace('user#', ''),
   firstName,
   lastName,
   photo: getTypeImage(photo),
