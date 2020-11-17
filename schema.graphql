@@ -856,6 +856,7 @@ type UserPublic {
 }
 
 type UserChild {
+  id: String
   firstName: String
   lastName: String
   photo: Image
