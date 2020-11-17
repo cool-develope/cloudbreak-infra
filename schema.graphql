@@ -752,8 +752,13 @@ type File {
 type Contact {
   id: ID!
   fullName: String!
+  firstName: String
+  lastName: String
   photo: Image!
   email: String!
+  phone: String
+  birthDate: String
+  gender: String
   treezor: TreezorUser!
 }
 
