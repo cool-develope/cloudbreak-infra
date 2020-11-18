@@ -610,8 +610,6 @@ export class ApiStack extends cdk.Stack {
         MAIN_TABLE_NAME: this.mainTable.tableName,
         IMAGES_DOMAIN: this.imagesDomain,
         ES_DOMAIN: this.esDomain,
-        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
-        SES_REGION: 'eu-west-1',
         INVITATION_URL: process.env.CHILD_INVITATION_URL,
       },
     );
@@ -619,13 +617,6 @@ export class ApiStack extends cdk.Stack {
     this.allowDynamoDB(inviteParentFunction);
     this.allowES(inviteParentFunction);
     this.allowEventBridge(inviteParentFunction);
-
-    const sesPolicy = new PolicyStatement({
-      effect: Effect.ALLOW,
-    });
-    sesPolicy.addActions('ses:SendEmail');
-    sesPolicy.addResources('*');
-    inviteParentFunction.addToRolePolicy(sesPolicy);
 
     const dataSource = this.api.addLambdaDataSource('inviteParentFunction', inviteParentFunction);
 
