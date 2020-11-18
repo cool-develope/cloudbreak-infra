@@ -106,7 +106,7 @@ export class CognitoStack extends cdk.Stack {
         'custom:trzWalletsId',
         'custom:trzCardsId',
       ],
-      writeAttributes: ['address'],
+      writeAttributes: ['address', 'locale'],
     });
 
     new cdk.CfnOutput(this, 'UserPoolWebClientId', {
@@ -131,7 +131,7 @@ export class CognitoStack extends cdk.Stack {
         'custom:trzWalletsId',
         'custom:trzCardsId',
       ],
-      writeAttributes: ['address'],
+      writeAttributes: ['address', 'locale'],
     });
 
     new cdk.CfnOutput(this, 'UserPoolMobileClientId', {
