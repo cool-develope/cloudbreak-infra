@@ -1,71 +1,10 @@
 // @ts-ignore
 import * as AWS from 'aws-sdk';
-import * as fs from 'fs';
 import { Handler } from 'aws-lambda';
 
-const {
-  MAIN_TABLE_NAME = '',
-  IMAGES_DOMAIN,
-  ES_DOMAIN,
-  SES_FROM_ADDRESS,
-  SES_REGION,
-  INVITATION_URL = '',
-} = process.env;
+const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN, ES_DOMAIN, INVITATION_URL = '' } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
 const eventbridge = new AWS.EventBridge();
-const ses = new AWS.SES({ region: SES_REGION });
-const EMAIL_TEMPLATE = './child-invitation.html';
-
-const getEmailHtml = (templateFileName: string, data: any) => {
-  const html = fs.readFileSync(templateFileName, 'utf8');
-  const htmlWithData = Object.keys(data).reduce(
-    (acc, key) => acc.replace(new RegExp(`{{ ${key} }}`, 'g'), data[key]),
-    html,
-  );
-  return htmlWithData;
-};
-
-const sendEmail = async (
-  emailAddress: string,
-  invitationUrl: string,
-  fullName: string,
-  photo: string,
-  birthDate: string,
-  childEmail: string,
-) => {
-  const html = getEmailHtml(EMAIL_TEMPLATE, {
-    domain: `https://${IMAGES_DOMAIN}`,
-    photo,
-    url_invite: invitationUrl,
-    text1: 'Are you the parent of this child?',
-    text2: 'Date of birth',
-    text3: 'Email',
-    text4: 'This link will expire in 15 minutes and can only be used once.',
-    button: 'Check in app',
-    fullName,
-    birth: birthDate,
-    email: childEmail,
-  });
-
-  const params: AWS.SES.SendEmailRequest = {
-    Destination: { ToAddresses: [emailAddress] },
-    Message: {
-      Body: {
-        Html: {
-          Charset: 'UTF-8',
-          Data: html,
-        },
-      },
-      Subject: {
-        Charset: 'UTF-8',
-        Data: `${fullName} invites you as a parent`,
-      },
-    },
-    Source: SES_FROM_ADDRESS,
-  };
-
-  await ses.sendEmail(params).promise();
-};
 
 const putEvents = (type: string, detail: any) => {
   const params = {
@@ -175,19 +114,16 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
   const parentSub = parentUser ? parentUser.pk.replace('user#', '') : null;
 
   const invitationUrl = INVITATION_URL;
-  const fullName = `${user.firstName} ${user.lastName}`;
   const photo = user.photo
     ? `https://${IMAGES_DOMAIN}/${user.photo}`
     : `https://${IMAGES_DOMAIN}/email/nophoto.png`;
   const birthDate = formatDate(user.birthDate);
   const childEmail = user.email;
 
-  await sendEmail(email, invitationUrl, fullName, photo, birthDate, childEmail);
-
   await putEvents('InviteParent', {
     invitationUrl,
     childSub: sub,
-    childEmail: childEmail,
+    childEmail,
     childFirstName: user.firstName,
     childLastName: user.lastName,
     childPhoto: photo,
