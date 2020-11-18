@@ -12,5 +12,16 @@
     "verification": "Verification",
     "verificationApproved": "Your verification status has been updated to Approved",
     "verificationRejected": "Your verification status has been updated to Rejected"
+  },
+  "email": {
+    "signinSubject": "Tifo signin",
+    "signinLine1": "Click the link below to sign in to your Tifo account.",
+    "signinLine2": "This link will expire in 15 minutes and can only be used once.",
+    "signinButton": "Sign in to Tifo",
+    "inviteParentSubject": "{{fullName}} invites you as a parent",
+    "inviteParentLine1": "Are you the parent of this child?",
+    "inviteParentBirth": "Date of birth",
+    "inviteParentLine2": "This link will expire in 15 minutes and can only be used once.",
+    "inviteParentButton": "Check in app"
   }
 }
