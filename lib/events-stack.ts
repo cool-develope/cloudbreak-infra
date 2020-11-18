@@ -52,6 +52,8 @@ export class EventsStack extends cdk.Stack {
         ES_DOMAIN: esDomain,
         ONESIGNAL_APP_ID,
         ONESIGNAL_API_KEY,
+        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
+        SES_REGION: 'eu-west-1',
       },
     );
 
@@ -66,6 +68,7 @@ export class EventsStack extends cdk.Stack {
     this.allowDynamoDB(notificationsFunction);
     this.allowDynamoDB(teamFunction);
     this.allowCognito(teamFunction);
+    this.allowSes(notificationsFunction);
 
     const rule = new Rule(this, 'CognitoSignupRule', {
       enabled: true,
@@ -108,6 +111,15 @@ export class EventsStack extends cdk.Stack {
     );
     cognitoPolicy.addResources('*');
     fn.addToRolePolicy(cognitoPolicy);
+  }
+
+  allowSes(fn: lambda.Function) {
+    const policy = new PolicyStatement({
+      effect: Effect.ALLOW,
+    });
+    policy.addActions('ses:SendEmail');
+    policy.addResources('*');
+    fn.addToRolePolicy(policy);
   }
 
   allowDynamoDB(lambdaFunction: lambda.Function) {
