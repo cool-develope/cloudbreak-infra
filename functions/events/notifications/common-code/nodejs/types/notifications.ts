@@ -28,6 +28,10 @@ export enum TeamMemberType {
   Coach = 'Coach',
 }
 
+export enum EmailType {
+  InviteParent,
+}
+
 export interface NotificationInput {
   type: string | NotificationType;
   attributes: KeyValue[];
