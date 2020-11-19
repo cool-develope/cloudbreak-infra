@@ -2,6 +2,7 @@
 import * as AWS from 'aws-sdk';
 import * as fs from 'fs';
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
+import localeService from './localeService';
 
 const {
   SES_FROM_ADDRESS,
@@ -36,13 +37,15 @@ const randomDigits = (len: number): string =>
     .map(() => getRandomInteger(0, 9))
     .join('');
 
-const sendEmail = async (signinUrl: string, emailAddress: string) => {
+const sendEmail = async (signinUrl: string, emailAddress: string, language: string) => {
+  const t = localeService.getFixedT(language);
+
   const html = getEmailHtml(EMAIL_TEMPLATE, {
     domain: `https://${IMAGES_DOMAIN}`,
     url_signin: signinUrl,
-    text1: 'Click the link below to sign in to your Tifo account.',
-    text2: 'This link will expire in 15 minutes and can only be used once.',
-    button: 'Sign in to Tifo',
+    text1: t('email.signinLine1'),
+    text2: t('email.signinLine2'),
+    button: t('email.signinButton'),
   });
 
   const params: AWS.SES.SendEmailRequest = {
@@ -56,7 +59,7 @@ const sendEmail = async (signinUrl: string, emailAddress: string) => {
       },
       Subject: {
         Charset: 'UTF-8',
-        Data: 'Tifo signin',
+        Data: t('email.signinSubject'),
       },
     },
     Source: SES_FROM_ADDRESS,
@@ -90,7 +93,8 @@ export const handler: CognitoUserPoolTriggerHandler = async (event, context) => 
     secretLoginCode = randomDigits(6);
 
     const signinUrl = getSigninUrl(clientId, secretLoginCode);
-    await sendEmail(signinUrl, event.request.userAttributes.email);
+    const language = event.request.userAttributes.locale || 'en';
+    await sendEmail(signinUrl, event.request.userAttributes.email, language);
   } else {
     // There's an existing session. Don't generate new digits but
     // re-use the code from the current session. This allows the user to
