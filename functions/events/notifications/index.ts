@@ -13,17 +13,28 @@ import {
   NotificationInviteParent,
   NotificationChildInvitation,
   NotificationSendMoneyRequest,
+  EmailType,
 } from './common-code/nodejs/types/notifications';
 import { NotificationsModel } from './common-code/nodejs/models';
 import DynamoHelper from './common-code/nodejs/dynamoHelper';
 import PushNotifications from './pushNotifications';
+import MailService from './mailService';
 
-const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN = '', ES_DOMAIN } = process.env;
+const {
+  MAIN_TABLE_NAME = '',
+  IMAGES_DOMAIN = '',
+  ES_DOMAIN,
+  SES_FROM_ADDRESS = '',
+  SES_REGION,
+} = process.env;
+
 const db = new AWS.DynamoDB.DocumentClient();
+const ses = new AWS.SES({ region: SES_REGION });
 const es = new Client({ node: ES_DOMAIN });
 const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
 const notificationsModel = new NotificationsModel(db, MAIN_TABLE_NAME, IMAGES_DOMAIN, uuidv4, es);
 const pushNotifications = new PushNotifications(IMAGES_DOMAIN);
+const mailService = new MailService(ses, SES_FROM_ADDRESS, IMAGES_DOMAIN);
 
 const getDeviceIds = async (userId: string) => {
   const res = await dynamoHelper.getItem(`user#${userId}`, 'devices');
@@ -117,6 +128,7 @@ const sendInviteParent = async (type: NotificationType, detail: NotificationInvi
   const deviceIds = await getDeviceIds(sub);
   const language = await getUserLanguage(sub);
   await pushNotifications.send(language, deviceIds, type, detail);
+  await mailService.send(detail.parentEmail, EmailType.InviteParent, detail, language);
   await notificationsModel.create(detail.childParentSub, {
     type,
     attributes: objToKeyValueArray({
