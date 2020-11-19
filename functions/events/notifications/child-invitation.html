@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      @font-face {
+        font-family: 'RobotoRegular';
+        src: url('{{ domain }}/email/Roboto-Regular.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'RobotoMedium';
+        src: url('{{ domain }}/email/Roboto-Medium.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'RobotoBold';
+        src: url('{{ domain }}/email/Roboto-Bold.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'SFProTextBold';
+        src: url('{{ domain }}/email/SFProText-Bold.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'SFProTextMedium';
+        src: url('{{ domain }}/email/SFProText-Bold.ttf') format('truetype');
+      }
+      body,
+      p {
+        margin: 0;
+        padding: 0;
+        font-family: 'RobotoRegular', 'Helvetica', sans-serif;
+      }
+      a {
+        font-size: 28px;
+        line-height: 34px;
+      }
+      @media screen and (max-width: 600px) {
+        table {
+          max-height: 700px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      align="center"
+      style="max-width: 100%"
+    >
+      <tbody>
+        <tr>
+          <td
+            width="100%"
+            align="center"
+            class="table-header"
+            style="
+              height: 400px;
+              background-image: url({{ domain }}/email/Bg.png);
+              background-repeat: no-repeat;
+              -webkit-background-size: 100% 100%;
+              -moz-background-size: 100% 100%;
+              background-size: 100% 100%;
+            "
+          >
+            <img src="{{ domain }}/email/tifo-logo-white.png" alt="logo" width="165" height="165" />
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center">
+            <h2
+              class="header-text"
+              style="
+                font-family: 'RobotoBold', 'Helvetica', sans-serif;
+                font-size: 32px;
+                color: #213174;
+                padding-top: 20px;
+                margin-left: 15px;
+                margin-right: 15px;
+              "
+            >
+              {{ text1 }}
+            </h2>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <table
+              cellpadding="0"
+              cellspacing="0"
+              border="0"
+              align="center"
+              class="table-card"
+              style="
+                background-color: #f5f6f8;
+                padding-left: 15px;
+                padding-right: 15px;
+                border-radius: 12px;
+                width: 100%;
+                max-width: 476px;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td width="100%" height="35" class="table_margin">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <img
+                      src="{{ photo }}"
+                      alt="avatar"
+                      class="user-avatar"
+                      style="width: 82px; height: 82px; border-radius: 50%"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td width="100%" height="15" class="table_margin">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <p
+                      class="user-name"
+                      style="
+                        font-family: 'RobotoMedium', 'Helvetica', sans-serif;
+                        font-size: 32px;
+                        color: #213174;
+                      "
+                    >
+                      {{ fullName }}
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="100%" height="35" class="table_margin">&nbsp;</td>
+                </tr>
+
+                <tr>
+                  <td align="center">
+                    <table width="100%" align="justify" style="margin-bottom: 16px">
+                      <tr>
+                        <td
+                          class="list-name"
+                          style="
+                            font-family: 'RobotoRegular', 'Helvetica', sans-serif;
+                            font-size: 16px;
+                            color: #adadad;
+                            white-space: nowrap;
+                            line-height: 0.5;
+                          "
+                        >
+                          {{ text2 }}
+                        </td>
+                        <td
+                          class="dotted"
+                          style="border-bottom: 1px dashed #adadad; line-height: 0.5; width: 100%"
+                        ></td>
+                        <td
+                          align="right"
+                          class="list-value"
+                          style="
+                            font-family: 'RobotoMedium', 'Helvetica', sans-serif;
+                            font-size: 18px;
+                            color: #213174;
+                            line-height: 0.5;
+                            white-space: nowrap;
+                          "
+                        >
+                          {{ birth }}
+                        </td>
+                      </tr>
+                    </table>
+                    <table width="100%" align="justify">
+                      <tr>
+                        <td
+                          class="list-name"
+                          style="
+                            font-family: 'RobotoRegular', 'Helvetica', sans-serif;
+                            font-size: 16px;
+                            color: #adadad;
+                            line-height: 0.5;
+                            white-space: nowrap;
+                          "
+                        >
+                          {{ text3 }}
+                        </td>
+                        <td
+                          class="dotted"
+                          style="border-bottom: 1px dashed #adadad; line-height: 0.5; width: 100%"
+                        ></td>
+                        <td align="right" class="list-value">
+                          <a
+                            style="
+                              font-family: 'RobotoMedium', 'Helvetica', sans-serif;
+                              font-size: 18px;
+                              line-height: 0.5;
+                              color: #213174;
+                              white-space: nowrap;
+                            "
+                            >{{ email }}</a
+                          >
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td width="100%" height="35" class="table_margin">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <a
+                      href="{{ url_invite }}"
+                      class="btn_link"
+                      style="
+                        font-family: 'SFProTextMedium', 'Helvetica', sans-serif;
+                        background: #3054e5;
+                        text-decoration: none;
+                        display: block;
+                        width: 100%;
+                        max-width: 446px;
+                        color: #ffffff !important;
+                        border-radius: 6px;
+                        padding-top: 26px;
+                        padding-bottom: 26px;
+                        font-weight: 500;
+                        font-size: 28px;
+                      "
+                      >{{ button }}</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td width="100%" height="40" class="table_margin">&nbsp;</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" height="40" class="table_margin">&nbsp;</td>
+        </tr>
+        <tr>
+          <td width="100%" align="center">
+            <p
+              class="info-text"
+              style="
+                font-family: 'SFProTextBold', 'Helvetica', sans-serif;
+                font-size: 18px;
+                color: #737ea8;
+                margin-left: 15px;
+                margin-right: 15px;
+              "
+            >
+              {{ text4 }}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" height="30">&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
