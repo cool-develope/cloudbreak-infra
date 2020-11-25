@@ -48,6 +48,25 @@ const getUserLanguage = async (userId: string) => {
   return userData?.language || 'en';
 };
 
+const scanItems = (pk: string, sk: string, fieldName: string, fieldValue: any) => {
+  const params = {
+    TableName: MAIN_TABLE_NAME,
+    FilterExpression: `begins_with(pk, :pk) and sk = :sk and ${fieldName} = :fieldValue`,
+    ExpressionAttributeValues: {
+      ':pk': pk,
+      ':sk': sk,
+      ':fieldValue': fieldValue,
+    },
+  };
+
+  return db.scan(params).promise();
+};
+
+const getUserByTreezorUserId = async (treezorUserId: string): Promise<any | null> => {
+  const { Items } = await scanItems('user#', 'metadata', 'treezorUserId', Number(treezorUserId));
+  return Items?.[0];
+};
+
 const objToKeyValueArray = (obj: any): KeyValue[] =>
   Object.keys(obj).map((key) => ({
     Key: key,
