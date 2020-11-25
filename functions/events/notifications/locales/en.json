@@ -11,7 +11,11 @@
     "teamRequest": "Request to the team",
     "verification": "Verification",
     "verificationApproved": "Your verification status has been updated to Approved",
-    "verificationRejected": "Your verification status has been updated to Rejected"
+    "verificationRejected": "Your verification status has been updated to Rejected",
+    "cardLockChanged": "Card lock",
+    "cardLockChangedMessage": "Your card was {{lockStatus}}",
+    "cardLimitChanged": "Card limits",
+    "cardLimitChangedMessage": "Your card limits was changed"
   },
   "email": {
     "signinSubject": "Tifo signin",
