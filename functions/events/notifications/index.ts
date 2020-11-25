@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 // @ts-ignore
 import { Client } from '@elastic/elasticsearch';
 import {
+  WebhookEvent,
   NotificationType,
   KeyValue,
   NotificationTeamInvitation,
@@ -143,6 +144,7 @@ const sendKycReview = async (type: NotificationType, detail: NotificationKycRevi
 };
 
 const sendInviteParent = async (type: NotificationType, detail: NotificationInviteParent) => {
+  // todo: detail.childParentSub can be null
   const sub = detail.childParentSub;
   const deviceIds = await getDeviceIds(sub);
   const language = await getUserLanguage(sub);
@@ -217,9 +219,82 @@ const sendSendMoneyRequest = async (
   });
 };
 
+const cardLockChanged = async (type: NotificationType | WebhookEvent, detail: any) => {
+  console.dir(detail, { depth: 4 });
+  const [card] = detail.cards;
+  const treezorUserId = card.userId;
+  const user = await getUserByTreezorUserId(treezorUserId);
+  if (user) {
+    // todo: promise.all
+    const sub = user.pk.replace('user#', '');
+    const deviceIds = await getDeviceIds(sub);
+    const language = await getUserLanguage(sub);
+    const { maskedPan, statusCode, cardId, walletId } = card;
+
+    await pushNotifications.send(language, deviceIds, type, detail);
+    await notificationsModel.create(sub, {
+      type: NotificationType.CardLockChanged,
+      attributes: objToKeyValueArray({
+        maskedPan,
+        statusCode,
+        cardId,
+        walletId,
+      }),
+    });
+  }
+};
+
+const cardLimitsChanged = async (type: NotificationType | WebhookEvent, detail: any) => {
+  console.dir(detail, { depth: 4 });
+  const [card] = detail.cards;
+  const treezorUserId = card.userId;
+  const user = await getUserByTreezorUserId(treezorUserId);
+  if (user) {
+    // todo: promise.all
+    const sub = user.pk.replace('user#', '');
+    const deviceIds = await getDeviceIds(sub);
+    const language = await getUserLanguage(sub);
+    const {
+      maskedPan,
+      cardId,
+      walletId,
+      limitAtmYear,
+      limitAtmMonth,
+      limitAtmWeek,
+      limitAtmDay,
+      limitAtmAll,
+      limitPaymentYear,
+      limitPaymentMonth,
+      limitPaymentWeek,
+      limitPaymentDay,
+      limitPaymentAll,
+    } = card;
+
+    await pushNotifications.send(language, deviceIds, type, detail);
+    await notificationsModel.create(sub, {
+      type: NotificationType.CardLimitChanged,
+      attributes: objToKeyValueArray({
+        maskedPan,
+        cardId,
+        walletId,
+        limitAtmYear,
+        limitAtmMonth,
+        limitAtmWeek,
+        limitAtmDay,
+        limitAtmAll,
+        limitPaymentYear,
+        limitPaymentMonth,
+        limitPaymentWeek,
+        limitPaymentDay,
+        limitPaymentAll,
+      }),
+    });
+  }
+};
+
 export const handler: EventBridgeHandler<any, any, any> = async (event) => {
   const { detail } = event;
-  const type: NotificationType = event['detail-type'];
+  const type: NotificationType | WebhookEvent = event['detail-type'];
   console.log(type, detail);
 
   switch (type) {
@@ -254,6 +329,14 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
 
     case NotificationType.AcceptedPaidEvent:
       await acceptedPaidEventHandler(type, detail);
+      break;
+
+    case WebhookEvent.card_lockunlock:
+      await cardLockChanged(type, detail);
+      break;
+
+    case WebhookEvent.card_limits:
+      await cardLimitsChanged(type, detail);
       break;
 
     default:
