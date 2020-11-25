@@ -111,7 +111,7 @@ class PushNotifications {
           t('notification.familyRequest'),
           t(
             childAccepted
-              ? 'notification.amilyRequestAccepted'
+              ? 'notification.familyRequestAccepted'
               : 'notification.familyRequestRejected',
             {
               name: `${childInvitation.parentFirstName} ${childInvitation.parentLastName}`,
