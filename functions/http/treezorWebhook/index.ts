@@ -459,6 +459,9 @@ const processWebhook = async (h: Webhook) => {
       }
       await processCreateVirtualCard(card);
       break;
+    default:
+      await putEvents(EventSource.TifoTreezor, h.webhook, h.object_payload);
+      break;
   }
 };
 
