@@ -1,5 +1,6 @@
 import * as OneSignal from 'onesignal-node';
 import {
+  WebhookEvent,
   NotificationType,
   NotificationTeamInvitation,
   KycStatus,
@@ -57,7 +58,11 @@ class PushNotifications {
     return data;
   }
 
-  private getData(language: string, type: NotificationType, detail: any): NotificationData | null {
+  private getData(
+    language: string,
+    type: NotificationType | WebhookEvent,
+    detail: any,
+  ): NotificationData | null {
     const t = localeService.getFixedT(language);
 
     switch (type) {
@@ -136,6 +141,23 @@ class PushNotifications {
           }),
         );
 
+      case NotificationType.CardLockChanged:
+        return this.notification(
+          t('notification.cardLockChanged'),
+          t(
+            detail.statusCode === 'LOCK'
+              ? 'notification.cardLockekMessage'
+              : 'notification.cardUnlockedMessage',
+            { cardNumber: detail.maskedPan },
+          ),
+        );
+
+      case NotificationType.CardLimitChanged:
+        return this.notification(
+          t('notification.cardLimitChanged'),
+          t('notification.cardLimitChangedMessage', { cardNumber: detail.maskedPan }),
+        );
+
       default:
         return null;
     }
@@ -144,12 +166,12 @@ class PushNotifications {
   async send(
     language: string,
     deviceIds: string[],
-    notificationType: NotificationType,
+    notificationType: NotificationType | WebhookEvent,
     detail: any,
   ) {
     const data = this.getData(language, notificationType, detail);
 
-    if (!data) {
+    if (!data || !deviceIds || !deviceIds.length) {
       return;
     }
 
