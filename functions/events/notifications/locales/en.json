@@ -12,10 +12,11 @@
     "verification": "Verification",
     "verificationApproved": "Your verification status has been updated to Approved",
     "verificationRejected": "Your verification status has been updated to Rejected",
-    "cardLockChanged": "Card lock",
-    "cardLockChangedMessage": "Your card was {{lockStatus}}",
+    "cardLockChanged": "Card status",
+    "cardLockekMessage": "Your card {{cardNumber}} is locked",
+    "cardUnlockedMessage": "Your card {{cardNumber}} is unlocked",
     "cardLimitChanged": "Card limits",
-    "cardLimitChangedMessage": "Your card limits was changed"
+    "cardLimitChangedMessage": "Your card limits {{cardNumber}} have been changed"
   },
   "email": {
     "signinSubject": "Tifo signin",
