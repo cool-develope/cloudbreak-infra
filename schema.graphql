@@ -725,6 +725,8 @@ enum NotificationType {
   KycReview
   ChildSendMoneyRequest
   ChildAcceptedPaidEvent
+  CardLockChanged
+  CardLimitChanged
 }
 
 enum TransactionType {
