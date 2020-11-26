@@ -219,7 +219,7 @@ const sendSendMoneyRequest = async (
   });
 };
 
-const cardLockChanged = async (type: NotificationType | WebhookEvent, detail: any) => {
+const cardLockChanged = async (detail: any) => {
   console.dir(detail, { depth: 4 });
   const [card] = detail.cards;
   const treezorUserId = card.userId;
@@ -231,7 +231,7 @@ const cardLockChanged = async (type: NotificationType | WebhookEvent, detail: an
     const language = await getUserLanguage(sub);
     const { maskedPan, statusCode, cardId, walletId } = card;
 
-    await pushNotifications.send(language, deviceIds, type, detail);
+    await pushNotifications.send(language, deviceIds, NotificationType.CardLockChanged, detail);
     await notificationsModel.create(sub, {
       type: NotificationType.CardLockChanged,
       attributes: objToKeyValueArray({
@@ -244,7 +244,7 @@ const cardLockChanged = async (type: NotificationType | WebhookEvent, detail: an
   }
 };
 
-const cardLimitsChanged = async (type: NotificationType | WebhookEvent, detail: any) => {
+const cardLimitsChanged = async (detail: any) => {
   console.dir(detail, { depth: 4 });
   const [card] = detail.cards;
   const treezorUserId = card.userId;
@@ -270,7 +270,7 @@ const cardLimitsChanged = async (type: NotificationType | WebhookEvent, detail: 
       limitPaymentAll,
     } = card;
 
-    await pushNotifications.send(language, deviceIds, type, detail);
+    await pushNotifications.send(language, deviceIds, NotificationType.CardLimitChanged, detail);
     await notificationsModel.create(sub, {
       type: NotificationType.CardLimitChanged,
       attributes: objToKeyValueArray({
@@ -332,11 +332,11 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       break;
 
     case WebhookEvent.card_lockunlock:
-      await cardLockChanged(type, detail);
+      await cardLockChanged(detail);
       break;
 
     case WebhookEvent.card_limits:
-      await cardLimitsChanged(type, detail);
+      await cardLimitsChanged(detail);
       break;
 
     default:
