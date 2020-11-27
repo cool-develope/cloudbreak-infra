@@ -738,8 +738,13 @@ enum KycReview {
 
 enum NotificationType {
   SendTeamInvitation
+  ChildSendTeamInvitation
   DeclineTeamInvitation
   AcceptTeamInvitation
+  DeclineTeamInvitation
+  AcceptTeamInvitation
+  ApproveTeamInvitationByParent
+  RejectTeamInvitationByParent
   SendMoneyRequest
   InviteParent
   AcceptChildInvitation
