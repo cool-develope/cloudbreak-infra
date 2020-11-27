@@ -716,9 +716,11 @@ enum TeamMemberType {
 }
 
 enum TeamInvitationStatus {
+  PendingParentApproval
   Pending
   Accepted
   Declined
+  ParentRejected
 }
 
 enum MoneyRequestStatus {
