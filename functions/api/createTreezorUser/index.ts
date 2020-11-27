@@ -191,12 +191,13 @@ export const handler: Handler = async (event) => {
   let treezorNewUserData: TreezorUser | null = null;
 
   if (field === FieldName.createTreezorUser) {
-    const { country, city, address1, state, postcode, birthCity, usCitizen } = input;
+    const { country, city, address1, address2, state, postcode, birthCity, usCitizen } = input;
 
     await updateUser(pk, {
       country,
       city,
       address1,
+      address2,
       stateName: state,
       postcode,
       birthCity,
