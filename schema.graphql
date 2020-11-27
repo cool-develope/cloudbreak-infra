@@ -239,6 +239,7 @@ input CreateTreezorUserInput {
   country: String!
   city: String!
   address1: String!
+  address2: String
   state: String!
   postcode: String!
   birthCity: String!
