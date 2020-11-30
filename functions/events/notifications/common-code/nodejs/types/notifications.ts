@@ -16,6 +16,9 @@ export enum NotificationType {
   ChildAcceptedPaidEvent = 'ChildAcceptedPaidEvent',
   CardLockChanged = 'CardLockChanged',
   CardLimitChanged = 'CardLimitChanged',
+  ChildSendTeamInvitation = 'ChildSendTeamInvitation',
+  ApproveTeamInvitationByParent = 'ApproveTeamInvitationByParent',
+  RejectTeamInvitationByParent = 'RejectTeamInvitationByParent',
 }
 
 export enum WebhookEvent {
@@ -106,8 +109,14 @@ export interface Notification {
 
 export interface NotificationTeamInvitation {
   sub: string;
+  parentSub?: string | null;
   teamId: string;
   clubId: string;
+  childFirstName?: string;
+  childLastName?: string;
+  childPhoto?: string | null;
+  parentFirstName?: string;
+  parentLastName?: string;
   teamName: string;
   teamLogo: string;
   role?: TeamMemberType;
