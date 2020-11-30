@@ -263,18 +263,30 @@ class TeamInvitationModel {
     };
   }
 
+  async rejectTeamInvitationByParent(sub: string, input: DeclineTeamInvitationPrivateInput) {
+    const errors: string[] = [];
+    const { userId, clubId, teamId } = input;
+    const pk = `team#${teamId}`;
+    const sk = `user#${userId}`;
+    const teamUser = await this.getTeamUser(pk, sk);
+    const teamDetails = await this.getTeam(clubId, teamId);
+
+    if (teamUser?.status === TeamInvitationStatus.PendingParentApproval) {
       const data = {
-        status: TeamInvitationStatus.Declined,
+        status: TeamInvitationStatus.ParentRejected,
       };
       await this.dynamoHelper.updateItem(pk, sk, data);
-      await this.putEvents('DeclineTeamInvitation', {
+      await this.putEvents('RejectTeamInvitationByParent', {
         sub: userId,
+        parentSub: sub,
         teamId,
         clubId,
         teamName: teamDetails?.name || '',
         teamLogo: teamDetails?.logo || '',
         role: teamUser.role,
       });
+    } else {
+      errors.push('Invalid invitation');
     }
 
     return {
