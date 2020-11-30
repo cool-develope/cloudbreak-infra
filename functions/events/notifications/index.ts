@@ -38,15 +38,23 @@ const pushNotifications = new PushNotifications(IMAGES_DOMAIN);
 const mailService = new MailService(ses, SES_FROM_ADDRESS, IMAGES_DOMAIN);
 
 const getDeviceIds = async (userId: string) => {
-  const res = await dynamoHelper.getItem(`user#${userId}`, 'devices');
-  return res?.Item?.ids?.values || [];
+  if (userId) {
+    const res = await dynamoHelper.getItem(`user#${userId}`, 'devices');
+    return res?.Item?.ids?.values || [];
+  }
+
+  return [];
 };
 
 const getImageUrl = (image: string = '') => (image ? `https://${IMAGES_DOMAIN}/${image}` : '');
 
 const getUserLanguage = async (userId: string) => {
-  const { Item: userData } = await dynamoHelper.getItem(`user#${userId}`, 'metadata');
-  return userData?.language || 'en';
+  if (userId) {
+    const { Item: userData } = await dynamoHelper.getItem(`user#${userId}`, 'metadata');
+    return userData?.language || 'en';
+  }
+
+  return 'en';
 };
 
 const scanItems = (pk: string, sk: string, fieldName: string, fieldValue: any) => {
@@ -89,6 +97,15 @@ const getParentUser = async (sub: string) => {
     console.error(err, {
       sub,
     });
+  }
+
+  return null;
+};
+
+const getUser = async (userId?: string | null) => {
+  if (userId) {
+    const { Item } = await dynamoHelper.getItem(`user#${userId}`, 'metadata');
+    return Item;
   }
 
   return null;
