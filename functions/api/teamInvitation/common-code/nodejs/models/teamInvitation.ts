@@ -216,9 +216,28 @@ class TeamInvitationModel {
 
     if (!teamUser) {
       errors.push('Invitation not found');
+    } else if (teamUser.status === TeamInvitationStatus.Pending) {
+      const data = {
+        status: TeamInvitationStatus.Declined,
+      };
+      await this.dynamoHelper.updateItem(pk, sk, data);
+      await this.putEvents('DeclineTeamInvitation', {
+        sub: userId,
+        teamId,
+        clubId,
+        teamName: teamDetails?.name || '',
+        teamLogo: teamDetails?.logo || '',
+        role: teamUser.role,
+      });
     } else if (teamUser.status === TeamInvitationStatus.Declined) {
       errors.push('Invitation already declined');
-    } else {
+    }
+
+    return {
+      errors,
+    };
+  }
+
       const data = {
         status: TeamInvitationStatus.Declined,
       };
