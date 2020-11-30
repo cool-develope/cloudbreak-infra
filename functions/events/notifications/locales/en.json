@@ -16,7 +16,11 @@
     "cardLockekMessage": "Your card {{cardNumber}} is locked",
     "cardUnlockedMessage": "Your card {{cardNumber}} is unlocked",
     "cardLimitChanged": "Card limits",
-    "cardLimitChangedMessage": "Your card limits {{cardNumber}} have been changed"
+    "cardLimitChangedMessage": "Your card limits {{cardNumber}} have been changed",
+    "childSendTeamInvitation": "Your child want to join a team",
+    "childSendTeamInvitationMessage": "{{childName}} want to join {{teamName}}",
+    "approvedTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Approved by {{parentName}}",
+    "rejectTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Rejected by {{parentName}}"
   },
   "email": {
     "signinSubject": "Tifo signin",
