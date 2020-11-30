@@ -171,9 +171,7 @@ class TeamInvitationModel {
 
     if (!teamUser) {
       errors.push('Invitation not found');
-    } else if (teamUser.status === TeamInvitationStatus.Accepted) {
-      errors.push('Invitation already accepted');
-    } else {
+    } else if (teamUser.status === TeamInvitationStatus.Pending) {
       const data = {
         status: TeamInvitationStatus.Accepted,
       };
@@ -188,6 +186,16 @@ class TeamInvitationModel {
       });
 
       await this.addParentToTeam(clubId, teamId, userId, teamDetails);
+    } else if (teamUser.status === TeamInvitationStatus.Accepted) {
+      errors.push('Invitation already accepted');
+    } else if (teamUser.status === TeamInvitationStatus.PendingParentApproval) {
+      errors.push('Waiting for parent approval');
+    }
+
+    return {
+      errors,
+    };
+  }
     }
 
     return {
