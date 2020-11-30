@@ -158,6 +158,33 @@ class PushNotifications {
           t('notification.cardLimitChangedMessage', { cardNumber: detail.maskedPan }),
         );
 
+      case NotificationType.ChildSendTeamInvitation:
+        return this.notification(
+          t('notification.childSendTeamInvitation'),
+          t('notification.childSendTeamInvitationMessage', {
+            childName: detail.childFirstName,
+            teamName: detail.teamName,
+          }),
+        );
+
+      case NotificationType.ApproveTeamInvitationByParent:
+        return this.notification(
+          t('notification.teamRequest'),
+          t('notification.approvedTeamInvitationByParent', {
+            parentName: detail.parentFirstName,
+            teamName: detail.teamName,
+          }),
+        );
+
+      case NotificationType.RejectTeamInvitationByParent:
+        return this.notification(
+          t('notification.teamRequest'),
+          t('notification.rejectTeamInvitationByParent', {
+            parentName: detail.parentFirstName,
+            teamName: detail.teamName,
+          }),
+        );
+
       default:
         return null;
     }
