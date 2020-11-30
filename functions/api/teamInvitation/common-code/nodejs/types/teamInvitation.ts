@@ -3,6 +3,8 @@ export enum FieldName {
   acceptTeamInvitationPrivate = 'acceptTeamInvitationPrivate',
   declineTeamInvitationPrivate = 'declineTeamInvitationPrivate',
   changeTeamRolePrivate = 'changeTeamRolePrivate',
+  approveTeamInvitationByParent = 'approveTeamInvitationByParent',
+  rejectTeamInvitationByParent = 'rejectTeamInvitationByParent',
 }
 
 export enum TeamMemberType {
@@ -14,6 +16,8 @@ export enum TeamInvitationStatus {
   Pending = 'Pending',
   Accepted = 'Accepted',
   Declined = 'Declined',
+  PendingParentApproval = 'PendingParentApproval',
+  ParentRejected = 'ParentRejected',
 }
 
 export interface SendTeamInvitationInput {
@@ -79,8 +83,12 @@ export interface TeamRecord {
 
 export interface NotificationTeamInvitation {
   sub: string;
+  parentSub?: string | null;
   teamId: string;
   clubId: string;
+  childFirstName?: string;
+  childLastName?: string;
+  childPhoto?: string | null;
   teamName: string;
   teamLogo: string;
   role?: TeamMemberType;

@@ -48,6 +48,10 @@ class TeamInvitationModel {
     return Item;
   }
 
+  private getImageUrl(image: string = '') {
+    return image ? `https://${this.imagesDomain}/${image}` : '';
+  }
+
   async sendInvitation(
     userId: string,
     input: SendTeamInvitationInput,
@@ -60,6 +64,9 @@ class TeamInvitationModel {
      * TODO - coach can't be club owner
      */
 
+    const { Item: userData } = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
+    const { parentUserId } = userData;
+
     const pk = `team#${teamId}`;
     const sk = `user#${userId}`;
     const teamUser = await this.getTeamUser(pk, sk);
@@ -69,15 +76,29 @@ class TeamInvitationModel {
     if (teamUserExists) {
       errors.push('Invitation already exists');
     } else {
-      const data: TeamUserRecord = {
+      let eventName = 'SendTeamInvitation';
+      let parentSub = null;
+      let data: TeamUserRecord = {
         role,
         createdAt: new Date().toISOString(),
         status: TeamInvitationStatus.Pending,
         clubId,
       };
+
+      if (parentUserId) {
+        // this is a Child
+        eventName = 'ChildSendTeamInvitation';
+        parentSub = parentUserId;
+        data.status = TeamInvitationStatus.PendingParentApproval;
+      }
+
       await this.dynamoHelper.updateItem(pk, sk, data);
-      await this.putEvents('SendTeamInvitation', {
+      await this.putEvents(eventName, {
         sub: userId,
+        parentSub,
+        childFirstName: userData.firstName,
+        childLastName: userData.lastName,
+        childPhoto: this.getImageUrl(userData.photo),
         teamId,
         clubId,
         teamName: teamDetails?.name || '',
