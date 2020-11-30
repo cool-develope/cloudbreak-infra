@@ -40,6 +40,10 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
     return await teamInvitationModel.declineInvitation(sub, input);
   } else if (field === FieldName.changeTeamRolePrivate) {
     return await teamInvitationModel.changeTeamRole(sub, input);
+  } else if (field === FieldName.approveTeamInvitationByParent) {
+    return await teamInvitationModel.approveTeamInvitationByParent(sub, input);
+  } else if (field === FieldName.rejectTeamInvitationByParent) {
+    return await teamInvitationModel.rejectTeamInvitationByParent(sub, input);
   }
 
   throw Error('Query not supported');

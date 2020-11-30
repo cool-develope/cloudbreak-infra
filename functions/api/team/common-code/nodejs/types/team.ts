@@ -40,6 +40,8 @@ export enum TeamInvitationStatus {
   Pending = 'Pending',
   Accepted = 'Accepted',
   Declined = 'Declined',
+  PendingParentApproval = 'PendingParentApproval',
+  ParentRejected = 'ParentRejected',
 }
 
 export interface Image {
