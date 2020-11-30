@@ -176,6 +176,57 @@ const childSendTeamInvitation = async (
   });
 };
 
+const approveTeamInvitationByParent = async (
+  type: NotificationType,
+  detail: NotificationTeamInvitation,
+) => {
+  const parentSub = detail.parentSub || '';
+  const childSub = detail.sub || '';
+  const [parentUser, childUser, childDeviceIds, childLanguage] = await Promise.all([
+    getUser(parentSub),
+    getUser(childSub),
+    getDeviceIds(childSub),
+    getUserLanguage(childSub),
+  ]);
+
+  detail.parentFirstName = parentUser.firstName;
+  detail.parentLastName = parentUser.lastName;
+  detail.childFirstName = childUser.firstName;
+  detail.childLastName = childUser.lastName;
+
+  await pushNotifications.send(childLanguage, childDeviceIds, type, detail);
+
+  // Child Notification
+  await notificationsModel.create(childSub, {
+    type,
+    attributes: objToKeyValueArray({
+      parentUserId: detail.parentSub,
+      parentFirstName: detail.parentFirstName,
+      parentLastName: detail.parentLastName,
+      clubId: detail.clubId,
+      teamId: detail.teamId,
+      teamName: detail.teamName,
+      teamLogo: getImageUrl(detail.teamLogo),
+      role: detail.role,
+    }),
+  });
+
+  // Parent Notification
+  await notificationsModel.create(parentSub, {
+    type,
+    attributes: objToKeyValueArray({
+      childUserId: detail.sub,
+      childFirstName: detail.childFirstName,
+      childLastName: detail.childLastName,
+      clubId: detail.clubId,
+      teamId: detail.teamId,
+      teamName: detail.teamName,
+      teamLogo: getImageUrl(detail.teamLogo),
+      role: detail.role,
+    }),
+  });
+};
+
 const sendKycReview = async (type: NotificationType, detail: NotificationKycReview) => {
   const sub = detail.sub;
   const deviceIds = await getDeviceIds(sub);
@@ -356,6 +407,9 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       await sendTeamInvitation(type, detail);
       break;
 
+    case NotificationType.ApproveTeamInvitationByParent:
+      await approveTeamInvitationByParent(type, detail);
+      break;
 
     case NotificationType.ChildSendTeamInvitation:
       await childSendTeamInvitation(type, detail);
