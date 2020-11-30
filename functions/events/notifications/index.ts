@@ -328,7 +328,7 @@ const cardLockChanged = async (detail: any) => {
     const language = await getUserLanguage(sub);
     const { maskedPan, statusCode, cardId, walletId } = card;
 
-    await pushNotifications.send(language, deviceIds, NotificationType.CardLockChanged, detail);
+    await pushNotifications.send(language, deviceIds, NotificationType.CardLockChanged, card);
     await notificationsModel.create(sub, {
       type: NotificationType.CardLockChanged,
       attributes: objToKeyValueArray({
@@ -367,7 +367,7 @@ const cardLimitsChanged = async (detail: any) => {
       limitPaymentAll,
     } = card;
 
-    await pushNotifications.send(language, deviceIds, NotificationType.CardLimitChanged, detail);
+    await pushNotifications.send(language, deviceIds, NotificationType.CardLimitChanged, card);
     await notificationsModel.create(sub, {
       type: NotificationType.CardLimitChanged,
       attributes: objToKeyValueArray({
