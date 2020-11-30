@@ -176,7 +176,7 @@ const childSendTeamInvitation = async (
   });
 };
 
-const approveTeamInvitationByParent = async (
+const sendTeamInvitationByParent = async (
   type: NotificationType,
   detail: NotificationTeamInvitation,
 ) => {
@@ -403,12 +403,16 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       await sendTeamInvitation(type, detail);
       break;
 
+    case NotificationType.RejectTeamInvitationByParent:
+      await sendTeamInvitationByParent(type, detail);
+      break;
+
     case NotificationType.AcceptTeamInvitation:
       await sendTeamInvitation(type, detail);
       break;
 
     case NotificationType.ApproveTeamInvitationByParent:
-      await approveTeamInvitationByParent(type, detail);
+      await sendTeamInvitationByParent(type, detail);
       break;
 
     case NotificationType.ChildSendTeamInvitation:
