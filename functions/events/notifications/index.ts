@@ -140,8 +140,37 @@ const sendTeamInvitation = async (type: NotificationType, detail: NotificationTe
   await notificationsModel.create(detail.sub, {
     type,
     attributes: objToKeyValueArray({
+      clubId: detail.clubId,
       teamId: detail.teamId,
       teamName: detail.teamName,
+      teamLogo: getImageUrl(detail.teamLogo),
+      role: detail.role,
+    }),
+  });
+};
+
+const childSendTeamInvitation = async (
+  type: NotificationType,
+  detail: NotificationTeamInvitation,
+) => {
+  const parentSub = detail.parentSub || '';
+  const [deviceIds, language] = await Promise.all([
+    getDeviceIds(parentSub),
+    getUserLanguage(parentSub),
+  ]);
+
+  await pushNotifications.send(language, deviceIds, type, detail);
+  await notificationsModel.create(parentSub, {
+    type,
+    attributes: objToKeyValueArray({
+      childUserId: detail.sub,
+      childFirstName: detail.childFirstName,
+      childLastName: detail.childLastName,
+      childPhoto: detail.childPhoto,
+      clubId: detail.clubId,
+      teamId: detail.teamId,
+      teamName: detail.teamName,
+      teamLogo: getImageUrl(detail.teamLogo),
       role: detail.role,
     }),
   });
@@ -325,6 +354,11 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
 
     case NotificationType.AcceptTeamInvitation:
       await sendTeamInvitation(type, detail);
+      break;
+
+
+    case NotificationType.ChildSendTeamInvitation:
+      await childSendTeamInvitation(type, detail);
       break;
 
     case NotificationType.SendMoneyRequest:
