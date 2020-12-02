@@ -463,14 +463,20 @@ class UserModel {
       birthDateBefore,
     } = filter;
     const roles = role ? [role] : [];
-    const statuses = status ? [status] : [];
+    const statuses = status
+      ? [status]
+      : [
+          TeamInvitationStatus.Pending,
+          TeamInvitationStatus.Accepted,
+          TeamInvitationStatus.Declined,
+        ];
 
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByTeams = this.getEsQueryTeamsArray('should', 'teamId', teamIds);
     const filterByClubs = this.getEsQueryTeamsArray('should', 'clubId', clubIds);
     const filterByUsers = this.getEsQueryTeamsArray('should', '_id', userIds);
     const filterByRole = this.getEsQueryTeamsArray('must', 'role', roles);
-    const filterByStatus = this.getEsQueryTeamsArray('must', 'status', statuses);
+    const filterByStatus = this.getEsQueryTeamsArray('should', 'status', statuses);
     const filterByHasWallet = hasWallet === true ? this.getEsQueryExists('treezorWalletId') : null;
     const filterByCreateDate = this.getEsQueryByDate(
       'createdAt',
