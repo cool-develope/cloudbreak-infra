@@ -406,6 +406,7 @@ export class ApiStack extends cdk.Stack {
       'addLike',
       {
         MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
       },
       120,
     );
