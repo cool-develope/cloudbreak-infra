@@ -43,6 +43,15 @@ class DynamoHelper {
     return this.db.update(params).promise();
   }
 
+  deleteItem(pk: string, sk: string) {
+    const params = {
+      TableName: this.tableName,
+      Key: { pk, sk },
+    };
+
+    return this.db.delete(params).promise();
+  }
+
   queryItems(pk: string, sk: string) {
     const params = {
       TableName: this.tableName,
