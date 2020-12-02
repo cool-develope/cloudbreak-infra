@@ -452,6 +452,16 @@ input ChangePin {
   newPin: String!
 }
 
+input ApproveAsParentInput {
+  type: ParentApprovalType!
+  id: String!
+}
+
+input RejectAsParentInput {
+  type: ParentApprovalType!
+  id: String!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -627,6 +637,14 @@ type ChangePinPayload {
   errors: [String]
 }
 
+type ApproveAsParentPayload {
+  errors: [String]
+}
+
+type RejectAsParentPayload {
+  errors: [String]
+}
+
 enum Gender {
   M
   F
@@ -765,6 +783,10 @@ enum SupportTicketType {
   Technical
   Financial
   Other
+}
+
+enum ParentApprovalType {
+  Event
 }
 
 type Image {
@@ -1329,6 +1351,9 @@ type Mutation {
   setPin(input: SetPinInput!): SetPinPayload
   verifyPin(input: VerifyPinInput!): VerifyPinPayload
   changePin(input: ChangePin!): ChangePinPayload
+
+  approveAsParent(input: ApproveAsParentInput!): ApproveAsParentPayload
+  rejectAsParent(input: RejectAsParentInput!): RejectAsParentPayload
 }
 
 type Query {
@@ -1411,4 +1436,5 @@ type Query {
   notifications(limit: Int): NotificationsConnection!
   moneyRequests(filter: MoneyRequestsFilterInput): MoneyRequestsConnection!
   transactions(filter: TransactionsFilterInput): TransactionsConnection!
+  checkParentApproval(type: ParentApprovalType!, id: String!): Boolean
 }
