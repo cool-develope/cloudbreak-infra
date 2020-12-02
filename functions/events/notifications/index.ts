@@ -196,6 +196,16 @@ const sendTeamInvitationByParent = async (
 
   await pushNotifications.send(childLanguage, childDeviceIds, type, detail);
 
+  await notificationsModel.delete(
+    parentSub,
+    NotificationType.ChildSendTeamInvitation,
+    objToKeyValueArray({
+      childUserId: childSub,
+      clubId: detail.clubId,
+      teamId: detail.teamId,
+    }),
+  );
+
   // Child Notification
   await notificationsModel.create(childSub, {
     type,
