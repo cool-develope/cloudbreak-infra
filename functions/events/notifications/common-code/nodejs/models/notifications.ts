@@ -4,6 +4,8 @@ import {
   NotificationRecord,
   NotificationsConnection,
   NotificationInput,
+  NotificationType,
+  KeyValue,
 } from '../types/notifications';
 
 class NotificationsModel {
@@ -52,6 +54,20 @@ class NotificationsModel {
     return {
       items,
     };
+  }
+
+  async delete(userId: string, type: NotificationType, attributes: KeyValue[]) {
+    const pk = `user#${userId}`;
+    const { Items } = await this.dynamoHelper.queryItems(pk, 'notification#');
+
+    if (Items?.length) {
+      // TODO: row.attributes === attributes
+      const item = Items.find((row: any) => row.type === type);
+
+      if (item) {
+        await this.dynamoHelper.deleteItem(item.pk, item.sk);
+      }
+    }
   }
 }
 
