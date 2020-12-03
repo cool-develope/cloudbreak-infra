@@ -110,6 +110,7 @@ export const handler: Handler = async (event): Promise<{ errors: string[]; event
             parentSub: parentUserId,
             eventId,
             eventTitle: eventMetadata.title,
+            eventPrice: eventMetadata.price,
             eventImage: getImageUrl(eventMetadata.image),
           });
         }
