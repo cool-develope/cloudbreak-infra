@@ -789,6 +789,12 @@ enum ParentApprovalType {
   Event
 }
 
+enum ParentApprovalStatus {
+  Pending
+  Approved
+  Rejected
+}
+
 type Image {
   url: String
 }
@@ -1111,6 +1117,7 @@ type PostReaction {
 type EventReaction {
   liked: Boolean
   accepted: Boolean
+  parentApproval: ParentApprovalStatus
   paid: Boolean
 }
 
