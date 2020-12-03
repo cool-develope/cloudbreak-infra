@@ -1443,5 +1443,5 @@ type Query {
   notifications(limit: Int): NotificationsConnection!
   moneyRequests(filter: MoneyRequestsFilterInput): MoneyRequestsConnection!
   transactions(filter: TransactionsFilterInput): TransactionsConnection!
-  checkParentApproval(type: ParentApprovalType!, id: String!): Boolean
+  checkParentApproval(type: ParentApprovalType!, id: String!): ParentApprovalStatus
 }
