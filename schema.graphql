@@ -453,11 +453,13 @@ input ChangePin {
 }
 
 input ApproveAsParentInput {
+  childUserId: String!
   type: ParentApprovalType!
   id: String!
 }
 
 input RejectAsParentInput {
+  childUserId: String!
   type: ParentApprovalType!
   id: String!
 }
@@ -1443,5 +1445,5 @@ type Query {
   notifications(limit: Int): NotificationsConnection!
   moneyRequests(filter: MoneyRequestsFilterInput): MoneyRequestsConnection!
   transactions(filter: TransactionsFilterInput): TransactionsConnection!
-  checkParentApproval(type: ParentApprovalType!, id: String!): ParentApprovalStatus
+  checkParentApproval(childUserId: String!, type: ParentApprovalType!, id: String!): ParentApprovalStatus
 }
