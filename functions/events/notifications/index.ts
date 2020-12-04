@@ -112,6 +112,7 @@ const getUser = async (userId?: string | null) => {
 };
 
 const acceptedPaidEventHandler = async (type: NotificationType, detail: any) => {
+  // TODO: Call in parallel
   const { sub, eventId, amount } = detail;
   const { Item: child } = await dynamoHelper.getItem(`user#${sub}`, 'metadata');
   const { Item: event } = await dynamoHelper.getItem(`event#${eventId}`, 'metadata');
@@ -119,14 +120,26 @@ const acceptedPaidEventHandler = async (type: NotificationType, detail: any) => 
 
   if (parent && child && event) {
     /**
-     * Add notification for parent
+     * Notification for parent
      */
+
+    detail.eventPrice = event.price;
+    detail.eventTitle = event.title;
+    detail.childFirstName = child.firstName;
+
+    const deviceIds = await getDeviceIds(parent.sub);
+    const language = await getUserLanguage(parent.sub);
+
+    await pushNotifications.send(language, deviceIds, type, detail);
+
     await notificationsModel.create(parent.sub, {
       type: NotificationType.ChildAcceptedPaidEvent,
       attributes: objToKeyValueArray({
         childFirstName: child.firstName,
         childLastName: child.lastName,
+        childPhoto: getImageUrl(child.photo),
         eventName: event.title,
+        eventId,
         price: event.price,
       }),
     });
@@ -327,7 +340,7 @@ const sendSendMoneyRequest = async (
 };
 
 const cardLockChanged = async (detail: any) => {
-  console.dir(detail, { depth: 4 });
+  console.log(detail);
   const [card] = detail.cards;
   const treezorUserId = card.userId;
   const user = await getUserByTreezorUserId(treezorUserId);
@@ -352,7 +365,7 @@ const cardLockChanged = async (detail: any) => {
 };
 
 const cardLimitsChanged = async (detail: any) => {
-  console.dir(detail, { depth: 4 });
+  console.log(detail);
   const [card] = detail.cards;
   const treezorUserId = card.userId;
   const user = await getUserByTreezorUserId(treezorUserId);
