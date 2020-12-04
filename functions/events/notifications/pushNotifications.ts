@@ -185,6 +185,21 @@ class PushNotifications {
           }),
         );
 
+      case NotificationType.AcceptedPaidEvent:
+        const eventPrice = Number(detail.eventPrice).toLocaleString('it', {
+          style: 'currency',
+          currency: 'EUR',
+        });
+
+        return this.notification(
+          t('notification.paidEventToParentTitle'),
+          t('notification.paidEventToParent', {
+            childName: detail.childFirstName,
+            eventTitle: detail.eventTitle,
+            eventPrice: eventPrice,
+          }),
+        );
+
       default:
         return null;
     }
