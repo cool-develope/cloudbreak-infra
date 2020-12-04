@@ -20,7 +20,9 @@
     "childSendTeamInvitation": "Your child want to join a team",
     "childSendTeamInvitationMessage": "{{childName}} want to join {{teamName}}",
     "approvedTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Approved by {{parentName}}",
-    "rejectTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Rejected by {{parentName}}"
+    "rejectTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Rejected by {{parentName}}",
+    "paidEventToParentTitle": "Participation in paid event",
+    "paidEventToParent": "Your child {{childName}} will participate in the event {{eventTitle}} for € {{eventPrice}}"
   },
   "email": {
     "signinSubject": "Tifo signin",
