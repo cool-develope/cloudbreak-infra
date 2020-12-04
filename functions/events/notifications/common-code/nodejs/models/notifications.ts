@@ -58,14 +58,34 @@ class NotificationsModel {
 
   async delete(userId: string, type: NotificationType, attributes: KeyValue[]) {
     const pk = `user#${userId}`;
-    const { Items } = await this.dynamoHelper.queryItems(pk, 'notification#');
+    const sk = 'notification#';
+    const { Items } = await this.dynamoHelper.queryItems(pk, sk);
+    console.log('Delete notification', Items);
 
     if (Items?.length) {
-      // TODO: row.attributes === attributes
       const item = Items.find((row: any) => row.type === type);
-
       if (item) {
-        await this.dynamoHelper.deleteItem(item.pk, item.sk);
+        const row: KeyValue[] = item.attributes;
+        const isMatched = attributes.every((attr) =>
+          row.find(({ Key, Value }) => Key === attr.Key && Value === attr.Value),
+        );
+
+        if (isMatched) {
+          console.log(
+            JSON.stringify(
+              {
+                action: 'Notification.delete',
+                userId,
+                type,
+                attributes,
+                item,
+              },
+              null,
+              2,
+            ),
+          );
+          await this.dynamoHelper.deleteItem(item.pk, item.sk);
+        }
       }
     }
   }
