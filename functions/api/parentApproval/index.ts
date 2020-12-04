@@ -18,6 +18,10 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
     info: { fieldName },
   } = event;
 
+  /**
+   * TODO: Deprecated - can be deleted.
+   */
+
   if (fieldName === FieldName.approveAsParent) {
     return await parentApproval.approve(sub, input);
   } else if (fieldName === FieldName.rejectAsParent) {
