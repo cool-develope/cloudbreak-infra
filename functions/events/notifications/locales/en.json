@@ -22,7 +22,9 @@
     "approvedTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Approved by {{parentName}}",
     "rejectTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Rejected by {{parentName}}",
     "paidEventToParentTitle": "Participation in paid event",
-    "paidEventToParent": "Your child {{childName}} will participate in the event {{eventTitle}} for € {{eventPrice}}"
+    "paidEventToParent": "Your child {{childName}} will participate in the event {{eventTitle}} for € {{eventPrice}}",
+    "sendMoneyParent": "Your child {{childName}} wants to send money {{amount}} to {{name}}",
+    "moneyRequestParent": "Your child {{childName}} wants to request money {{amount}} from {{name}}"
   },
   "email": {
     "signinSubject": "Tifo signin",
