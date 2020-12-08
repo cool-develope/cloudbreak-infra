@@ -24,7 +24,9 @@
     "paidEventToParentTitle": "Participation in paid event",
     "paidEventToParent": "Your child {{childName}} will participate in the event {{eventTitle}} for € {{eventPrice}}",
     "sendMoneyParent": "Your child {{childName}} wants to send money {{amount}} to {{name}}",
-    "moneyRequestParent": "Your child {{childName}} wants to request money {{amount}} from {{name}}"
+    "moneyRequestParent": "Your child {{childName}} wants to request money {{amount}} from {{name}}",
+    "childReceivedMoney": "Money received",
+    "childReceivedMoneyParent": "Your child {{childName}} received money {{amount}} from {{name}}"
   },
   "email": {
     "signinSubject": "Tifo signin",
