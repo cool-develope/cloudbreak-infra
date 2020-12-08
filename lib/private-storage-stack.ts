@@ -15,6 +15,14 @@ export class PrivateStorageStack extends cdk.Stack {
       bucketName,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.KMS_MANAGED,
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.POST, s3.HttpMethods.PUT, s3.HttpMethods.HEAD],
+          allowedOrigins: ['*'],
+          allowedHeaders: ['*'],
+          maxAge: 3000,
+        },
+      ],
     });
   }
 }
