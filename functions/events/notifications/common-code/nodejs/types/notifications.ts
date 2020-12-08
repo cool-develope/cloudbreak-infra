@@ -19,6 +19,7 @@ export enum NotificationType {
   ChildSendTeamInvitation = 'ChildSendTeamInvitation',
   ApproveTeamInvitationByParent = 'ApproveTeamInvitationByParent',
   RejectTeamInvitationByParent = 'RejectTeamInvitationByParent',
+  ChildReceivedMoney = 'ChildReceivedMoney',
 }
 
 export enum WebhookEvent {
@@ -163,4 +164,34 @@ export interface NotificationSendMoneyRequest {
   recipientLastName: string;
   amount: string;
   note: string;
+}
+
+export enum TransferType {
+  Event,
+  P2P,
+}
+
+export interface Transfer {
+  transferId: string;
+  transferTypeId: string;
+  transferTag: string;
+  transferStatus: string;
+  walletId: string;
+  foreignId: string;
+  walletTypeId: string;
+  beneficiaryWalletId: string;
+  beneficiaryWalletTypeId: string;
+  transferDate: string;
+  amount: string;
+  currency: string;
+  label: string;
+  partnerFee: string;
+  createdDate: string;
+  modifiedDate: string;
+  walletEventName: string;
+  walletAlias: string;
+  beneficiaryWalletEventName: string;
+  beneficiaryWalletAlias: string;
+  codeStatus: string;
+  informationStatus: string;
 }

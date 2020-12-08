@@ -15,6 +15,8 @@ import {
   NotificationChildInvitation,
   NotificationSendMoneyRequest,
   EmailType,
+  Transfer,
+  TransferType,
 } from './common-code/nodejs/types/notifications';
 import { NotificationsModel } from './common-code/nodejs/models';
 import DynamoHelper from './common-code/nodejs/dynamoHelper';
@@ -423,6 +425,89 @@ const cardLimitsChanged = async (detail: any) => {
   }
 };
 
+const getDetailsByTransferTag = (
+  transferTag: string,
+): { type: TransferType; id?: string; from?: string; to?: string } | null => {
+  const matchP2P = transferTag.match(/^from:(?<from>[a-z0-9-]{36}),to:(?<to>[a-z0-9-]{36})$/);
+
+  if (transferTag.startsWith('event:')) {
+    return {
+      type: TransferType.Event,
+      id: transferTag.replace('event:', ''),
+    };
+  } else if (matchP2P) {
+    return {
+      type: TransferType.P2P,
+      from: matchP2P.groups?.from,
+      to: matchP2P.groups?.from,
+    };
+  }
+
+  return null;
+};
+
+const treezorTransferUpdate = async (detail: any) => {
+  console.log(detail);
+  const [transfer]: Transfer[] = detail.transfers;
+
+  if (transfer.transferStatus === 'VALIDATED') {
+    const { walletId, transferTag, amount, beneficiaryWalletId, transferId } = transfer;
+    const transferDetails = getDetailsByTransferTag(transferTag);
+
+    if (transferDetails?.type === TransferType.P2P) {
+      const { from, to } = transferDetails;
+      if (!from || !to) {
+        console.error('P2P transfer have invalid data', transferDetails, transfer);
+        return;
+      }
+      await moneyReceivedP2P(from, to, amount);
+    }
+  }
+};
+
+const moneyReceivedP2P = async (fromUserId: string, toUserId: string, amount: string) => {
+  const [fromUser, toUser, parent] = await Promise.all([
+    getUser(fromUserId),
+    getUser(toUserId),
+    getParentUser(fromUserId),
+  ]);
+
+  const detail = {
+    senderFirstName: fromUser.firstName,
+    senderLastName: fromUser.lastName,
+    recipientFirstName: toUser.firstName,
+    recipientLastName: toUser.lastName,
+    amount,
+  };
+
+  if (parent) {
+    /**
+     * Add notification for parent
+     */
+    const { sub: parentSub } = parent;
+    const deviceIdsParent = await getDeviceIds(parentSub);
+    const languageParent = await getUserLanguage(parentSub);
+
+    await pushNotifications.send(
+      languageParent,
+      deviceIdsParent,
+      NotificationType.ChildReceivedMoney,
+      detail,
+    );
+
+    await notificationsModel.create(parentSub, {
+      type: NotificationType.ChildReceivedMoney,
+      attributes: objToKeyValueArray({
+        childFirstName: detail.recipientFirstName,
+        childLastName: detail.recipientLastName,
+        senderFirstName: detail.senderFirstName,
+        senderLastName: detail.senderLastName,
+        amount: detail.amount,
+      }),
+    });
+  }
+};
+
 export const handler: EventBridgeHandler<any, any, any> = async (event) => {
   const { detail } = event;
   const type: NotificationType | WebhookEvent = event['detail-type'];
@@ -480,6 +565,10 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
 
     case WebhookEvent.card_limits:
       await cardLimitsChanged(detail);
+      break;
+
+    case WebhookEvent.transfer_update:
+      await treezorTransferUpdate(detail);
       break;
 
     default:
