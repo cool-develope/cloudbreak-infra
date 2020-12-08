@@ -773,6 +773,7 @@ enum NotificationType {
   ChildAcceptedPaidEvent
   CardLockChanged
   CardLimitChanged
+  ChildReceivedMoney
 }
 
 enum TransactionType {
