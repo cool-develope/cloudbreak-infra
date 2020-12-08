@@ -312,7 +312,18 @@ const sendSendMoneyRequest = async (
     /**
      * Add notification for parent
      */
-    await notificationsModel.create(parent.sub, {
+    const { sub: parentSub } = parent;
+    const deviceIdsParent = await getDeviceIds(parentSub);
+    const languageParent = await getUserLanguage(parentSub);
+
+    await pushNotifications.send(
+      languageParent,
+      deviceIdsParent,
+      NotificationType.ChildSendMoneyRequest,
+      detail,
+    );
+
+    await notificationsModel.create(parentSub, {
       type: NotificationType.ChildSendMoneyRequest,
       attributes: objToKeyValueArray({
         childFirstName: detail.senderFirstName,
