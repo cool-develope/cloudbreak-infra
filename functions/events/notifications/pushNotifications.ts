@@ -58,6 +58,13 @@ class PushNotifications {
     return data;
   }
 
+  private formatMoney(amount: string | number) {
+    return Number(amount).toLocaleString('it', {
+      style: 'currency',
+      currency: 'EUR',
+    });
+  }
+
   private getData(
     language: string,
     type: NotificationType | WebhookEvent,
@@ -127,10 +134,7 @@ class PushNotifications {
       case NotificationType.SendMoneyRequest:
         const sendMoneyRequest = detail as NotificationSendMoneyRequest;
         const senderName = `${sendMoneyRequest.senderFirstName} ${sendMoneyRequest.senderLastName}`;
-        const sendAmount = Number(sendMoneyRequest.amount).toLocaleString('it', {
-          style: 'currency',
-          currency: 'EUR',
-        });
+        const sendAmount = this.formatMoney(sendMoneyRequest.amount);
 
         return this.notification(
           t('notification.moneyRequest'),
@@ -138,6 +142,17 @@ class PushNotifications {
             name: senderName,
             amount: sendAmount,
             note: sendMoneyRequest.note,
+          }),
+        );
+
+      case NotificationType.ChildSendMoneyRequest:
+        const moneyRequestParent = detail as NotificationSendMoneyRequest;
+        return this.notification(
+          t('notification.moneyRequest'),
+          t('notification.moneyRequestParent', {
+            name: `${moneyRequestParent.senderFirstName} ${moneyRequestParent.senderLastName}`,
+            childName: `${moneyRequestParent.recipientFirstName} ${moneyRequestParent.recipientLastName}`,
+            amount: this.formatMoney(moneyRequestParent.amount),
           }),
         );
 
