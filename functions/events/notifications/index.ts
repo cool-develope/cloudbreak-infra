@@ -470,11 +470,14 @@ const treezorTransferUpdate = async (detail: any) => {
 };
 
 const moneyReceivedP2P = async (fromUserId: string, toUserId: string, amount: string) => {
-  const [fromUser, toUser, parent] = await Promise.all([
+  const [fromUser, toUser, fromUserParent, toUserParent] = await Promise.all([
     getUser(fromUserId),
     getUser(toUserId),
     getParentUser(fromUserId),
+    getParentUser(toUserId),
   ]);
+
+  //TODO: Notify <toUser> - you received money
 
   const detail = {
     senderFirstName: fromUser.firstName,
@@ -484,11 +487,11 @@ const moneyReceivedP2P = async (fromUserId: string, toUserId: string, amount: st
     amount,
   };
 
-  if (parent) {
+  if (toUserParent && toUserId !== toUserParent.sub) {
     /**
-     * Add notification for parent
+     * Notify <toUserParent> - your child received money
      */
-    const { sub: parentSub } = parent;
+    const { sub: parentSub } = toUserParent;
     const deviceIdsParent = await getDeviceIds(parentSub);
     const languageParent = await getUserLanguage(parentSub);
 
@@ -506,6 +509,33 @@ const moneyReceivedP2P = async (fromUserId: string, toUserId: string, amount: st
         childLastName: detail.recipientLastName,
         senderFirstName: detail.senderFirstName,
         senderLastName: detail.senderLastName,
+        amount: detail.amount,
+      }),
+    });
+  }
+
+  if (fromUserParent) {
+    /**
+     * Notify <fromUserParent> - your child sent money
+     */
+    const { sub: parentSub } = fromUserParent;
+    const deviceIdsParent = await getDeviceIds(parentSub);
+    const languageParent = await getUserLanguage(parentSub);
+
+    await pushNotifications.send(
+      languageParent,
+      deviceIdsParent,
+      NotificationType.ChildSendMoney,
+      detail,
+    );
+
+    await notificationsModel.create(parentSub, {
+      type: NotificationType.ChildSendMoney,
+      attributes: objToKeyValueArray({
+        childFirstName: detail.senderFirstName,
+        childLastName: detail.senderLastName,
+        recipientFirstName: detail.recipientFirstName,
+        recipientLastName: detail.recipientLastName,
         amount: detail.amount,
       }),
     });
