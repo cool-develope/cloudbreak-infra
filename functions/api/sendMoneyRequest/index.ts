@@ -183,6 +183,7 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
     senderFirstName: senderUser.firstName,
     senderLastName: senderUser.lastName,
     senderPhoto: getImageUrl(senderUser.photo),
+    senderWalletId: senderUser.treezorWalletId,
     recipientSub: recipientUserId,
     recipientEmail: recipientUser.email,
     recipientFirstName: recipientUser.firstName,
