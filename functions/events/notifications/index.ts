@@ -141,6 +141,7 @@ const acceptedPaidEventHandler = async (type: NotificationType, detail: any) => 
         childLastName: child.lastName,
         childPhoto: getImageUrl(child.photo),
         eventName: event.title,
+        eventImage: getImageUrl(event.image),
         eventId,
         price: event.price,
       }),
