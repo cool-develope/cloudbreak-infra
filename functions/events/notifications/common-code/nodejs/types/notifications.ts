@@ -20,6 +20,7 @@ export enum NotificationType {
   ApproveTeamInvitationByParent = 'ApproveTeamInvitationByParent',
   RejectTeamInvitationByParent = 'RejectTeamInvitationByParent',
   ChildReceivedMoney = 'ChildReceivedMoney',
+  ChildSendMoney = 'ChildSendMoney',
 }
 
 export enum WebhookEvent {
@@ -158,6 +159,7 @@ export interface NotificationSendMoneyRequest {
   senderFirstName: string;
   senderLastName: string;
   senderPhoto: string;
+  senderWalletId: string;
   recipientSub: string;
   recipientEmail: string;
   recipientFirstName: string;
