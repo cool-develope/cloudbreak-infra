@@ -311,7 +311,7 @@ const sendSendMoneyRequest = async (
   await pushNotifications.send(language, deviceIds, type, detail);
 
   const parent = await getParentUser(detail.senderSub);
-  if (parent) {
+  if (parent && parent.sub !== detail.recipientSub) {
     /**
      * Add notification for parent
      */
@@ -331,6 +331,7 @@ const sendSendMoneyRequest = async (
       attributes: objToKeyValueArray({
         childFirstName: detail.senderFirstName,
         childLastName: detail.senderLastName,
+        childPhoto: detail.senderPhoto,
         recipientFirstName: detail.recipientFirstName,
         recipientLastName: detail.recipientLastName,
         amount: detail.amount,
@@ -347,8 +348,10 @@ const sendSendMoneyRequest = async (
       senderFirstName: detail.senderFirstName,
       senderLastName: detail.senderLastName,
       senderPhoto: detail.senderPhoto,
+      senderWalletId: detail.senderWalletId,
       amount: detail.amount,
       note: detail.note,
+      transferTag: `from:${detail.recipientSub},to:${detail.senderSub}`,
     }),
   });
 };
