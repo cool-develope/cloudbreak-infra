@@ -150,8 +150,8 @@ class PushNotifications {
         return this.notification(
           t('notification.moneyRequest'),
           t('notification.moneyRequestParent', {
-            name: `${moneyRequestParent.senderFirstName} ${moneyRequestParent.senderLastName}`,
-            childName: `${moneyRequestParent.recipientFirstName} ${moneyRequestParent.recipientLastName}`,
+            childName: `${moneyRequestParent.senderFirstName} ${moneyRequestParent.senderLastName}`,
+            name: `${moneyRequestParent.recipientFirstName} ${moneyRequestParent.recipientLastName}`,
             amount: this.formatMoney(moneyRequestParent.amount),
           }),
         );
