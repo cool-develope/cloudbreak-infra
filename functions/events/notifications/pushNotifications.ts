@@ -156,6 +156,16 @@ class PushNotifications {
           }),
         );
 
+      case NotificationType.ChildSendMoney:
+        return this.notification(
+          t('notification.moneySent'),
+          t('notification.sendMoneyParent', {
+            childName: `${detail.senderFirstName} ${detail.senderLastName}`,
+            name: `${detail.recipientFirstName} ${detail.recipientLastName}`,
+            amount: this.formatMoney(detail.amount),
+          }),
+        );
+
       case NotificationType.ChildReceivedMoney:
         return this.notification(
           t('notification.childReceivedMoney'),
