@@ -443,7 +443,7 @@ const getDetailsByTransferTag = (
     return {
       type: TransferType.P2P,
       from: matchP2P.groups?.from,
-      to: matchP2P.groups?.from,
+      to: matchP2P.groups?.to,
     };
   }
 
