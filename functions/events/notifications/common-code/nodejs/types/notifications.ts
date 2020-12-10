@@ -21,6 +21,7 @@ export enum NotificationType {
   RejectTeamInvitationByParent = 'RejectTeamInvitationByParent',
   ChildReceivedMoney = 'ChildReceivedMoney',
   ChildSendMoney = 'ChildSendMoney',
+  SendMoney = 'SendMoney',
 }
 
 export enum WebhookEvent {

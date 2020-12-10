@@ -775,6 +775,7 @@ enum NotificationType {
   CardLimitChanged
   ChildReceivedMoney
   ChildSendMoney
+  SendMoney
 }
 
 enum TransactionType {
