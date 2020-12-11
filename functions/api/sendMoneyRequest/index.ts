@@ -164,8 +164,9 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
   }
 
   const senderUserId = sub;
+  const requestId = uuidv4();
   const recipientUserId = recipientUser.pk.replace('user#', '');
-  const requestPk = `money-request#${uuidv4()}`;
+  const requestPk = `money-request#${requestId}`;
   const requestSk = 'metadata';
 
   await dynamoHelper.updateItem(requestPk, requestSk, {
@@ -178,6 +179,7 @@ const sendMoneyRequest = async (sub: string, input: any): Promise<string[]> => {
   });
 
   await putEvents('SendMoneyRequest', {
+    requestId,
     senderSub: senderUserId,
     senderEmail: senderUser.email,
     senderFirstName: senderUser.firstName,
