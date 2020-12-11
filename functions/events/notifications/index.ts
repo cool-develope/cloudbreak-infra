@@ -288,17 +288,26 @@ const sendInviteParent = async (type: NotificationType, detail: NotificationInvi
 
 const sendChildInvitation = async (type: NotificationType, detail: NotificationChildInvitation) => {
   const sub = detail.childSub;
-  const deviceIds = await getDeviceIds(sub);
-  const language = await getUserLanguage(sub);
-  await pushNotifications.send(language, deviceIds, type, detail);
-  await notificationsModel.create(detail.childSub, {
-    type,
-    attributes: objToKeyValueArray({
-      parentUserId: detail.parentSub,
-      parentFirstName: detail.parentFirstName,
-      parentLastName: detail.parentLastName,
+  const [deviceIds, language] = await Promise.all([getDeviceIds(sub), getUserLanguage(sub)]);
+
+  await Promise.all([
+    pushNotifications.send(language, deviceIds, type, detail),
+    notificationsModel.create(detail.childSub, {
+      type,
+      attributes: objToKeyValueArray({
+        parentUserId: detail.parentSub,
+        parentFirstName: detail.parentFirstName,
+        parentLastName: detail.parentLastName,
+      }),
     }),
-  });
+    notificationsModel.delete(
+      detail.parentSub,
+      NotificationType.InviteParent,
+      objToKeyValueArray({
+        childUserId: detail.childSub,
+      }),
+    ),
+  ]);
 };
 
 const sendSendMoneyRequest = async (
