@@ -209,6 +209,11 @@ const rejectMoneyRequest = async (sub: string, input: any) => {
     const haveAccess = sub === recipientUserId || sub === senderUserId;
     if (haveAccess) {
       await dynamoHelper.updateItem(pk, sk, { status: MoneyRequestStatus.Rejected });
+      await putEvents('RejectMoneyRequest', {
+        requestId,
+        senderSub: senderUserId,
+        recipientSub: recipientUserId,
+      });
     } else {
       console.error('Access Denied', {
         sub,
