@@ -7,6 +7,7 @@ export enum NotificationType {
   DeclineTeamInvitation = 'DeclineTeamInvitation',
   AcceptTeamInvitation = 'AcceptTeamInvitation',
   SendMoneyRequest = 'SendMoneyRequest',
+  RejectMoneyRequest = 'RejectMoneyRequest',
   InviteParent = 'InviteParent',
   AcceptChildInvitation = 'AcceptChildInvitation',
   DeclineChildInvitation = 'DeclineChildInvitation',
@@ -155,6 +156,7 @@ export interface NotificationChildInvitation {
 }
 
 export interface NotificationSendMoneyRequest {
+  requestId: string;
   senderSub: string;
   senderEmail: string;
   senderFirstName: string;
@@ -167,6 +169,12 @@ export interface NotificationSendMoneyRequest {
   recipientLastName: string;
   amount: string;
   note: string;
+}
+
+export interface NotificationRejectMoneyRequest {
+  requestId: string;
+  senderSub: string;
+  recipientSub: string;
 }
 
 export enum TransferType {
