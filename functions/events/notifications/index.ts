@@ -14,6 +14,7 @@ import {
   NotificationInviteParent,
   NotificationChildInvitation,
   NotificationSendMoneyRequest,
+  NotificationRejectMoneyRequest,
   EmailType,
   Transfer,
   TransferType,
@@ -365,6 +366,17 @@ const sendSendMoneyRequest = async (
   });
 };
 
+const rejectMoneyRequest = async (
+  type: NotificationType,
+  { recipientSub, requestId }: NotificationRejectMoneyRequest,
+) => {
+  await notificationsModel.delete(
+    recipientSub,
+    NotificationType.SendMoneyRequest,
+    objToKeyValueArray({ requestId }),
+  );
+};
+
 const cardLockChanged = async (detail: any) => {
   console.log(detail);
   const [card] = detail.cards;
@@ -583,6 +595,10 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
 
     case NotificationType.SendMoneyRequest:
       await sendSendMoneyRequest(type, detail);
+      break;
+
+    case NotificationType.RejectMoneyRequest:
+      await rejectMoneyRequest(type, detail);
       break;
 
     case NotificationType.AcceptChildInvitation:
