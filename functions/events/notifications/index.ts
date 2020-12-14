@@ -353,6 +353,7 @@ const sendSendMoneyRequest = async (
   await notificationsModel.create(detail.recipientSub, {
     type,
     attributes: objToKeyValueArray({
+      requestId: detail.requestId,
       senderUserId: detail.senderSub,
       senderEmail: detail.senderEmail,
       senderFirstName: detail.senderFirstName,
