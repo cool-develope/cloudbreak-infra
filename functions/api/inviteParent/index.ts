@@ -91,24 +91,42 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
     info: { fieldName },
   } = event;
 
-  /**
-   * TODO: Move to EventBridge
-   * TODO: Check other pending invitations from me - disable them
-   * TODO: Validate email
-   * TODO: Check invitation frequency (5/hour)
-   */
-
   const errors: string[] = [];
   const pk = `invitation#${email}`;
   const sk = `child#${sub}`;
-  const data = {
+
+  /**
+   * TODO: Move to EventBridge
+   * TODO: Validate email
+   */
+
+  /**
+   * Reject if I have a parentUserId
+   */
+  const { Item: user } = await getItem(`user#${sub}`, 'metadata');
+  if (user.parentUserId) {
+    return {
+      errors: ['You already have a perent'],
+    };
+  }
+
+  /**
+   * Reject if invitation exists and pending
+   */
+  const { Item: invitation } = await getItem(pk, sk);
+  if (invitation?.inviteStatus === 'pending') {
+    return {
+      errors: ['Your invitation already exists and waiting for approval'],
+    };
+  }
+
+  const invitationData = {
     createdAt: new Date().toISOString(),
     modifiedAt: '',
     inviteStatus: 'pending',
   };
 
-  await updateItem(pk, sk, data);
-  const { Item: user } = await getItem(`user#${sub}`, 'metadata');
+  await updateItem(pk, sk, invitationData);
   const { Items: parents } = await scanItems('user#', 'metadata', email);
   const [parentUser] = parents;
   const parentSub = parentUser ? parentUser.pk.replace('user#', '') : null;
