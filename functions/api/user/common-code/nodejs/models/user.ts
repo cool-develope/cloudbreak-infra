@@ -19,6 +19,7 @@ import {
   UpdateUserPrivateInput,
   UserChild,
   TreezorUser,
+  SortOrderEnum,
 } from '../types/user';
 
 class UserModel {
@@ -94,7 +95,7 @@ class UserModel {
     from: number = 0,
   ): Promise<UsersPrivateConnection> {
     const query = this.getEsQueryList(userId, filter);
-    const esResult = await this.esSearch({ query, limit, from });
+    const esResult = await this.esSearch({ query, limit, from, sort:[{lastName: SortOrderEnum.ASC}] });
 
     const totalCount = esResult.body?.hits.total.value || 0;
     const esItems = this.prepareEsItems(esResult.body?.hits.hits);
@@ -508,7 +509,7 @@ class UserModel {
     return query;
   }
 
-  async esSearch({ query, limit, from }: { query: any; limit: number; from: number }) {
+  async esSearch({ query, limit, from, sort = [{_id: SortOrderEnum.ASC}]}: { query: any; limit: number; from: number; sort?: any}) {
     try {
       const queryFilter = query ? { query } : null;
 
@@ -518,7 +519,7 @@ class UserModel {
           from,
           size: limit,
           ...queryFilter,
-          sort: [{ _id: 'asc' }],
+          sort: {...sort},
         },
       });
 

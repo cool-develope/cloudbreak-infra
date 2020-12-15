@@ -1,3 +1,5 @@
+import exp = require("constants");
+
 export enum FieldName {
   clubCoaches = 'clubCoaches',
   clubMembers = 'clubMembers',
@@ -49,6 +51,11 @@ export interface UserShort {
   id: string;
   name: string;
   logo: Image;
+}
+
+export enum SortOrderEnum {
+  ASC= "asc",
+  DESC = "desc"
 }
 
 export interface UsersFilter {
