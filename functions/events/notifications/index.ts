@@ -299,6 +299,16 @@ const sendChildInvitation = async (type: NotificationType, detail: NotificationC
         parentUserId: detail.parentSub,
         parentFirstName: detail.parentFirstName,
         parentLastName: detail.parentLastName,
+        parentPhoto: getImageUrl(detail.parentPhoto),
+      }),
+    }),
+    notificationsModel.create(detail.parentSub, {
+      type,
+      attributes: objToKeyValueArray({
+        childUserId: detail.childSub,
+        childFirstName: detail.childFirstName,
+        childLastName: detail.childLastName,
+        childPhoto: getImageUrl(detail.childPhoto),
       }),
     }),
     notificationsModel.delete(
