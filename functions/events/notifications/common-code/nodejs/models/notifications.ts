@@ -56,36 +56,55 @@ class NotificationsModel {
     };
   }
 
-  async delete(userId: string, type: NotificationType, attributes: KeyValue[]) {
+  private isAttributesEqual(attr1: KeyValue, attr2: KeyValue) {
+    return attr1.Key === attr2.Key && attr1.Value == attr2.Value;
+  }
+
+  private isAttributesIncludes(attributes: KeyValue[], testValues: KeyValue[]) {
+    return testValues.every((attr1) =>
+      attributes.find((attr2) => this.isAttributesEqual(attr1, attr2)),
+    );
+  }
+
+  private async getUserNotifications(userId: string, type: NotificationType) {
     const pk = `user#${userId}`;
     const sk = 'notification#';
-    const { Items } = await this.dynamoHelper.queryItems(pk, sk);
-    console.log('Delete notification', Items);
+    const { Items }: { Items?: any[] | null } = await this.dynamoHelper.queryItems(pk, sk);
 
-    if (Items?.length) {
-      const item = Items.find((row: any) => row.type === type);
-      if (item) {
-        const row: KeyValue[] = item.attributes;
-        const isMatched = attributes.every((attr) =>
-          row.find(({ Key, Value }) => Key === attr.Key && Value === attr.Value),
+    if (Items) {
+      return Items.filter((row: any) => row.type === type);
+    }
+
+    return [];
+  }
+
+  async delete(userId: string, type: NotificationType, attributes: KeyValue[]) {
+    const notifications = await this.getUserNotifications(userId, type);
+
+    console.log(
+      `Delete notification ${type}`,
+      JSON.stringify(notifications, null, 2),
+      JSON.stringify(attributes, null, 2),
+    );
+
+    for (const item of notifications) {
+      const isMatched = this.isAttributesIncludes(item.attributes, attributes);
+
+      if (isMatched) {
+        console.log(
+          JSON.stringify(
+            {
+              action: 'Notification.delete',
+              userId,
+              type,
+              attributes,
+              item,
+            },
+            null,
+            2,
+          ),
         );
-
-        if (isMatched) {
-          console.log(
-            JSON.stringify(
-              {
-                action: 'Notification.delete',
-                userId,
-                type,
-                attributes,
-                item,
-              },
-              null,
-              2,
-            ),
-          );
-          await this.dynamoHelper.deleteItem(item.pk, item.sk);
-        }
+        await this.dynamoHelper.deleteItem(item.pk, item.sk);
       }
     }
   }
