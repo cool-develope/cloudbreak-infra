@@ -60,6 +60,8 @@ const getUserLanguage = async (userId: string) => {
   return 'en';
 };
 
+const getUserLanguageFromUserData = (userData: any) => userData?.language || 'en';
+
 const scanItems = (pk: string, sk: string, fieldName: string, fieldValue: any) => {
   const params = {
     TableName: MAIN_TABLE_NAME,
