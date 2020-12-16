@@ -488,38 +488,99 @@ const treezorTransferUpdate = async (detail: any) => {
   console.log(detail);
   const [transfer]: Transfer[] = detail.transfers;
 
-  if (transfer.transferStatus === 'VALIDATED') {
-    const { walletId, transferTag, amount, beneficiaryWalletId, transferId } = transfer;
-    const transferDetails = getDetailsByTransferTag(transferTag);
+  // TODO: continue only if (transfer.transferStatus === 'VALIDATED')
+  const { walletId, transferTag, amount, beneficiaryWalletId, transferId } = transfer;
+  const transferDetails = getDetailsByTransferTag(transferTag);
 
-    if (transferDetails?.type === TransferType.P2P) {
-      const { from, to } = transferDetails;
-      if (!from || !to) {
-        console.error('P2P transfer have invalid data', transferDetails, transfer);
-        return;
-      }
-      await moneyReceivedP2P(from, to, amount);
+  if (transferDetails?.type === TransferType.P2P) {
+    const { from, to } = transferDetails;
+    if (!from || !to) {
+      console.error('P2P transfer have invalid data', transferDetails, transfer);
+      return;
     }
+    await moneyReceivedP2P(from, to, amount, transferTag);
   }
 };
 
-const moneyReceivedP2P = async (fromUserId: string, toUserId: string, amount: string) => {
-  const [fromUser, toUser, fromUserParent, toUserParent] = await Promise.all([
+const moneyReceivedP2P = async (
+  /**
+   * Send money
+   */
+  fromUserId: string,
+  /**
+   * Receive money
+   */
+  toUserId: string,
+  amount: string,
+  transferTag: string,
+) => {
+  /**
+   * Delete notification SendMoneyRequest from money sender
+   */
+  await notificationsModel.delete(
+    fromUserId,
+    NotificationType.SendMoneyRequest,
+    objToKeyValueArray({
+      amount,
+      transferTag,
+    }),
+  );
+
+  const [
+    fromUser,
+    toUser,
+    fromUserParent,
+    toUserParent,
+    fromUserDeviceIds,
+    toUserDeviceIds,
+  ] = await Promise.all([
     getUser(fromUserId),
     getUser(toUserId),
     getParentUser(fromUserId),
     getParentUser(toUserId),
+    getDeviceIds(fromUserId),
+    getDeviceIds(toUserId),
   ]);
 
-  //TODO: Notify <toUser> - you received money
+  const fromUserLanguage = getUserLanguageFromUserData(fromUser);
+  const toUserLanguage = getUserLanguageFromUserData(toUser);
+
+  // TODO: Notify <toUser> - you received money
+  // TODO: Add notification - SendMoney
+
+
+  // TODO: approce/reject MoneyRequest
+  // const pk = `money-request#${requestId}`;
+  // const sk = 'metadata';
+  // await dynamoHelper.updateItem(pk, sk, { status: MoneyRequestStatus.Rejected });
 
   const detail = {
     senderFirstName: fromUser.firstName,
     senderLastName: fromUser.lastName,
     recipientFirstName: toUser.firstName,
     recipientLastName: toUser.lastName,
+    recipientPhoto: getImageUrl(toUser.photo),
     amount,
   };
+
+  /**
+   * Notification to money sender - fromUserId
+   */
+  await pushNotifications.send(
+    fromUserLanguage,
+    fromUserDeviceIds,
+    NotificationType.SendMoney,
+    detail,
+  );
+  await notificationsModel.create(fromUserId, {
+    type: NotificationType.SendMoney,
+    attributes: objToKeyValueArray({
+      recipientFirstName: detail.recipientFirstName,
+      recipientLastName: detail.recipientLastName,
+      recipientPhoto: detail.recipientPhoto,
+      amount: detail.amount,
+    }),
+  });
 
   if (toUserParent && toUserId !== toUserParent.sub) {
     /**
@@ -641,6 +702,7 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       break;
 
     case WebhookEvent.transfer_update:
+    case WebhookEvent.transfer_create:
       await treezorTransferUpdate(detail);
       break;
 
