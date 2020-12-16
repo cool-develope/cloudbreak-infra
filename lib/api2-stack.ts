@@ -98,6 +98,8 @@ export class Api2Stack extends cdk.Stack {
     this.treezor();
 
     this.submitSupportTicket();
+
+    // this.parentApproval();
   }
 
   dictionaryQuery() {
@@ -724,6 +726,33 @@ export class Api2Stack extends cdk.Stack {
       fieldName: 'submitSupportTicket',
     });
   }
+
+  // parentApproval() {
+  //   const fn = this.getFunction('parentApproval', 'api-parentApproval', 'parentApproval', {
+  //     MAIN_TABLE_NAME: this.mainTable.tableName,
+  //     IMAGES_DOMAIN: this.imagesDomain,
+  //   });
+
+  //   this.allowDynamoDB(fn);
+  //   this.allowEventBridge(fn);
+
+  //   const dataSource = this.api.addLambdaDataSource('parentApprovalFn', fn);
+
+  //   dataSource.createResolver({
+  //     typeName: 'Mutation',
+  //     fieldName: 'approveAsParent',
+  //   });
+
+  //   dataSource.createResolver({
+  //     typeName: 'Mutation',
+  //     fieldName: 'rejectAsParent',
+  //   });
+
+  //   dataSource.createResolver({
+  //     typeName: 'Query',
+  //     fieldName: 'checkParentApproval',
+  //   });
+  // }
 
   allowSES(lambdaFunction: lambda.Function) {
     const sesPolicy = new PolicyStatement({ effect: Effect.ALLOW });
