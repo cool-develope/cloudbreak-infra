@@ -150,9 +150,11 @@ export interface NotificationChildInvitation {
   childFirstName: string;
   childLastName: string;
   childBirthDate: string;
+  childPhoto: string;
   parentSub: string;
   parentFirstName: string;
   parentLastName: string;
+  parentPhoto: string;
 }
 
 export interface NotificationSendMoneyRequest {

@@ -1,132 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <style>
-      @font-face {
-        font-family: 'SFProTextRegular';
-        src: url('{{ domain }}/email/SFProTextRegular.ttf') format('truetype');
-      }
-      @font-face {
-        font-family: 'SFProTextMedium';
-        src: url('{{ domain }}/email/SFProTextMedium.ttf') format('truetype');
-      }
-      body,
-      p {
-        margin: 0;
-        padding: 0;
-      }
-      p {
-        margin-left: 15px;
-        margin-right: 15px;
-        margin-bottom: 30px;
-      }
-      p,
-      a {
-        font-family: 'SFProTextRegular', 'Helvetica', sans-serif;
-        font-size: 28px;
-        line-height: 34px;
-      }
-      .btn_link {
-        font-family: 'SFProTextMedium', 'Helvetica', sans-serif;
-        background: #3054e5;
-        text-decoration: none;
-        display: block;
-        max-width: 578px;
-        height: 66px;
-        color: #ffffff !important;
-        border-radius: 5.6px;
-        padding-top: 27px;
-        margin-left: 15px;
-        margin-right: 15px;
-      }
-      .table-header {
-        height: 400px;
-        background-image: url({{ domain }}/email/Bg.png);
-        background-repeat: no-repeat;
-        background-size: 100% 100%;
-      }
-      @media screen and (max-width: 600px) {
-        table {
-          max-height: 700px;
+        body,
+        p,
+        h1 {
+            margin: 0;
+            padding: 0;
+            font-family: "Arial", "Helvetica", sans-serif;
         }
-        .table-header {
-          height: 300px;
-        }
-        .table_margin {
-          height: 50px;
-        }
-        p {
-          margin-bottom: 15px;
-          font-size: 24px;
-        }
-      }
     </style>
-  </head>
-  <body>
-    <table
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      border="0"
-      align="center"
-      class="body_table"
-    >
-      <tbody>
-        <tr>
-          <td
-            width="100%"
-            align="center"
-            class="table-header"
-            style="height: 400px;
-          background-image: url({{ domain }}/email/Bg.png);
-          background-repeat: no-repeat;
-          -webkit-background-size: 100% 100%;
-          -moz-background-size: 100% 100%;
-          background-size: 100% 100%;"
-          >
-            <img src="{{ domain }}/email/tifo-logo-white.png" alt="logo" width="165" height="165" />
-          </td>
-        </tr>
-        <tr>
-          <td width="100%" height="85" class="table_margin">&nbsp;</td>
-        </tr>
-        <tr>
-          <td align="center">
-            <p>{{ text1 }}</p>
-            <p>{{ text2 }}</p>
-          </td>
-        </tr>
-        <tr>
-          <td width="100%" height="85" class="table_margin">&nbsp;</td>
-        </tr>
-        <tr>
-          <td align="center">
-            <a
-              href="{{ url_signin }}"
-              class="btn_link"
-              style="
-                font-family: 'SFProTextMedium', 'Helvetica', sans-serif;
-                background: #3054e5;
-                text-decoration: none;
-                display: block;
-                max-width: 578px;
-                color: #ffffff !important;
-                border-radius: 5.6px;
-                padding-top: 27px;
-                margin-left: 15px;
-                margin-right: 15px;
-              "
-              color="#FFFFFF!important"
-              >{{ button }}</a
-            >
-          </td>
-        </tr>
-        <tr>
-          <td width="100%" height="30">&nbsp;</td>
-        </tr>
-      </tbody>
+</head>
+
+<body>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" align="center"
+        style="padding-left: 15px;padding-right: 15px;">
+        <tbody>
+            <tr>
+                <td width="100%" height="55">&nbsp;</td>
+            </tr>
+            <tr>
+                <td width="60%" align="center" >
+                    <img src="{{ domain }}/email/v1/Login.png" alt="logo" width="182" height="150" />
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="25">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <h1 style="color: #213174; font-size: 22px;  line-height: 40px; font-weight: bold;">{{ signinTitle }}</h1>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <p
+                        style="color: #213174; font-size: 14px; line-height: 24px; padding-top: 4px;">{{ signinLine1 }}</p>
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="25">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <a href="{{ signinUrl }}" style="
+                    font-weight: 500;
+                    background: #3054E5;
+                    text-decoration: none;
+                    display: block;
+                    max-width: 200px;
+                    color: #ffffff !important;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    padding-top: 14px;
+                    padding-bottom: 14px;
+                    margin-left: 15px;
+                    margin-right: 15px;
+                    margin-bottom: 16px;
+                    " color="#FFFFFF!important">{{ signinButton }}</a>
+                </td>
+            </tr>
+
+            <tr>
+                <td align="center">
+                    <p
+                        style="color: #737EA8; font-size: 12px;  line-height: 24px; padding-top: 4px; opacity: 0.5">{{ signinLine2 }}</p>
+                </td>
+            </tr>
+        </tbody>
     </table>
-  </body>
+
+    <table width="80%" cellpadding="0" cellspacing="0" border="0" align="center" style="max-width: 572px;">
+        <tbody>
+            <tr>
+                <td width="100%" height="32">&nbsp;</td>
+            </tr>
+            <tr>
+                <td>
+                    <div style="height: 1px; background: #D8D8D8;"></div>
+                </td>
+            </tr>
+            <tr>
+                <td width="100%" height="21">&nbsp;</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <table cellpadding="0" cellspacing="0" border="0"  style="margin: 0 auto;">
+        <tbody>
+            <tr>
+                <td>
+                    <img style="width: 22px; height: 22px; vertical-align: middle; margin-right: 11px"
+                        src="{{ domain }}/email/v1/Logo.png" alt="logo">
+                </td>
+                <td>
+                    <span
+                        style="color: #213174; font-size: 16px; line-height: 19px;">TIFO
+                        S.r.l.</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0"  style="padding-top: 16px;margin: 0 auto;">
+        <tbody>
+            <tr align="center" style="text-align: center;">
+                <td ><a style="white-space: nowrap;color:#3054E5; font-size: 12px; line-height: 14px;text-decoration: none; padding-right: 20px;"
+                        href="https://tifo-sport.com/privacy-policy/" target="_blanc">{{ privacyPolicy }}</a>
+                </td>
+                <td>
+                    <div style="height: 22px; width: 1px; background-color: #D8D8D8;"></div>
+                </td>
+                <td>
+                    <a style="white-space: nowrap;color:#3054E5; font-size: 12px; line-height: 14px;text-decoration: none; padding-left: 20px;"
+                        href="https://tifo-sport.com/contatti/" target="_blanc">{{ contactUs }}</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" align="center"
+    >
+    <tfoot bgcolor="#F5F6F8" align="center" style=" width: 100%;">
+        <tr>
+            <td>
+                <p style="color: #ADADAD; font-size: 11px;  line-height: 13px; padding-top: 5px;  padding-bottom: 5px;">
+                    Copyright 2021 &copy; Tifo. All rights reserved.
+                </p>
+            </td>
+        </tr>
+        
+    </tfoot>
+    <tbody>
+    <tr align="center">
+        <td >
+            <a href="#"
+                style="cursor: default; text-decoration: none;display:block; color: #737EA8!important; font-size: 12px; line-height: 22px; padding-top: 16px;">
+                Piazza Adriana 15, 00193 Roma (Italy)</a>
+            <p
+                style="color: #737EA8; font-size: 12px;  line-height: 22px; padding-bottom: 16px;">
+                REA RM1572296 | Codice fiscale e PIVA 15166861003</p>
+        </td>
+    </tr>
+    <tr align="center">
+        <td>
+            <a style="color:#3054E5; font-size: 12px; line-height: 14px;text-decoration: none;"
+            href="mailto:tifo@tifo-sport.com" target="_blanc">tifo@tifo-sport.com</a>
+        </td>
+    </tr>
+    <tr>
+        <td width="100%" height="16">&nbsp;</td>
+    </tr>
+    </tbody>
+
+    </table>
+</body>
+
 </html>

@@ -42,10 +42,13 @@ const sendEmail = async (signinUrl: string, emailAddress: string, language: stri
 
   const html = getEmailHtml(EMAIL_TEMPLATE, {
     domain: `https://${IMAGES_DOMAIN}`,
-    url_signin: signinUrl,
-    text1: t('email.signinLine1'),
-    text2: t('email.signinLine2'),
-    button: t('email.signinButton'),
+    signinUrl: signinUrl,
+    signinLine1: t('email.signinLine1'),
+    signinLine2: t('email.signinLine2'),
+    signinButton: t('email.signinButton'),
+    signinTitle: t('email.signinTitle'),
+    privacyPolicy: t('email.privacyPolicy'),
+    contactUs: t('email.contactUs'),
   });
 
   const params: AWS.SES.SendEmailRequest = {

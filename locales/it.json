@@ -1,0 +1,27 @@
+{
+  "email": {
+    "inviteParentBirth": "Data di nascita",
+    "inviteParentButton": "Controlla in app",
+    "inviteParentLine1": "Sei il genitore di questa persona?",
+    "inviteParentLine2": "Il link scadrà in 15 minuti e potrà essere usato solo una volta.",
+    "inviteParentSubject": "{{fullName}} ti ha mandato un invito come genitore",
+    "signinButton": "Entra in tifo",
+    "signinLine1": "Clicca sul link qui sotto per entrare nel tuo profilo TIFO.",
+    "signinLine2": "Il link scadrà fra 15 minuti e potrà essere usato solo una volta.",
+    "signinSubject": "Tifo login"
+  },
+  "notification": {
+    "acceptedTeamInvitation": "La tua richiesta di connessione a \"{{teamName}}\" è stata approvata",
+    "declinedTeamInvitation": "La tua richiesta di connessione a \"{{teamName}}\" è stata rifiutata",
+    "familyRequest": "Richiesta da un familiare",
+    "familyRequestAccepted": "{{name}} ha accettato la tua richiesta come familiare",
+    "familyRequestMessage": "{{name}} ti ha invitato come genitore",
+    "familyRequestRejected": "{{name} ha rifiutato la tua richiesta come familiare",
+    "moneyRequest": "Richiesta di denaro",
+    "moneyRequestMessage": "{{name}} ha richiesto {{amount}}. {{note}}.",
+    "teamRequest": "Chiedi al team",
+    "verification": "Verifica",
+    "verificationApproved": "Lo stato della tua verifica è diventato \"Approvato\"",
+    "verificationRejected": "Lo stato della tua verifica è diventato \"Rifiutato\""
+  }
+}

@@ -177,9 +177,11 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
       childFirstName: userChild.firstName,
       childLastName: userChild.lastName,
       childBirthDate: userChild.birthDate,
+      childPhoto: userChild.photo,
       parentSub: sub,
       parentFirstName: userParent.firstName,
       parentLastName: userParent.lastName,
+      parentPhoto: userParent.photo,
     });
   } else if (invitation.inviteStatus !== 'pending') {
     errors.push('Invitation alredy accepted/declined');

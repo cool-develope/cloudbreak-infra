@@ -50,14 +50,13 @@ class MailService {
         domain: `https://${this.imageDomain}`,
         photo: inviteParent.childPhoto,
         url_invite: inviteParent.invitationUrl,
-        text1: t('email.inviteParentLine1'),
-        text2: t('email.inviteParentBirth'),
-        text3: 'Email',
-        text4: t('email.inviteParentLine2'),
-        button: t('email.inviteParentButton'),
         fullName,
         birth: inviteParent.childBirthDate,
         email: inviteParent.childEmail,
+        inviteParentLine1: t('email.inviteParentLine1'),
+        inviteParentTitle: t('email.inviteParentTitle'),
+        inviteParentBirth: t('email.inviteParentBirth'),
+        inviteParentButton: t('email.inviteParentButton'),
       });
     }
 
