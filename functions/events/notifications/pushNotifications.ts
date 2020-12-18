@@ -204,7 +204,7 @@ class PushNotifications {
 
       case NotificationType.ChildSendTeamInvitation:
         return this.notification(
-          t('notification.childSendTeamInvitation'),
+          t('notification.teamRequest'),
           t('notification.childSendTeamInvitationMessage', {
             childName: detail.childFirstName,
             teamName: detail.teamName,
