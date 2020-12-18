@@ -171,7 +171,10 @@ class TeamInvitationModel {
 
     if (!teamUser) {
       errors.push('Invitation not found');
-    } else if (teamUser.status === TeamInvitationStatus.Pending) {
+    } else if (
+      teamUser.status === TeamInvitationStatus.Pending ||
+      teamUser.status === TeamInvitationStatus.Declined
+    ) {
       const data = {
         status: TeamInvitationStatus.Accepted,
       };
@@ -241,7 +244,10 @@ class TeamInvitationModel {
 
     if (!teamUser) {
       errors.push('Invitation not found');
-    } else if (teamUser.status === TeamInvitationStatus.Pending) {
+    } else if (
+      teamUser.status === TeamInvitationStatus.Pending ||
+      teamUser.status === TeamInvitationStatus.Accepted
+    ) {
       const data = {
         status: TeamInvitationStatus.Declined,
       };
