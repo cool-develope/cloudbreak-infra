@@ -64,6 +64,20 @@ class DynamoHelper {
 
     return this.db.get(params).promise();
   }
+
+  queryItemsByIndex(sk: string, pk: string, indexName: string) {
+    const params = {
+      TableName: this.tableName,
+      IndexName: indexName,
+      KeyConditionExpression: 'sk = :sk and begins_with(pk, :pk)',
+      ExpressionAttributeValues: {
+        ':sk': sk,
+        ':pk': pk,
+      },
+    };
+
+    return this.db.query(params).promise();
+  }
 }
 
 export default DynamoHelper;

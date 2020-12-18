@@ -375,13 +375,30 @@ class ClubModel {
     };
   }
 
+  async getMyClubs(userId: string): Promise<string[]> {
+    const { Items }: { Items: any[] | null } = await this.dynamoHelper.queryItemsByIndex(
+      `user#${userId}`,
+      'team#',
+      'GSI1',
+    );
+    let ids =
+      Items?.filter(({ status }) => status === 'Accepted').map(({ clubId }) => clubId) ?? [];
+
+    return ids;
+  }
+
   async getEsQuery(userId: string, filter: ClubsFilterInput = {}) {
-    const { search = '', city = '', discipline = [], clubIds, nearMe } = filter;
+    let { search = '', city = '', discipline = [], clubIds, nearMe, myClubs } = filter;
 
     let filterByNearMe = null;
     if (userId && nearMe === true) {
       const { Item: userData } = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
       filterByNearMe = this.getEsQueryByNearMe(userData.country, userData.city);
+    }
+
+    let filterByMyClubs = null;
+    if (userId && myClubs === true) {
+      clubIds = await this.getMyClubs(userId);
     }
 
     const filterBySearch = this.getEsQueryBySearch(search);
@@ -395,6 +412,7 @@ class ClubModel {
       filterByDiscipline,
       filterById,
       filterByNearMe,
+      filterByMyClubs,
     ].filter((f) => !!f);
 
     const query = must.length
