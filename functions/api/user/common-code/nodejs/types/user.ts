@@ -1,5 +1,3 @@
-import exp = require("constants");
-
 export enum FieldName {
   clubCoaches = 'clubCoaches',
   clubMembers = 'clubMembers',

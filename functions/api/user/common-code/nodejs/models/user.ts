@@ -95,7 +95,7 @@ class UserModel {
     from: number = 0,
   ): Promise<UsersPrivateConnection> {
     const query = this.getEsQueryList(userId, filter);
-    const esResult = await this.esSearch({ query, limit, from, sort:[{lastName: SortOrderEnum.ASC}] });
+    const esResult = await this.esSearch({ query, limit, from, sort:[{firstName: SortOrderEnum.ASC}] });
 
     const totalCount = esResult.body?.hits.total.value || 0;
     const esItems = this.prepareEsItems(esResult.body?.hits.hits);
