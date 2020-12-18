@@ -133,6 +133,7 @@ export interface ClubsFilterInput {
   clubIds?: string[];
   city?: string;
   nearMe?: boolean;
+  myClubs?: boolean;
 }
 
 export interface ClubsConnection {
