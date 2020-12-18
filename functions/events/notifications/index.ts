@@ -557,6 +557,7 @@ const moneyReceivedP2P = async (
   const detail = {
     senderFirstName: fromUser.firstName,
     senderLastName: fromUser.lastName,
+    senderPhoto: getImageUrl(fromUser.photo),
     recipientFirstName: toUser.firstName,
     recipientLastName: toUser.lastName,
     recipientPhoto: getImageUrl(toUser.photo),
@@ -630,6 +631,7 @@ const moneyReceivedP2P = async (
       attributes: objToKeyValueArray({
         childFirstName: detail.senderFirstName,
         childLastName: detail.senderLastName,
+        childPhoto: detail.senderPhoto,
         recipientFirstName: detail.recipientFirstName,
         recipientLastName: detail.recipientLastName,
         amount: detail.amount,

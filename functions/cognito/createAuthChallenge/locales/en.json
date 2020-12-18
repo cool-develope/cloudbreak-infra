@@ -23,8 +23,7 @@
     "cardUnlockedMessage": "Your card {{cardNumber}} is unlocked",
     "childReceivedMoney": "Money received",
     "childReceivedMoneyParent": "Your child {{childName}} received money {{amount}} from {{name}}",
-    "childSendTeamInvitation": "Your child want to join a team",
-    "childSendTeamInvitationMessage": "{{childName}} want to join {{teamName}}",
+    "childSendTeamInvitationMessage": "Your child {{childName}} wants to be a member of the {{teamName}}",
     "declinedTeamInvitation": "Your connection request to the \"{{teamName}}\" has been Rejected",
     "familyRequest": "Family request",
     "familyRequestAccepted": "{{name}} accepted your family request",
@@ -39,7 +38,7 @@
     "rejectTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Rejected by {{parentName}}",
     "sendMoney": "You have sent money {{amount}} to {{name}}",
     "sendMoneyParent": "Your child {{childName}} sent money {{amount}} to {{name}}",
-    "teamRequest": "Request to the team",
+    "teamRequest": "Team participation request",
     "verification": "Verification",
     "verificationApproved": "Your verification status has been updated to Approved",
     "verificationRejected": "Your verification status has been updated to Rejected"

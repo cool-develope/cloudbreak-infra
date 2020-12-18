@@ -79,7 +79,7 @@ const getItem = (pk: string, sk: string) => {
 
 const formatDate = (str: string) => {
   const d = new Date(str || Date.now());
-  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
 };
 
 export const handler: Handler = async (event): Promise<{ errors: string[] }> => {

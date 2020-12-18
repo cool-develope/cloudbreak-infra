@@ -166,6 +166,7 @@ input ClubsFilterInput {
   discipline: [Discipline]
   clubIds: [String]
   nearMe: Boolean
+  myClubs: Boolean
 }
 
 input TeamsPrivateFilterInput {

@@ -57,6 +57,8 @@ class MailService {
         inviteParentTitle: t('email.inviteParentTitle'),
         inviteParentBirth: t('email.inviteParentBirth'),
         inviteParentButton: t('email.inviteParentButton'),
+        privacyPolicy: t('email.privacyPolicy'),
+        contactUs: t('email.contactUs'),
       });
     }
 
