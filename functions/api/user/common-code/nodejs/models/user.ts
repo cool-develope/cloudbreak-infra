@@ -400,6 +400,27 @@ class UserModel {
     return null;
   }
 
+  getEsQueryTeamsMultiParams(boolCondition: string, filter: Object) {
+    const entries = Object.entries(filter || {}).filter(([k, v]) => v !== null && v !== undefined);
+
+    if (entries.length) {
+      return {
+        nested: {
+          path: 'teams',
+          query: {
+            bool: {
+              [boolCondition]: entries.map(([key, value]) => ({
+                term: { [`teams.${key}.keyword`]: value },
+              })),
+            },
+          },
+        },
+      };
+    }
+
+    return null;
+  }
+
   getEsQueryListShort(userId: string, filter: any = {}) {
     const {
       search,
@@ -472,9 +493,37 @@ class UserModel {
           TeamInvitationStatus.Declined,
         ];
 
+    let filterByTeamsArray: any[] = [];
+    const teamsCount = teamIds?.length ?? 0;
+    const clubsCount = clubIds?.length ?? 0;
+    const rolesCount = roles?.length ?? 0;
+
+    // TODO: improve it in future
+    if (statuses.length === 1 && teamsCount <= 1 && clubsCount <= 1 && rolesCount <= 1) {
+      /**
+       * Search with all of params
+       */
+      filterByTeamsArray = [
+        this.getEsQueryTeamsMultiParams('must', {
+          clubId: clubIds?.[0],
+          teamId: teamIds?.[0],
+          role: roles?.[0],
+          status: statuses?.[0],
+        }),
+      ];
+    } else {
+      /**
+       * Search with any of this params
+       */
+      filterByTeamsArray = [
+        this.getEsQueryTeamsArray('should', 'teamId', teamIds),
+        this.getEsQueryTeamsArray('should', 'clubId', clubIds),
+        this.getEsQueryTeamsArray('must', 'role', roles),
+        this.getEsQueryTeamsArray('should', 'status', statuses),
+      ];
+    }
+
     const filterBySearch = this.getEsQueryBySearch(search);
-    const filterByTeams = this.getEsQueryTeamsArray('should', 'teamId', teamIds);
-    const filterByClubs = this.getEsQueryTeamsArray('should', 'clubId', clubIds);
     const filterByUsers = this.getEsQueryTeamsArray('should', '_id', userIds);
     const filterByRole = this.getEsQueryTeamsArray('must', 'role', roles);
     const filterByStatus = this.getEsQueryTeamsArray('should', 'status', statuses);
@@ -488,14 +537,11 @@ class UserModel {
 
     const must = [
       filterBySearch,
-      filterByTeams,
-      filterByClubs,
       filterByUsers,
-      filterByRole,
-      filterByStatus,
       filterByCreateDate,
       filterByBirthDate,
       filterByHasWallet,
+      ...filterByTeamsArray,
     ].filter((f) => !!f);
 
     const query = must.length
