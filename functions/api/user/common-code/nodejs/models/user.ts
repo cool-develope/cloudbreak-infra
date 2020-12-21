@@ -95,7 +95,12 @@ class UserModel {
     from: number = 0,
   ): Promise<UsersPrivateConnection> {
     const query = this.getEsQueryList(userId, filter);
-    const esResult = await this.esSearch({ query, limit, from, sort:[{firstName: SortOrderEnum.ASC}] });
+    const esResult = await this.esSearch({
+      query,
+      limit,
+      from,
+      sort: { 'firstName.keyword': SortOrderEnum.ASC },
+    });
 
     const totalCount = esResult.body?.hits.total.value || 0;
     const esItems = this.prepareEsItems(esResult.body?.hits.hits);
@@ -525,8 +530,6 @@ class UserModel {
 
     const filterBySearch = this.getEsQueryBySearch(search);
     const filterByUsers = this.getEsQueryTeamsArray('should', '_id', userIds);
-    const filterByRole = this.getEsQueryTeamsArray('must', 'role', roles);
-    const filterByStatus = this.getEsQueryTeamsArray('should', 'status', statuses);
     const filterByHasWallet = hasWallet === true ? this.getEsQueryExists('treezorWalletId') : null;
     const filterByCreateDate = this.getEsQueryByDate(
       'createdAt',
@@ -555,7 +558,17 @@ class UserModel {
     return query;
   }
 
-  async esSearch({ query, limit, from, sort = [{_id: SortOrderEnum.ASC}]}: { query: any; limit: number; from: number; sort?: any}) {
+  async esSearch({
+    query,
+    limit,
+    from,
+    sort = { _id: SortOrderEnum.ASC },
+  }: {
+    query: any;
+    limit: number;
+    from: number;
+    sort?: any;
+  }) {
     try {
       const queryFilter = query ? { query } : null;
 
@@ -565,7 +578,7 @@ class UserModel {
           from,
           size: limit,
           ...queryFilter,
-          sort: {...sort},
+          sort,
         },
       });
 
