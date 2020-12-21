@@ -51,6 +51,11 @@ export interface UserShort {
   logo: Image;
 }
 
+export enum SortOrderEnum {
+  ASC= "asc",
+  DESC = "desc"
+}
+
 export interface UsersFilter {
   search?: string;
   clubIds?: string[];
