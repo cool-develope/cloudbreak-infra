@@ -30,6 +30,8 @@
     "familyRequestMessage": "{{name}} invites you as a parent.",
     "familyRequestRejected": "{{name} rejected your family request",
     "moneyRequest": "Money request",
+    "moneyRequestApproved": "Your money request {{amount}} to {{name}} has been approved",
+    "moneyRequestRejected": "Your money request {{amount}} to {{name}} has been rejected",
     "moneyRequestMessage": "{{name}} has requested {{amount}}. {{note}}.",
     "moneyRequestParent": "Your child {{childName}} wants to request money {{amount}} from {{name}}",
     "moneySent": "Money sent",
