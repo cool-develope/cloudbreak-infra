@@ -192,6 +192,11 @@ export class Api2Stack extends cdk.Stack {
     });
 
     dataSource.createResolver({
+      typeName: 'Mutation',
+      fieldName: 'approveMoneyRequest',
+    });
+
+    dataSource.createResolver({
       typeName: 'Query',
       fieldName: 'moneyRequests',
     });
