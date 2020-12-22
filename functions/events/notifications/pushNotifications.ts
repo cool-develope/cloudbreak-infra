@@ -145,6 +145,24 @@ class PushNotifications {
           }),
         );
 
+      case NotificationType.RejectMoneyRequest:
+        return this.notification(
+          t('notification.moneySent'),
+          t('notification.moneyRequestRejected', {
+            name: `${detail.name}`,
+            amount: this.formatMoney(detail.amount),
+          }),
+        );
+
+      case NotificationType.ApproveMoneyRequest:
+        return this.notification(
+          t('notification.moneySent'),
+          t('notification.moneyRequestApproved', {
+            name: `${detail.name}`,
+            amount: this.formatMoney(detail.amount),
+          }),
+        );
+
       case NotificationType.SendMoney:
         return this.notification(
           t('notification.moneySent'),
