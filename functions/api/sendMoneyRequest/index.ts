@@ -10,6 +10,7 @@ enum FieldName {
   sendMoneyRequest = 'sendMoneyRequest',
   rejectMoneyRequest = 'rejectMoneyRequest',
   moneyRequests = 'moneyRequests',
+  approveMoneyRequest = 'approveMoneyRequest',
 }
 
 enum MoneyRequestStatus {
@@ -228,6 +229,37 @@ const rejectMoneyRequest = async (sub: string, input: any) => {
   return errors;
 };
 
+const approveMoneyRequest = async (sub: string, input: any) => {
+  const { requestId } = input;
+  const errors: string[] = [];
+  const pk = `money-request#${requestId}`;
+  const sk = 'metadata';
+
+  const { Item } = await dynamoHelper.getItem(pk, sk);
+  if (Item) {
+    const { recipientUserId, senderUserId } = Item;
+    const haveAccess = sub === recipientUserId || sub === senderUserId;
+    if (haveAccess) {
+      await dynamoHelper.updateItem(pk, sk, { status: MoneyRequestStatus.Paid });
+      await putEvents('ApproveMoneyRequest', {
+        requestId,
+        senderSub: senderUserId,
+        recipientSub: recipientUserId,
+      });
+    } else {
+      console.error('Access Denied', {
+        sub,
+        requestId,
+      });
+      errors.push('Access Denied');
+    }
+  } else {
+    errors.push('This money request not exists');
+  }
+
+  return errors;
+};
+
 const moneyRequests = async (sub: string, filter: any = {}): Promise<MoneyRequest[]> => {
   const { status } = filter;
   const { Items } = await getAllMoneyRequests(sub, status || MoneyRequestStatus.Pending);
@@ -276,18 +308,24 @@ export const handler: Handler = async (event): Promise<{ errors?: string[]; item
 
   const field = fieldName as FieldName;
 
-  if (field === FieldName.sendMoneyRequest) {
-    const errors = await sendMoneyRequest(sub, input);
-    return { errors };
+  switch (field) {
+    case FieldName.sendMoneyRequest: {
+      const errors = await sendMoneyRequest(sub, input);
+      return { errors };
+    }
+    case FieldName.rejectMoneyRequest: {
+      const errors = await rejectMoneyRequest(sub, input);
+      return { errors };
+    }
+    case FieldName.approveMoneyRequest: {
+      const errors = await approveMoneyRequest(sub, input);
+      return { errors };
+    }
+    case FieldName.moneyRequests: {
+      const items = await moneyRequests(sub, filter);
+      return { items };
+    }
+    default:
+      throw Error('Query not supported');
   }
-  if (field === FieldName.rejectMoneyRequest) {
-    const errors = await rejectMoneyRequest(sub, input);
-    return { errors };
-  }
-  if (field === FieldName.moneyRequests) {
-    const items = await moneyRequests(sub, filter);
-    return { items };
-  }
-
-  throw Error('Query not supported');
 };
