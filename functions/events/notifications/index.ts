@@ -548,7 +548,6 @@ const moneyReceivedP2P = async (
   // TODO: Notify <toUser> - you received money
   // TODO: Add notification - SendMoney
 
-
   // TODO: approce/reject MoneyRequest
   // const pk = `money-request#${requestId}`;
   // const sk = 'metadata';
@@ -579,6 +578,25 @@ const moneyReceivedP2P = async (
       recipientFirstName: detail.recipientFirstName,
       recipientLastName: detail.recipientLastName,
       recipientPhoto: detail.recipientPhoto,
+      amount: detail.amount,
+    }),
+  });
+
+  /**
+   * Notification to money recipient
+   */
+  await pushNotifications.send(
+    toUserLanguage,
+    toUserDeviceIds,
+    NotificationType.ReceivedMoney,
+    detail,
+  );
+  await notificationsModel.create(toUserId, {
+    type: NotificationType.ReceivedMoney,
+    attributes: objToKeyValueArray({
+      senderFirstName: detail.senderFirstName,
+      senderLastName: detail.senderLastName,
+      senderPhoto: detail.senderPhoto,
       amount: detail.amount,
     }),
   });
