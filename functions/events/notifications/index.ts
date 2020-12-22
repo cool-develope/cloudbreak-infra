@@ -379,15 +379,86 @@ const sendSendMoneyRequest = async (
   });
 };
 
-const rejectMoneyRequest = async (
+const getMoneyRequest = async (requestId: string) => {
+  const pk = `money-request#${requestId}`;
+  const sk = 'metadata';
+  const { Item } = await dynamoHelper.getItem(pk, sk);
+  return Item;
+};
+
+const rejectOrApproveMoneyRequest = async (
   type: NotificationType,
-  { recipientSub, requestId }: NotificationRejectMoneyRequest,
+  { senderSub, recipientSub, requestId }: NotificationRejectMoneyRequest,
 ) => {
   await notificationsModel.delete(
     recipientSub,
     NotificationType.SendMoneyRequest,
     objToKeyValueArray({ requestId }),
   );
+
+  const [
+    senderUser,
+    recipientUser,
+    senderUserDeviceIds,
+    recipientUserDeviceIds,
+    moneyRequest,
+  ] = await Promise.all([
+    getUser(senderSub),
+    getUser(recipientSub),
+    getDeviceIds(senderSub),
+    getDeviceIds(recipientSub),
+    getMoneyRequest(requestId),
+  ]);
+
+  const senderUserLanguage = getUserLanguageFromUserData(senderUser);
+  const recipientUserLanguage = getUserLanguageFromUserData(recipientUser);
+
+  const detail = {
+    senderFirstName: senderUser.firstName,
+    senderLastName: senderUser.lastName,
+    senderPhoto: getImageUrl(senderUser.photo),
+    recipientFirstName: recipientUser.firstName,
+    recipientLastName: recipientUser.lastName,
+    recipientPhoto: getImageUrl(recipientUser.photo),
+    amount: moneyRequest.amount,
+  };
+
+  /**
+   * To sender - your request was approved/rejected
+   */
+  await pushNotifications.send(senderUserDeviceIds, senderUserLanguage, type, {
+    name: `${detail.recipientFirstName} ${detail.recipientLastName}`,
+    amount: detail.amount,
+  });
+
+  await notificationsModel.create(senderSub, {
+    type,
+    attributes: objToKeyValueArray({
+      recipientFirstName: detail.recipientFirstName,
+      recipientLastName: detail.recipientLastName,
+      recipientPhoto: detail.recipientPhoto,
+      amount: detail.amount,
+    }),
+  });
+
+  if (type === NotificationType.RejectMoneyRequest) {
+    /**
+     * To recipient - You denied money request
+     */
+    // await pushNotifications.send(recipientUserDeviceIds, recipientUserLanguage, type, {
+    //   name: `${detail.senderFirstName} ${detail.senderLastName}`,
+    //   amount: detail.amount,
+    // });
+    // await notificationsModel.create(recipientSub, {
+    //   type,
+    //   attributes: objToKeyValueArray({
+    //     senderFirstName: detail.senderFirstName,
+    //     senderLastName: detail.senderLastName,
+    //     senderPhoto: detail.senderPhoto,
+    //     amount: detail.amount,
+    //   }),
+    // });
+  }
 };
 
 const cardLockChanged = async (detail: any) => {
@@ -514,18 +585,6 @@ const moneyReceivedP2P = async (
   amount: string,
   transferTag: string,
 ) => {
-  /**
-   * Delete notification SendMoneyRequest from money sender
-   */
-  await notificationsModel.delete(
-    fromUserId,
-    NotificationType.SendMoneyRequest,
-    objToKeyValueArray({
-      amount,
-      transferTag,
-    }),
-  );
-
   const [
     fromUser,
     toUser,
@@ -544,14 +603,6 @@ const moneyReceivedP2P = async (
 
   const fromUserLanguage = getUserLanguageFromUserData(fromUser);
   const toUserLanguage = getUserLanguageFromUserData(toUser);
-
-  // TODO: Notify <toUser> - you received money
-  // TODO: Add notification - SendMoney
-
-  // TODO: approce/reject MoneyRequest
-  // const pk = `money-request#${requestId}`;
-  // const sk = 'metadata';
-  // await dynamoHelper.updateItem(pk, sk, { status: MoneyRequestStatus.Rejected });
 
   const detail = {
     senderFirstName: fromUser.firstName,
@@ -693,7 +744,8 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
       break;
 
     case NotificationType.RejectMoneyRequest:
-      await rejectMoneyRequest(type, detail);
+    case NotificationType.ApproveMoneyRequest:
+      await rejectOrApproveMoneyRequest(type, detail);
       break;
 
     case NotificationType.AcceptChildInvitation:
