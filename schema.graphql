@@ -227,6 +227,10 @@ input RejectMoneyRequestInput {
   requestId: ID!
 }
 
+input ApproveMoneyRequestInput {
+  requestId: ID!
+}
+
 input SendPhoneVerificationInput {
   phoneNumber: String!
 }
@@ -556,6 +560,10 @@ type SendMoneyRequestPayload {
 }
 
 type RejectMoneyRequestPayload {
+  errors: [String]
+}
+
+type ApproveMoneyRequestPayload {
   errors: [String]
 }
 
@@ -1332,6 +1340,7 @@ type Mutation {
 
   sendMoneyRequest(input: SendMoneyRequestInput!): SendMoneyRequestPayload!
   rejectMoneyRequest(input: RejectMoneyRequestInput!): RejectMoneyRequestPayload!
+  approveMoneyRequest(input: ApproveMoneyRequestInput!): ApproveMoneyRequestPayload!
 
   createClubPrivate(input: CreateClubPrivateInput!): CreateClubPrivatePayload!
   updateClubPrivate(input: UpdateClubPrivateInput!): UpdateClubPrivatePayload!
