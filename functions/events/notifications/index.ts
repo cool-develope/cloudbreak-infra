@@ -152,9 +152,14 @@ const acceptedPaidEventHandler = async (type: NotificationType, detail: any) => 
   }
 };
 
-const sendTeamInvitation = async (type: NotificationType, detail: NotificationTeamInvitation) => {
-  const deviceIds = await getDeviceIds(detail.sub);
-  const language = await getUserLanguage(detail.sub);
+const teamInvitation = async (type: NotificationType, detail: NotificationTeamInvitation) => {
+  const [userData, deviceIds, language, parent] = await Promise.all([
+    getUser(detail.sub),
+    getDeviceIds(detail.sub),
+    getUserLanguage(detail.sub),
+    getParentUser(detail.sub),
+  ]);
+
   await pushNotifications.send(language, deviceIds, type, detail);
   await notificationsModel.create(detail.sub, {
     type,
@@ -166,6 +171,45 @@ const sendTeamInvitation = async (type: NotificationType, detail: NotificationTe
       role: detail.role,
     }),
   });
+
+  /**
+   * Notification to parent - you child request was rejected
+   */
+  if (
+    parent &&
+    (type === NotificationType.AcceptTeamInvitation ||
+      type === NotificationType.DeclineTeamInvitation)
+  ) {
+    const { sub: parentSub } = parent;
+    const [parentDeviceIds, parentLanguage] = await Promise.all([
+      getDeviceIds(parentSub),
+      getUserLanguage(parentSub),
+    ]);
+
+    const notificationTypeToParent =
+      type === NotificationType.AcceptTeamInvitation
+        ? NotificationType.AcceptTeamInvitationToParent
+        : NotificationType.DeclineTeamInvitationToParent;
+
+    await pushNotifications.send(parentLanguage, parentDeviceIds, notificationTypeToParent, {
+      teamName: detail.teamName,
+      childName: `${userData.firstName} ${userData.lastName}`,
+    });
+    await notificationsModel.create(parentSub, {
+      type: notificationTypeToParent,
+      attributes: objToKeyValueArray({
+        clubId: detail.clubId,
+        teamId: detail.teamId,
+        teamName: detail.teamName,
+        teamLogo: getImageUrl(detail.teamLogo),
+        role: detail.role,
+        childUserId: detail.sub,
+        childFirstName: userData.firstName,
+        childLastName: userData.lastName,
+        childPhoto: getImageUrl(userData.photo),
+      }),
+    });
+  }
 };
 
 const childSendTeamInvitation = async (
@@ -716,22 +760,13 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
 
   switch (type) {
     case NotificationType.SendTeamInvitation:
-      await sendTeamInvitation(type, detail);
-      break;
-
-    case NotificationType.DeclineTeamInvitation:
-      await sendTeamInvitation(type, detail);
-      break;
-
-    case NotificationType.RejectTeamInvitationByParent:
-      await sendTeamInvitationByParent(type, detail);
-      break;
-
     case NotificationType.AcceptTeamInvitation:
-      await sendTeamInvitation(type, detail);
+    case NotificationType.DeclineTeamInvitation:
+      await teamInvitation(type, detail);
       break;
 
     case NotificationType.ApproveTeamInvitationByParent:
+    case NotificationType.RejectTeamInvitationByParent:
       await sendTeamInvitationByParent(type, detail);
       break;
 
