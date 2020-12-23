@@ -24,6 +24,8 @@
     "childReceivedMoney": "Money received",
     "childReceivedMoneyParent": "Your child {{childName}} received money {{amount}} from {{name}}",
     "childSendTeamInvitationMessage": "Your child {{childName}} wants to be a member of the {{teamName}}",
+    "declinedTeamInvitationToParent": "Your child {{childName}} connection request to the {{teamName}} has been Rejected",
+    "acceptedTeamInvitationToParent": "Your child {{childName}} connection request to the {{teamName}} has been Approved",
     "declinedTeamInvitation": "Your connection request to the \"{{teamName}}\" has been Rejected",
     "familyRequest": "Family request",
     "familyRequestAccepted": "{{name}} accepted your family request",
