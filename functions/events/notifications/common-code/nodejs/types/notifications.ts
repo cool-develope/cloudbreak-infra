@@ -6,6 +6,8 @@ export enum NotificationType {
   SendTeamInvitation = 'SendTeamInvitation',
   DeclineTeamInvitation = 'DeclineTeamInvitation',
   AcceptTeamInvitation = 'AcceptTeamInvitation',
+  AcceptTeamInvitationToParent = 'AcceptTeamInvitationToParent',
+  DeclineTeamInvitationToParent = 'DeclineTeamInvitationToParent',
   SendMoneyRequest = 'SendMoneyRequest',
   RejectMoneyRequest = 'RejectMoneyRequest',
   ApproveMoneyRequest = 'ApproveMoneyRequest',

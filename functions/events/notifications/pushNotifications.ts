@@ -92,6 +92,21 @@ class PushNotifications {
           logoUrl,
         );
 
+      case NotificationType.AcceptTeamInvitationToParent:
+      case NotificationType.DeclineTeamInvitationToParent:
+        return this.notification(
+          t('notification.teamRequest'),
+          t(
+            type === NotificationType.AcceptTeamInvitationToParent
+              ? 'notification.acceptedTeamInvitationToParent'
+              : 'notification.declinedTeamInvitationToParent',
+            {
+              teamName: detail.teamName,
+              childName: detail.childName,
+            },
+          ),
+        );
+
       case NotificationType.KycReview:
         const kycReview = detail as NotificationKycReview;
         if (kycReview.status === KycStatus.VALIDATED || kycReview.status === KycStatus.REFUSED) {
