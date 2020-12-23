@@ -434,11 +434,18 @@ const rejectOrApproveMoneyRequest = async (
   type: NotificationType,
   { senderSub, recipientSub, requestId }: NotificationRejectMoneyRequest,
 ) => {
-  await notificationsModel.delete(
-    recipientSub,
-    NotificationType.SendMoneyRequest,
-    objToKeyValueArray({ requestId }),
-  );
+  await Promise.all([
+    notificationsModel.delete(
+      recipientSub,
+      NotificationType.SendMoneyRequest,
+      objToKeyValueArray({ requestId }),
+    ),
+    notificationsModel.delete(
+      senderSub,
+      NotificationType.SendMoneyRequest,
+      objToKeyValueArray({ requestId }),
+    ),
+  ]);
 
   const [
     senderUser,
@@ -485,24 +492,18 @@ const rejectOrApproveMoneyRequest = async (
     }),
   });
 
-  if (type === NotificationType.RejectMoneyRequest) {
-    /**
-     * To recipient - You denied money request
-     */
-    // await pushNotifications.send(recipientUserDeviceIds, recipientUserLanguage, type, {
-    //   name: `${detail.senderFirstName} ${detail.senderLastName}`,
-    //   amount: detail.amount,
-    // });
-    // await notificationsModel.create(recipientSub, {
-    //   type,
-    //   attributes: objToKeyValueArray({
-    //     senderFirstName: detail.senderFirstName,
-    //     senderLastName: detail.senderLastName,
-    //     senderPhoto: detail.senderPhoto,
-    //     amount: detail.amount,
-    //   }),
-    // });
-  }
+  /**
+   * To recipient - You approve/denied money request
+   */
+  await notificationsModel.create(recipientSub, {
+    type,
+    attributes: objToKeyValueArray({
+      senderFirstName: detail.senderFirstName,
+      senderLastName: detail.senderLastName,
+      senderPhoto: detail.senderPhoto,
+      amount: detail.amount,
+    }),
+  });
 };
 
 const cardLockChanged = async (detail: any) => {
