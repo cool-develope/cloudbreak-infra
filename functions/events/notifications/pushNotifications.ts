@@ -307,6 +307,7 @@ class PushNotifications {
 
     try {
       const res = await oneSignal.createNotification(notification);
+      console.log('Sent push notification', notification);
     } catch (err) {
       console.error({
         err,
