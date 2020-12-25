@@ -37,6 +37,7 @@ class NotificationsModel {
       createdAt: new Date().toISOString(),
     };
 
+    console.log('Create notification', { type, userId, sk });
     await this.dynamoHelper.updateItem(pk, sk, metadata);
   }
 
@@ -82,8 +83,7 @@ class NotificationsModel {
     const notifications = await this.getUserNotifications(userId, type);
 
     console.log(
-      `Delete notification ${type}`,
-      JSON.stringify(notifications, null, 2),
+      `Trying to delete notification ${type} for ${userId}`,
       JSON.stringify(attributes, null, 2),
     );
 
