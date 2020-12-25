@@ -507,7 +507,6 @@ const rejectOrApproveMoneyRequest = async (
 };
 
 const cardLockChanged = async (detail: any) => {
-  console.log(detail);
   const [card] = detail.cards;
   const treezorUserId = card.userId;
   const user = await getUserByTreezorUserId(treezorUserId);
@@ -532,7 +531,6 @@ const cardLockChanged = async (detail: any) => {
 };
 
 const cardLimitsChanged = async (detail: any) => {
-  console.log(detail);
   const [card] = detail.cards;
   const treezorUserId = card.userId;
   const user = await getUserByTreezorUserId(treezorUserId);
@@ -601,7 +599,6 @@ const getDetailsByTransferTag = (
 };
 
 const treezorTransferUpdate = async (detail: any) => {
-  console.log(detail);
   const [transfer]: Transfer[] = detail.transfers;
 
   // TODO: continue only if (transfer.transferStatus === 'VALIDATED')
