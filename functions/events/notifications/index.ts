@@ -485,9 +485,9 @@ const rejectOrApproveMoneyRequest = async (
   await notificationsModel.create(senderSub, {
     type,
     attributes: objToKeyValueArray({
-      recipientFirstName: detail.recipientFirstName,
-      recipientLastName: detail.recipientLastName,
-      recipientPhoto: detail.recipientPhoto,
+      senderFirstName: detail.recipientFirstName,
+      senderLastName: detail.recipientLastName,
+      senderPhoto: detail.recipientPhoto,
       amount: detail.amount,
     }),
   });
@@ -498,9 +498,9 @@ const rejectOrApproveMoneyRequest = async (
   await notificationsModel.create(recipientSub, {
     type,
     attributes: objToKeyValueArray({
-      senderFirstName: detail.senderFirstName,
-      senderLastName: detail.senderLastName,
-      senderPhoto: detail.senderPhoto,
+      recipientFirstName: detail.senderFirstName,
+      recipientLastName: detail.senderLastName,
+      recipientPhoto: detail.senderPhoto,
       amount: detail.amount,
     }),
   });
