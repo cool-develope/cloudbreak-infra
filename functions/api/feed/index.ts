@@ -84,8 +84,10 @@ const getQueryBySearch = (search: string) =>
               },
             },
             {
-              match: {
-                description: search,
+              multi_match: {
+                fields: ["description"],
+                query: search,
+                operator: "and"
               },
             },
           ],
