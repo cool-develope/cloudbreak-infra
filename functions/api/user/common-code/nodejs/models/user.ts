@@ -22,6 +22,8 @@ import {
   SortOrderEnum,
 } from '../types/user';
 
+import {getSearchQueryByArr, getSearchArrByString} from "functions/helpers/searchHelper";
+
 class UserModel {
   private readonly es: any;
   private readonly db: any;
@@ -307,36 +309,26 @@ class UserModel {
     return items.map(({ _id, _source }) => ({ id: _id, ..._source }));
   }
 
-  getEsQueryBySearch(search?: string) {
-    return !search
-      ? null
-      : {
-          bool: {
-            should: [
-              {
-                wildcard: {
-                  firstName: {
-                    value: `*${search}*`,
-                  },
-                },
-              },
-              {
-                wildcard: {
-                  lastName: {
-                    value: `*${search}*`,
-                  },
-                },
-              },
-              {
-                wildcard: {
-                  email: {
-                    value: `*${search}*`,
-                  },
-                },
-              },
+  getEsQueryBySearch(search?: string){
+    if(!search) return null;
+
+    const searchArr:string[] = getSearchArrByString(search)
+
+    return searchArr.length === 0
+        ? null
+        : {
+          query_string: {
+            fields: [
+              "firstName",
+              "lastName",
+              // "email" ? should find by email?
             ],
-          },
-        };
+            query: getSearchQueryByArr(searchArr),
+            //should use length to discard wrong options (ex:
+            //input: fab capello mr <- invalid, just fab capello
+            minimum_should_match: searchArr.length
+          }
+        }
   }
 
   getEsQueryTeams(clubId: string, teamId: string, role: string) {
