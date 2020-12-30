@@ -39,7 +39,7 @@
     "moneyRequestParent": "Your child {{childName}} wants to request money {{amount}} from {{name}}",
     "moneyRequestRejected": "Your money request {{amount}} to {{name}} has been rejected",
     "moneySent": "Money sent",
-    "paidEventToParent": "Your child {{childName}} will participate in the event {{eventTitle}} for € {{eventPrice}}",
+    "paidEventToParent": "{{childName}} will participate the event {{eventTitle}} for € {{eventPrice}}",
     "paidEventToParentTitle": "Participation in paid event",
     "receivedMoneyFrom": "{{name}} sent you {{amount}}",
     "rejectTeamInvitationByParent": "Your connection request to the '{{teamName}}' has been Rejected by {{parentName}}",
