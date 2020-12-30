@@ -55,6 +55,7 @@ export class EventsStack extends cdk.Stack {
         SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
         SES_REGION: 'eu-west-1',
       },
+      256,
     );
 
     const teamFunction = this.getFunction('events-team', 'events-team', 'team', {
@@ -146,7 +147,13 @@ export class EventsStack extends cdk.Stack {
     lambdaFunction.addToRolePolicy(dbPolicy);
   }
 
-  getFunction(id: string, functionName: string, folderName: string, environment?: any) {
+  getFunction(
+    id: string,
+    functionName: string,
+    folderName: string,
+    environment?: any,
+    memorySize?: number,
+  ) {
     return new lambda.Function(this, id, {
       functionName,
       code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'events', folderName)),
@@ -157,6 +164,7 @@ export class EventsStack extends cdk.Stack {
       tracing: lambda.Tracing.ACTIVE,
       layers: [this.commonModulesLayer],
       timeout: cdk.Duration.seconds(120),
+      memorySize,
     });
   }
 }
