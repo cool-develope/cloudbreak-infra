@@ -222,7 +222,7 @@ const getFeedPrivateQuery = (filter: FeedPrivateFilterInput = {}, claims: Cognit
   const filterByClubIsEmpty = (club || []).length === 0;
   const filterByFederationIsEmpty = (federation || []).length === 0;
 
-  if (clubId && filterByClubIsEmpty) {
+  if (clubId && filterByClubIsEmpty && myContent) {
     club = [clubId];
   }
 
