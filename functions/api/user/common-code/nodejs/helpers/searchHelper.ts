@@ -1,4 +1,6 @@
+//remove all spaces
 export const regExpClearSpaces = new RegExp(" +");
+//remove all next lines and \r tags
 export const regExpClearNewLines = new RegExp(/[\r\n]+/gm);
 
 export function getSearchArrByString(search: string):string[]{

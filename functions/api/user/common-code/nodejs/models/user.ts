@@ -22,7 +22,7 @@ import {
   SortOrderEnum,
 } from '../types/user';
 
-import {getSearchQueryByArr, getSearchArrByString} from "functions/helpers/searchHelper";
+import {getSearchQueryByArr, getSearchArrByString} from "../helpers/searchHelper";
 
 class UserModel {
   private readonly es: any;
