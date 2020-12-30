@@ -99,7 +99,7 @@ class UserModel {
       query,
       limit,
       from,
-      sort: { 'firstName.keyword': SortOrderEnum.ASC },
+      sort: [{ 'firstName.keyword': SortOrderEnum.ASC }, { "lastName.keyword": SortOrderEnum.ASC }],
     });
 
     const totalCount = esResult.body?.hits.total.value || 0;
