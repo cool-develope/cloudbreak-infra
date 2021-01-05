@@ -49,6 +49,7 @@ input SignoutMobileInput {
 }
 
 input UpdateUserInput {
+  childUserId: String
   firstName: String
   lastName: String
   country: String
