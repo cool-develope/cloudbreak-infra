@@ -112,6 +112,15 @@ class TreezorClient {
   async createUser(
     userData: TreezorUser,
   ): Promise<{ user: TreezorUser | null; error: string | null }> {
+    userData.incomeRange = '0-18';
+    userData.legalNetIncomeRange = '0-4';
+    userData.legalNumberOfEmployeeRange = '0';
+    userData.legalAnnualTurnOver = '0-39';
+    userData.title = 'M';
+    userData.nationality = userData.country;
+    
+    console.log('Treezor user data', userData);
+
     const treezorToken = await this.getTreezorToken();
     const params = this.objToURLSearchParams(userData);
 
