@@ -59,6 +59,8 @@ export interface UpdateUserInput {
   address1?: string;
   address2?: string;
   language?: string;
+  childUserId?: string | null;
+  modifiedAt?: string;
 }
 
 export interface UserChild {

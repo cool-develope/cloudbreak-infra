@@ -352,6 +352,8 @@ const getTypeImage = (photo: string = '') => ({
 });
 
 const updateUser = async (pk: string, input: UpdateUserInput) => {
+  // TODO: get only allowed params from input
+  input.modifiedAt = new Date().toISOString();
   const { Attributes: userData } = await dynamoHelper.updateItem(pk, 'metadata', input);
   const user = await getTypeUser(userData);
   return user;
@@ -443,6 +445,13 @@ const changePin = async (
   };
 };
 
+const isChild = async (userId: string, childUserId: string) => {
+  const pk = `user#${childUserId}`;
+  const sk = 'metadata';
+  const { Item } = await dynamoHelper.getItem(pk, sk);
+  return Item?.parentUserId === userId;
+};
+
 export const handler: Handler = async (event) => {
   const {
     arguments: { input = {} },
@@ -458,11 +467,37 @@ export const handler: Handler = async (event) => {
     /**
      * Mutation updateUser:
      */
-    input.modifiedAt = new Date().toISOString();
-    const user = await updateUser(pk, input);
+
+    const { childUserId } = input;
+    delete input.childUserId;
+
+    const errors: string[] = [];
+    let user = null;
+
+    if (childUserId) {
+      const isMyChild = await isChild(sub, childUserId);
+      if (isMyChild) {
+        user = await updateUser(`user#${childUserId}`, input);
+        console.log('Parent updated child user data', {
+          user: sub,
+          child: childUserId,
+          data: input,
+        });
+      } else {
+        console.error('Access Denied', {
+          action: 'updateUser',
+          user: sub,
+          target: childUserId,
+        });
+
+        errors.push('Access Denied');
+      }
+    } else {
+      user = await updateUser(pk, input);
+    }
 
     return {
-      errors: [],
+      errors,
       user,
     };
   } else if (field === FieldName.me) {
