@@ -237,6 +237,36 @@ const getTreezorCreateUserData = async (
   }
 };
 
+const getMyUserIdOrChild = async (sub: string, input: any, fieldName: string): Promise<string> => {
+  const { childUserId } = input;
+  if (childUserId) {
+    /**
+     * My child
+     */
+    const isMyChild = await isChild(sub, childUserId);
+    if (isMyChild) {
+      console.log(`Parent called ${fieldName}`, {
+        user: sub,
+        child: childUserId,
+        data: input,
+      });
+      return childUserId;
+    } else {
+      console.error('Access Denied', {
+        action: fieldName,
+        user: sub,
+        target: childUserId,
+      });
+      throw Error('Access Denied ');
+    }
+  } else {
+    /**
+     * Me
+     */
+    return sub;
+  }
+};
+
 export const handler: Handler = async (event) => {
   const {
     arguments: { input },
@@ -253,10 +283,11 @@ export const handler: Handler = async (event) => {
    */
 
   const field = fieldName as FieldName;
-  const data = await getTreezorCreateUserData(field, sub, input);
+  const userId = await getMyUserIdOrChild(sub, input, fieldName);
+  const data = await getTreezorCreateUserData(field, userId, input);
   const { user, error } = await treezorClient.createUser(data);
   const treezorUserId = user?.userId || null;
-  await setTreezorUserId(sub, treezorUserId);
+  await setTreezorUserId(userId, treezorUserId);
 
   return {
     errors: [error].filter((e) => !!e),
