@@ -49,6 +49,9 @@ input SignoutMobileInput {
 }
 
 input UpdateUserInput {
+  """
+  Allows parents to update child user data
+  """
   childUserId: String
   firstName: String
   lastName: String
@@ -242,6 +245,9 @@ input VerifyPhoneInput {
 }
 
 input CreateTreezorUserInput {
+  """
+  Allows parents to create Treezor user for child
+  """
   childUserId: String
   country: String!
   city: String!
