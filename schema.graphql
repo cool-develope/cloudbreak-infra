@@ -242,6 +242,7 @@ input VerifyPhoneInput {
 }
 
 input CreateTreezorUserInput {
+  childUserId: String
   country: String!
   city: String!
   address1: String!
