@@ -101,15 +101,22 @@ const updateUserAttributes = ({
   return cognito.adminUpdateUserAttributes(params).promise();
 };
 
-const updateUser = async (pk: string, input: any) => {
+const updateUser = async (userId: string, input: any) => {
   input.modifiedAt = new Date().toISOString();
-  const { Attributes } = await dynamoHelper.updateItem(pk, 'metadata', input);
+  const { Attributes } = await dynamoHelper.updateItem(`user#${userId}`, 'metadata', input);
 };
 
-const getUser = async (pk: string) => {
-  const { Item } = await dynamoHelper.getItem(pk, 'metadata', true);
+const getUser = async (userId: string) => {
+  const { Item } = await dynamoHelper.getItem(`user#${userId}`, 'metadata', true);
   Item.id = Item.pk.replace('user#', '');
   return Item;
+};
+
+const isChild = async (userId: string, childUserId: string) => {
+  const pk = `user#${childUserId}`;
+  const sk = 'metadata';
+  const { Item } = await dynamoHelper.getItem(pk, sk);
+  return Item?.parentUserId === userId;
 };
 
 const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
@@ -131,17 +138,22 @@ const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
     specifiedUSPerson: user.usCitizen ? 1 : 0,
   };
 
+  /**
+   * Added parent data
+   */
   if (user.parentUserId) {
-    const parentUser = await getUser(`user#${user.parentUserId}`);
+    const parentUser = await getUser(user.parentUserId);
     if (parentUser?.treezorUserId) {
       treezorUser.parentUserId = parentUser.treezorUserId;
+      treezorUser.controllingPersonType = 1;
+      treezorUser.parentType = 'shareholder';
     }
   }
 
   return treezorUser;
 };
 
-const getTreezorCompanyData = async (user: any, company: CompanyRecord): Promise<TreezorUser> => {
+const getTreezorCompanyData = (user: any, company: CompanyRecord): TreezorUser => {
   const treezorUser: TreezorUser = {
     // TODO: remove random email
     userTypeId: TreezorUserType.BusinessEntity,
@@ -170,30 +182,34 @@ const getTreezorCompanyData = async (user: any, company: CompanyRecord): Promise
   return treezorUser;
 };
 
-export const handler: Handler = async (event) => {
-  const {
-    arguments: { input },
-    identity: { sub },
-    info: { fieldName },
-  } = event;
+const setTreezorUserId = async (userId: string, treezorUserId: number | null) => {
+  if (treezorUserId) {
+    await Promise.all([
+      updateUser(userId, { treezorUserId }),
+      updateUserAttributes({
+        userPoolId: COGNITO_USERPOOL_ID,
+        sub: userId,
+        trzUserId: String(treezorUserId),
+        trzChildren: 'none',
+        trzWalletsId: '0',
+        trzCardsId: '0',
+      }),
+    ]);
+  }
+};
 
-  /**
-   * 1. Adult
-   * 2. Parent
-   * 3. Child
-   * 4. Business user
-   */
-
-  const field = fieldName as FieldName;
-  const pk = `user#${sub}`;
-  const errors: string[] = [];
-  let treezorUserId: number | null = null;
-  let treezorNewUserData: TreezorUser | null = null;
-
+const getTreezorCreateUserData = async (
+  field: FieldName,
+  userId: string,
+  input: any,
+): Promise<TreezorUser> => {
   if (field === FieldName.createTreezorUser) {
+    /**
+     * Regular user
+     */
     const { country, city, address1, address2, state, postcode, birthCity, usCitizen } = input;
 
-    await updateUser(pk, {
+    await updateUser(userId, {
       country,
       city,
       address1,
@@ -204,68 +220,46 @@ export const handler: Handler = async (event) => {
       usCitizen,
     });
 
-    const user = await getUser(pk);
-    treezorNewUserData = await getTreezorUserData(user);
-
-    const { parentUserId } = user;
-    if (parentUserId) {
-      const parentUser = await getUser(`user#${parentUserId}`);
-      if (parentUser && parentUser.treezorUserId) {
-        treezorNewUserData.parentUserId = parentUser.treezorUserId;
-        treezorNewUserData.controllingPersonType = 1;
-        treezorNewUserData.parentType = 'shareholder';
-      }
-    }
-  } else if (field === FieldName.createTreezorCompany) {
-    const user = await getUser(pk);
+    const user = await getUser(userId);
+    return await getTreezorUserData(user);
+  } else {
+    /**
+     * Business user
+     */
+    const user = await getUser(userId);
     const { companyId } = user;
     if (!companyId) {
       throw Error('The user should have a company');
     }
 
     const { Item: company } = await dynamoHelper.getItem(`company#${companyId}`, 'metadata');
-    treezorNewUserData = await getTreezorCompanyData(user, company);
+    return getTreezorCompanyData(user, company);
   }
+};
+
+export const handler: Handler = async (event) => {
+  const {
+    arguments: { input },
+    identity: { sub },
+    info: { fieldName },
+  } = event;
 
   /**
-   * 1. Create Treezor Connect User
+   * User case:
+   * - Adult
+   * - Parent
+   * - Child by Parent
+   * - Business user
    */
-  if (!treezorNewUserData) {
-    throw Error('User data is empty');
-  }
 
-  treezorNewUserData.incomeRange = '0-18';
-  treezorNewUserData.legalNetIncomeRange = '0-4';
-  treezorNewUserData.legalNumberOfEmployeeRange = '0';
-  treezorNewUserData.legalAnnualTurnOver = '0-39';
-  treezorNewUserData.title = 'M';
-  treezorNewUserData.nationality = treezorNewUserData.country;
-  console.log('Treezor user data', treezorNewUserData);
-
-  const { user: treezorUser, error } = await treezorClient.createUser(treezorNewUserData);
-
-  if (treezorUser) {
-    console.log('Treezor response', treezorUser);
-
-    treezorUserId = treezorUser?.userId || null;
-    await updateUser(pk, { treezorUserId });
-    /**
-     * 2. Update Cognito User
-     */
-    await updateUserAttributes({
-      userPoolId: COGNITO_USERPOOL_ID,
-      sub,
-      trzUserId: String(treezorUserId),
-      trzChildren: 'none',
-      trzWalletsId: '0',
-      trzCardsId: '0',
-    });
-  } else {
-    errors.push(error || 'Error');
-  }
+  const field = fieldName as FieldName;
+  const data = await getTreezorCreateUserData(field, sub, input);
+  const { user, error } = await treezorClient.createUser(data);
+  const treezorUserId = user?.userId || null;
+  await setTreezorUserId(sub, treezorUserId);
 
   return {
-    errors,
+    errors: [error].filter((e) => !!e),
     treezorUserId,
   };
 };
