@@ -7,7 +7,8 @@ import * as route53 from '@aws-cdk/aws-route53';
 import { Fn } from '@aws-cdk/core';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Certificate } from '@aws-cdk/aws-certificatemanager';
-import { HttpMethod, LambdaProxyIntegration, HttpApi, DomainName } from '@aws-cdk/aws-apigatewayv2';
+import { HttpMethod, HttpApi, DomainName } from '@aws-cdk/aws-apigatewayv2';
+import { LambdaProxyIntegration } from '@aws-cdk/aws-apigatewayv2-integrations';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 
 export interface ApiHttpStackProps extends cdk.StackProps {
