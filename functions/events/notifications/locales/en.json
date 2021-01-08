@@ -48,6 +48,10 @@
     "teamRequest": "Team participation request",
     "verification": "Verification",
     "verificationApproved": "Your verification status has been updated to Approved",
-    "verificationRejected": "Your verification status has been updated to Rejected"
+    "verificationRejected": "Your verification status has been updated to Rejected",
+    "childVerification": "Child verification",
+    "childVerificationPending": "Your child {{childName}} verification status has been updated is Pending",
+    "childVerificationApproved": "Your child {{childName}} verification status has been updated to Approved",
+    "childVerificationRejected": "Your child {{childName}} verification status has been updated to Rejected"
   }
 }
