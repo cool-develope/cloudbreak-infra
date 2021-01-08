@@ -120,6 +120,20 @@ class PushNotifications {
           );
         }
 
+      case NotificationType.ChildKycReview:
+        const childVerificationKey = new Map([
+          [KycStatus.PENDING, 'childVerificationPending'],
+          [KycStatus.VALIDATED, 'childVerificationApproved'],
+          [KycStatus.REFUSED, 'childVerificationRejected'],
+        ]);
+
+        return this.notification(
+          t('notification.childVerification'),
+          t(childVerificationKey.get(detail.status), {
+            childName: `${detail.childFirstName} ${detail.childLastName}`,
+          }),
+        );
+
       case NotificationType.InviteParent:
         const inviteParent = detail as NotificationInviteParent;
         return this.notification(
