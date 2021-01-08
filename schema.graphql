@@ -788,6 +788,7 @@ enum NotificationType {
   AcceptChildInvitation
   DeclineChildInvitation
   KycReview
+  ChildKycReview
   ChildSendMoneyRequest
   ChildAcceptedPaidEvent
   CardLockChanged

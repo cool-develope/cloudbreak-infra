@@ -15,6 +15,7 @@ export enum NotificationType {
   AcceptChildInvitation = 'AcceptChildInvitation',
   DeclineChildInvitation = 'DeclineChildInvitation',
   KycReview = 'KycReview',
+  ChildKycReview = 'ChildKycReview',
   ChildSendMoneyRequest = 'ChildSendMoneyRequest',
   AcceptedPaidEvent = 'AcceptedPaidEvent',
   ChildAcceptedPaidEvent = 'ChildAcceptedPaidEvent',
