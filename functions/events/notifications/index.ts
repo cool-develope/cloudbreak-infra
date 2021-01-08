@@ -301,16 +301,49 @@ const sendTeamInvitationByParent = async (
 };
 
 const sendKycReview = async (type: NotificationType, detail: NotificationKycReview) => {
-  const sub = detail.sub;
-  const deviceIds = await getDeviceIds(sub);
-  const language = await getUserLanguage(sub);
+  const { sub, status } = detail;
+  const [deviceIds, language, parent] = await Promise.all([
+    getDeviceIds(sub),
+    getUserLanguage(sub),
+    getParentUser(sub),
+  ]);
   await pushNotifications.send(language, deviceIds, type, detail);
-  await notificationsModel.create(detail.sub, {
+  await notificationsModel.create(sub, {
     type,
     attributes: objToKeyValueArray({
-      status: detail.status,
+      status,
     }),
   });
+
+  /**
+   * Notification to parent
+   */
+  if (parent) {
+    const { sub: parentSub } = parent;
+    const [parentDeviceIds, parentLanguage, childUser] = await Promise.all([
+      getDeviceIds(parentSub),
+      getUserLanguage(parentSub),
+      getUser(sub),
+    ]);
+
+    const detailForParent = {
+      status,
+      childFirstName: childUser.firstName,
+      childLastName: childUser.lastName,
+      childPhoto: getImageUrl(childUser.photo),
+    };
+
+    await pushNotifications.send(
+      parentLanguage,
+      parentDeviceIds,
+      NotificationType.ChildKycReview,
+      detailForParent,
+    );
+    await notificationsModel.create(parentSub, {
+      type: NotificationType.ChildKycReview,
+      attributes: objToKeyValueArray(detailForParent),
+    });
+  }
 };
 
 const sendInviteParent = async (type: NotificationType, detail: NotificationInviteParent) => {
