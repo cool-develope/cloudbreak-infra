@@ -238,11 +238,11 @@ const getTreezorCreateUserData = async (
 };
 
 const getMyUserIdOrChild = async (sub: string, input: any, fieldName: string): Promise<string> => {
-  const { childUserId } = input;
-  if (childUserId) {
+  if (input?.childUserId) {
     /**
      * My child
      */
+    const { childUserId } = input;
     const isMyChild = await isChild(sub, childUserId);
     if (isMyChild) {
       console.log(`Parent called ${fieldName}`, {
