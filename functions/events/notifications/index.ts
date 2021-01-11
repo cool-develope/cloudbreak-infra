@@ -87,7 +87,7 @@ const objToKeyValueArray = (obj: any): KeyValue[] =>
     Value: obj[key],
   }));
 
-const getParentUser = async (sub: string) => {
+const getParentUser = async (sub: string): Promise<{ sub: string } | null> => {
   try {
     const { Item: child } = await dynamoHelper.getItem(`user#${sub}`, 'metadata');
     if (child && child.parentUserId) {
@@ -727,7 +727,7 @@ const moneyReceivedP2P = async (
     }),
   });
 
-  if (toUserParent && toUserId !== toUserParent.sub) {
+  if (toUserParent && toUserParent.sub !== toUserId) {
     /**
      * Notify <toUserParent> - your child received money
      */
@@ -755,7 +755,7 @@ const moneyReceivedP2P = async (
     });
   }
 
-  if (fromUserParent) {
+  if (fromUserParent && fromUserParent.sub !== toUserId) {
     /**
      * Notify <fromUserParent> - your child sent money
      */
