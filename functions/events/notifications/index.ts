@@ -727,7 +727,7 @@ const moneyReceivedP2P = async (
     }),
   });
 
-  if (toUserParent && toUserParent.sub !== toUserId) {
+  if (toUserParent && toUserParent.sub !== fromUserId) {
     /**
      * Notify <toUserParent> - your child received money
      */
