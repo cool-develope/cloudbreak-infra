@@ -510,7 +510,7 @@ const rejectOrApproveMoneyRequest = async (
   /**
    * To sender - your request was approved/rejected
    */
-  await pushNotifications.send(senderUserDeviceIds, senderUserLanguage, type, {
+  await pushNotifications.send(senderUserLanguage, senderUserDeviceIds, type, {
     name: `${detail.recipientFirstName} ${detail.recipientLastName}`,
     amount: detail.amount,
   });

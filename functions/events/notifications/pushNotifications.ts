@@ -305,6 +305,7 @@ class PushNotifications {
     }
   }
 
+  // TODO: language -> enum
   async send(
     language: string,
     deviceIds: string[],
