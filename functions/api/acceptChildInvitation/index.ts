@@ -155,7 +155,7 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
     errors.push('Invitation not found');
   } else if (invitation.inviteStatus === 'pending') {
     const hoursFromCreation = getTimeDifferenceInHours(invitation.createdAt);
-    const invitationExpired = hoursFromCreation > 168;
+    const invitationExpired = hoursFromCreation > 720;
 
     if (field === FieldName.acceptChildInvitation) {
       if (invitationExpired) {
