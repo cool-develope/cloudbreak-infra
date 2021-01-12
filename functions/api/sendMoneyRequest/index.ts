@@ -25,7 +25,7 @@ interface MoneyRequest {
   note: string;
   status: string;
   createDate: string;
-  user: UserPublic;
+  user: UserPublic | null;
   fromMe: boolean;
 }
 
@@ -126,12 +126,19 @@ const getItem = (pk: string, sk: string) => {
 
 const getImageUrl = (photo: string = '') => (photo ? `https://${IMAGES_DOMAIN}/${photo}` : '');
 
-const getTypeUser = ({ pk, firstName, lastName, photo }: any): UserPublic => ({
-  id: pk.replace('user#', ''),
-  firstName,
-  lastName,
-  photo: getTypeImage(photo),
-});
+const getTypeUser = (data: any): UserPublic | null => {
+  if (data) {
+    const { pk, firstName, lastName, photo } = data;
+    return {
+      id: pk.replace('user#', ''),
+      firstName,
+      lastName,
+      photo: getTypeImage(photo),
+    };
+  }
+
+  return null;
+};
 
 const getTypeImage = (photo: string = '') => ({
   url: photo ? `https://${IMAGES_DOMAIN}/${photo}` : '',
@@ -288,7 +295,7 @@ const moneyRequests = async (sub: string, filter: any = {}): Promise<MoneyReques
       note: item.note,
       status: item.status,
       createDate: item.createdAt,
-      user: getTypeUser(userData || {}),
+      user: getTypeUser(userData),
       fromMe,
     });
   }
