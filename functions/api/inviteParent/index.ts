@@ -5,6 +5,7 @@ import { Handler } from 'aws-lambda';
 const { MAIN_TABLE_NAME = '', IMAGES_DOMAIN, ES_DOMAIN, INVITATION_URL = '' } = process.env;
 const db = new AWS.DynamoDB.DocumentClient();
 const eventbridge = new AWS.EventBridge();
+const DATE_FORMAT = { year: 'numeric', month: '2-digit', day: '2-digit',  };
 
 const putEvents = (type: string, detail: any) => {
   const params = {
@@ -79,7 +80,7 @@ const getItem = (pk: string, sk: string) => {
 
 const formatDate = (str: string) => {
   const d = new Date(str || Date.now());
-  return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+  return d.toLocaleDateString('it', DATE_FORMAT);
 };
 
 export const handler: Handler = async (event): Promise<{ errors: string[] }> => {
