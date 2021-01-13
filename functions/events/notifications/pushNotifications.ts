@@ -4,6 +4,7 @@ import {
   NotificationType,
   NotificationTeamInvitation,
   KycStatus,
+  CardStatus,
   NotificationKycReview,
   NotificationInviteParent,
   NotificationChildInvitation,
@@ -31,7 +32,23 @@ interface NotificationData {
 }
 
 class PushNotifications {
-  constructor(private imageDomain: string) {}
+  private cardStatusKeys: Map<string, string>;
+  private childKycStatusKeys: Map<string, string>;
+
+  constructor(private imageDomain: string) {
+    this.cardStatusKeys = new Map([
+      [CardStatus.LOCK, 'notification.cardLockekMessage'],
+      [CardStatus.UNLOCK, 'notification.cardUnlockedMessage'],
+      [CardStatus.LOST, 'notification.cardLostMessage'],
+      [CardStatus.STOLEN, 'notification.cardStolenMessage'],
+    ]);
+
+    this.childKycStatusKeys = new Map([
+      [KycStatus.PENDING, 'childVerificationPending'],
+      [KycStatus.VALIDATED, 'childVerificationApproved'],
+      [KycStatus.REFUSED, 'childVerificationRejected'],
+    ]);
+  }
 
   private getImageUrl(image: string = '') {
     return image ? `https://${this.imageDomain}/${image}` : '';
@@ -121,15 +138,9 @@ class PushNotifications {
         }
 
       case NotificationType.ChildKycReview:
-        const childVerificationKey = new Map([
-          [KycStatus.PENDING, 'childVerificationPending'],
-          [KycStatus.VALIDATED, 'childVerificationApproved'],
-          [KycStatus.REFUSED, 'childVerificationRejected'],
-        ]);
-
         return this.notification(
           t('notification.childVerification'),
-          t(childVerificationKey.get(detail.status), {
+          t(this.childKycStatusKeys.get(detail.status), {
             childName: `${detail.childFirstName} ${detail.childLastName}`,
           }),
         );
@@ -244,12 +255,7 @@ class PushNotifications {
       case NotificationType.CardLockChanged:
         return this.notification(
           t('notification.cardLockChanged'),
-          t(
-            detail.statusCode === 'LOCK'
-              ? 'notification.cardLockekMessage'
-              : 'notification.cardUnlockedMessage',
-            { cardNumber: detail.maskedPan },
-          ),
+          t(this.cardStatusKeys.get(detail.statusCode), { cardNumber: detail.maskedPan }),
         );
 
       case NotificationType.CardLimitChanged:

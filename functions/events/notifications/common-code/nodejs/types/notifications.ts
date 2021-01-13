@@ -78,6 +78,13 @@ export enum KycStatus {
   REFUSED = 'REFUSED',
 }
 
+export enum CardStatus {
+  LOCK = 'LOCK',
+  UNLOCK = 'UNLOCK',
+  LOST = 'LOST',
+  STOLEN = 'STOLEN',
+}
+
 export enum TeamMemberType {
   Member = 'Member',
   Coach = 'Coach',
