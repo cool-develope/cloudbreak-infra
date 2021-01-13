@@ -23,6 +23,8 @@
     "cardLockChanged": "Card status",
     "cardLockekMessage": "Your card {{cardNumber}} is locked",
     "cardUnlockedMessage": "Your card {{cardNumber}} is unlocked",
+    "cardLostMessage": "Your card {{cardNumber}} is lost",
+    "cardStolenMessage": "Your card {{cardNumber}} is stolen",
     "childReceivedMoney": "Money received",
     "childReceivedMoneyParent": "Your child {{childName}} received money {{amount}} from {{name}}",
     "childSendTeamInvitation": "Your child wants to join a team",
