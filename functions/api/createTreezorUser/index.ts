@@ -126,7 +126,7 @@ const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
     firstname: user.firstName,
     lastname: user.lastName,
     birthday: user.birthDate,
-    email: `${Date.now()}@test.com`,
+    email: user.email,
     country: user.country,
     city: user.city,
     address1: user.address1,
