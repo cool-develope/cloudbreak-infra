@@ -122,7 +122,6 @@ const isChild = async (userId: string, childUserId: string) => {
 const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
   const treezorUser: TreezorUser = {
     userTypeId: TreezorUserType.NaturalPerson,
-    phone: user.phone,
     firstname: user.firstName,
     lastname: user.lastName,
     birthday: user.birthDate,
@@ -137,6 +136,13 @@ const getTreezorUserData = async (user: any): Promise<TreezorUser> => {
     birthCountry: user.birthCountry,
     specifiedUSPerson: user.usCitizen ? 1 : 0,
   };
+
+  /**
+   * Case for child KYC by parent
+   */
+  if (user.phone) {
+    treezorUser.phone = user.phone;
+  }
 
   /**
    * Added parent data
