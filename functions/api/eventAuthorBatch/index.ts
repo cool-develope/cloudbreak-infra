@@ -63,7 +63,7 @@ const getTypeAuthor = ({ firstName, lastName, photo }: any): Author => ({
   firstName,
   lastName,
   photo: getTypeImage(photo),
-  organizationName: 'Horizon sport club',
+  organizationName: '',
 });
 
 const getTypeImage = (photo: string = '') => ({
