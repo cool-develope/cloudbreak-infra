@@ -37,7 +37,7 @@
     "familyRequestRejected": "{{name} rejected your family request",
     "moneyRequest": "Money request",
     "moneyRequestApproved": "Your money request {{amount}} to {{name}} has been approved",
-    "moneyRequestMessage": "{{name}} has requested {{amount}}. {{note}}",
+    "moneyRequestMessage": "{{name}} has requested {{amount}}{{note}}",
     "moneyRequestParent": "Your child {{childName}} wants to request money {{amount}} from {{name}}",
     "moneyRequestRejected": "Your money request {{amount}} to {{name}} has been rejected",
     "moneySent": "Money sent",

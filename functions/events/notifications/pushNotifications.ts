@@ -181,7 +181,7 @@ class PushNotifications {
           t('notification.moneyRequestMessage', {
             name: senderName,
             amount: sendAmount,
-            note: sendMoneyRequest.note,
+            note: sendMoneyRequest.note ? `. ${sendMoneyRequest.note}` : '',
           }),
         );
 
