@@ -78,7 +78,7 @@ export interface Team {
   email: string;
   phone: string;
   discipline: string | null;
-  federations: FederationShortConnection | null;
+  federations?: FederationShortConnection | null | string[];
   coaches: UserShortConnection | null;
   members: UserShortConnection | null;
   friends: UserShortConnection | null;

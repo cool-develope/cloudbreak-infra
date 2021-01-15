@@ -205,7 +205,7 @@ class TeamModel {
       email = '',
       phone = '',
       discipline = null,
-      federations,
+      federations = [],
     } = data;
 
     const id = sk.replace('team#', '');
@@ -229,7 +229,7 @@ class TeamModel {
       coaches: null,
       members: null,
       friends: null,
-      federations: null,
+      federations,
       upcomingEventsCount: 0,
       coacheInvitationsCount: this.getClubStats(
         teamStats,
