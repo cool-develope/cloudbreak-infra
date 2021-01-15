@@ -178,12 +178,17 @@ class FederationModel {
     const limit = 100;
     const arrayOfIds: string[][] = event.map(({ source: { federations } }) => federations);
 
-    const arrayOfPromises = arrayOfIds.map((ids) => {
-      const filter = {
-        ids,
-      };
-      return this.list(sub, filter, limit);
-    });
+    const arrayOfPromises = arrayOfIds.map((ids) =>
+      ids && ids.length
+        ? this.list(
+            sub,
+            {
+              ids,
+            },
+            limit,
+          )
+        : null,
+    );
 
     const listResults = await Promise.all(arrayOfPromises);
     const result = listResults.map((listConnetion) => listConnetion);
