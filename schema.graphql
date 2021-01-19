@@ -477,6 +477,25 @@ input RejectAsParentInput {
   id: String!
 }
 
+input CreateQrPaymentCategoryInput {
+  clubId: String!
+  name: String!
+  image: String
+  vatFee: Float!
+}
+
+input UpdateQrPaymentCategoryInput {
+  id: ID!
+  clubId: String!
+  name: String
+  image: String
+}
+
+input DeleteQrPaymentCategoryInput {
+  id: ID!
+  clubId: String!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -661,6 +680,20 @@ type ApproveAsParentPayload {
 }
 
 type RejectAsParentPayload {
+  errors: [String]
+}
+
+type CreateQrPaymentCategoryPayload {
+  errors: [String]
+  category: QrPaymentCategory
+}
+
+type UpdateQrPaymentCategoryPayload {
+  errors: [String]
+  category: QrPaymentCategory
+}
+
+type DeleteQrPaymentCategoryPayload {
   errors: [String]
 }
 
@@ -1398,6 +1431,10 @@ type Mutation {
 
   approveAsParent(input: ApproveAsParentInput!): ApproveAsParentPayload
   rejectAsParent(input: RejectAsParentInput!): RejectAsParentPayload
+
+  createQrPaymentCategory(input: CreateQrPaymentCategoryInput!): CreateQrPaymentCategoryPayload!
+  updateQrPaymentCategory(input: UpdateQrPaymentCategoryInput!): UpdateQrPaymentCategoryPayload!
+  deleteQrPaymentCategory(input: DeleteQrPaymentCategoryInput!): DeleteQrPaymentCategoryPayload!
 }
 
 type Query {
