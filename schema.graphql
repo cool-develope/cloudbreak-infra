@@ -1156,6 +1156,14 @@ type Author {
   photo: Image
 }
 
+type QrPaymentCategory {
+  id: ID
+  clubId: String
+  name: String
+  image: String
+  vatFee: Float
+}
+
 type EventTarget {
   country: String
   federation: [FederationEventTarget]
