@@ -34,12 +34,14 @@
     "@aws-cdk/aws-iam": "^1.85.0",
     "@aws-cdk/aws-lambda": "^1.85.0",
     "@aws-cdk/aws-lambda-event-sources": "^1.85.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.85.0",
     "@aws-cdk/aws-route53": "^1.85.0",
     "@aws-cdk/aws-route53-targets": "^1.85.0",
     "@aws-cdk/aws-s3-deployment": "^1.85.0",
     "@aws-cdk/core": "^1.85.0",
     "@types/aws-lambda": "^8.10.71",
     "dotenv": "^8.2.0",
+    "esbuild": "^0.8.33",
     "source-map-support": "^0.5.16"
   }
 }
