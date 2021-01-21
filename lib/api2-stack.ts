@@ -3,6 +3,7 @@ import * as cdk from '@aws-cdk/core';
 import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as lambda from '@aws-cdk/aws-lambda';
+import * as lambdaNodejs from '@aws-cdk/aws-lambda-nodejs';
 import { Fn } from '@aws-cdk/core';
 import { MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
