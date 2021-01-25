@@ -15,6 +15,11 @@ export interface Api2StackProps extends cdk.StackProps {
   commonModulesLayerArn: string;
 }
 
+enum ResolverType {
+  Mutation = 'Mutation',
+  Query = 'Query',
+}
+
 export class Api2Stack extends cdk.Stack {
   public readonly api: appsync.IGraphqlApi;
   public readonly dictionaryTable: dynamodb.ITable;
