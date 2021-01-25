@@ -1554,4 +1554,5 @@ type Query {
   transactions(filter: TransactionsFilterInput): TransactionsConnection!
   checkParentApproval(childUserId: String!, type: ParentApprovalType!, id: String!): ParentApprovalStatus
   qrPaymentCategories(clubId: String!): [QrPaymentCategory]!
+  qrPayment(clubId: String!, id: ID!): QrPayment
 }
