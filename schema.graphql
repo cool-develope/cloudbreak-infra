@@ -1191,7 +1191,6 @@ type Author {
 
 type QrPaymentCategory {
   id: ID
-  clubId: String
   name: String
   image: String
   vatFee: Float

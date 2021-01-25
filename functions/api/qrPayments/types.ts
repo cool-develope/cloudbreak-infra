@@ -29,7 +29,6 @@ export interface DeleteQrPaymentCategoryPayload {
 
 export interface QrPaymentCategory {
   id: string;
-  clubId: string;
   name: string;
   image: string;
   vatFee: number;

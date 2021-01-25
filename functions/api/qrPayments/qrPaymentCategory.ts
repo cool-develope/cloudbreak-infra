@@ -23,7 +23,6 @@ export default class QrPaymentCategories {
   private getTypeQrPaymentCategory(item: QrPaymentCategoryDBItem): QrPaymentCategory {
     return {
       id: item.sk.replace('qr-payment-category#', ''),
-      clubId: item.pk.replace('club#', ''),
       name: item.name,
       image: item.image,
       vatFee: item.vatFee,
