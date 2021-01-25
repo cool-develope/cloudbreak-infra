@@ -211,6 +211,11 @@ input FederationsPrivateFilterInput {
   isParent: Boolean
 }
 
+input QrPaymentsFilterInput {
+  clubId: String!
+  categoryId: String
+}
+
 input AddLikeInput {
   eventId: ID!
 }
@@ -1393,6 +1398,10 @@ type TransactionsConnection {
   items: [Transaction]
 }
 
+type QrPaymentsConnection {
+  items: [QrPayment]
+}
+
 union FeedItem = Event | Post
 
 type Mutation {
@@ -1555,4 +1564,5 @@ type Query {
   checkParentApproval(childUserId: String!, type: ParentApprovalType!, id: String!): ParentApprovalStatus
   qrPaymentCategories(clubId: String!): [QrPaymentCategory]!
   qrPayment(clubId: String!, id: ID!): QrPayment
+  qrPayments(filter: QrPaymentsFilterInput!): QrPaymentsConnection!
 }
