@@ -496,6 +496,20 @@ input DeleteQrPaymentCategoryInput {
   clubId: String!
 }
 
+
+input CreateQrPaymentInput {
+  clubId: Int
+  categoryId: Int
+  amount: Float
+  description: String
+  images: [String]
+}
+
+input DeleteQrPaymentInput {
+  id: ID!
+  clubId: String!
+}
+
 type SigninMobilePayload {
   errors: [String]
 }
@@ -694,6 +708,15 @@ type UpdateQrPaymentCategoryPayload {
 }
 
 type DeleteQrPaymentCategoryPayload {
+  errors: [String]
+}
+
+type CreateQrPaymentPayload {
+  errors: [String]
+  payment: QrPayment
+}
+
+type DeleteQrPaymentPayload {
   errors: [String]
 }
 
@@ -1196,6 +1219,17 @@ type QrPaymentCategory {
   vatFee: Float
 }
 
+type QrPayment {
+  id: ID
+  club: ClubShort
+  category: QrPayment
+  createdBy: UserPublic
+  amount: Float
+  description: String
+  images: [String]
+  createDate: AWSDateTime
+}
+
 type EventTarget {
   country: String
   federation: [FederationEventTarget]
@@ -1434,6 +1468,8 @@ type Mutation {
   createQrPaymentCategory(input: CreateQrPaymentCategoryInput!): CreateQrPaymentCategoryPayload!
   updateQrPaymentCategory(input: UpdateQrPaymentCategoryInput!): UpdateQrPaymentCategoryPayload!
   deleteQrPaymentCategory(input: DeleteQrPaymentCategoryInput!): DeleteQrPaymentCategoryPayload!
+  createQrPayment(input: CreateQrPaymentInput!): CreateQrPaymentPayload!
+  deleteQrPayment(input: DeleteQrPaymentInput!): DeleteQrPaymentPayload!
 }
 
 type Query {
