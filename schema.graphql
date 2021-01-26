@@ -503,8 +503,8 @@ input DeleteQrPaymentCategoryInput {
 
 
 input CreateQrPaymentInput {
-  clubId: Int
-  categoryId: Int
+  clubId: String
+  categoryId: String
   amount: Float
   description: String
   images: [String]
