@@ -15,6 +15,24 @@ export interface DeleteQrPaymentCategoryInput {
   clubId: string;
 }
 
+export interface CreateQrPaymentInput {
+  clubId: string;
+  categoryId: string;
+  amount: number;
+  description: string;
+  images: string[];
+}
+
+export interface DeleteQrPaymentInput {
+  id: string;
+  clubId: string;
+}
+
+export interface QrPaymentsFilterInput {
+  clubId: string;
+  categoryId: string;
+}
+
 export interface CreateQrPaymentCategoryPayload {
   errors: string[];
   category?: QrPaymentCategory;
@@ -27,11 +45,51 @@ export interface DeleteQrPaymentCategoryPayload {
   errors: string[];
 }
 
+export interface CreateQrPaymentPayload {
+  errors: string[];
+  payment: QrPayment;
+}
+
+export interface DeleteQrPaymentPayload {
+  errors: string[];
+}
+
+export interface QrPaymentsConnection {
+  items: QrPayment[];
+}
+
 export interface QrPaymentCategory {
   id: string;
   name: string;
   image: string;
   vatFee: number;
+}
+
+export interface QrPayment {
+  id: string;
+  club: ClubShort | null;
+  category: QrPayment | null;
+  createdBy: UserPublic | null;
+  amount: number;
+  description: string;
+  images: string[];
+  createDate: string;
+}
+
+export interface Image {
+  url: string;
+}
+
+export interface UserPublic {
+  firstName: string;
+  lastName: string;
+  photo?: Image;
+}
+
+export interface ClubShort {
+  id: string;
+  name: string;
+  logo: Image;
 }
 
 export interface QrPaymentCategoryDBItem {
@@ -44,11 +102,26 @@ export interface QrPaymentCategoryDBItem {
   modifiedAt: string;
 }
 
+export interface QrPaymentDBItem {
+  pk: string;
+  sk: string;
+  categoryId: string;
+  amount: number;
+  description: string;
+  images: string[];
+  createdAt: string;
+  createdByUser: string;
+}
+
 export enum FieldName {
   createQrPaymentCategory = 'createQrPaymentCategory',
   updateQrPaymentCategory = 'updateQrPaymentCategory',
   deleteQrPaymentCategory = 'deleteQrPaymentCategory',
   qrPaymentCategories = 'qrPaymentCategories',
+  createQrPayment = 'createQrPayment',
+  deleteQrPayment = 'deleteQrPayment',
+  qrPayment = 'qrPayment',
+  qrPayments = 'qrPayments',
 }
 
 export interface FunctionEvent {
@@ -56,8 +129,12 @@ export interface FunctionEvent {
     input:
       | CreateQrPaymentCategoryInput
       | UpdateQrPaymentCategoryInput
-      | DeleteQrPaymentCategoryInput;
+      | DeleteQrPaymentCategoryInput
+      | CreateQrPaymentInput
+      | DeleteQrPaymentInput;
     clubId: string;
+    id: string;
+    filter: QrPaymentsFilterInput;
   };
   identity: CognitoIdentity;
   info: { fieldName: FieldName };
