@@ -70,6 +70,7 @@ new ApiStack(app, 'api-stack', {
 new Api2Stack(app, 'api2-stack', {
   imagesDomain: `images.${process.env.ZONE_NAME}`,
   commonModulesLayerArn: process.env.LAYER_COMMON_MODULES_ARN || '',
+  imageProcessingLayerArn: process.env.LAYER_IMAGE_PROCESSING_ARN || '',
 });
 
 new ApiHttpStack(app, 'hapi-stack', {
