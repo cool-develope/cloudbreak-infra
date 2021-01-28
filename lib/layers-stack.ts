@@ -13,6 +13,14 @@ export class LayersStack extends cdk.Stack {
       layerVersionName: 'common-modules',
     });
 
+    const imageProcessing = new lambda.LayerVersion(this, 'layers-image-processing', {
+      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'layers', 'image-processing')),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_12_X],
+      description: 'Sharp, QRCode',
+      layerVersionName: 'image-processing',
+    });
+
     new cdk.CfnOutput(this, 'layer-modules', { value: commonModules.layerVersionArn });
+    new cdk.CfnOutput(this, 'layer-image-processing', { value: imageProcessing.layerVersionArn });
   }
 }
