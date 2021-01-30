@@ -13,6 +13,7 @@ import { Duration } from '@aws-cdk/core';
 export interface Api2StackProps extends cdk.StackProps {
   imagesDomain: string;
   commonModulesLayerArn: string;
+  imageProcessingLayerArn: string;
 }
 
 enum ResolverType {
@@ -28,11 +29,12 @@ export class Api2Stack extends cdk.Stack {
   public readonly esDomain: string;
   private readonly userPoolId: string;
   private readonly commonModulesLayer: lambda.ILayerVersion;
+  private readonly imageProcessingLayer: lambda.ILayerVersion;
 
   constructor(scope: cdk.Construct, id: string, props: Api2StackProps) {
     super(scope, id, props);
 
-    const { imagesDomain, commonModulesLayerArn } = props;
+    const { imagesDomain, commonModulesLayerArn, imageProcessingLayerArn } = props;
     const { MAIN_TABLE_NAME = '', DICTIONARY_TABLE_NAME = '' } = process.env;
 
     this.mainTable = dynamodb.Table.fromTableName(this, 'MTable', MAIN_TABLE_NAME);
@@ -48,6 +50,12 @@ export class Api2Stack extends cdk.Stack {
       this,
       'api2-layers-common-modules',
       commonModulesLayerArn,
+    );
+
+    this.imageProcessingLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'api2-layers-image-processing',
+      imageProcessingLayerArn,
     );
 
     /**
