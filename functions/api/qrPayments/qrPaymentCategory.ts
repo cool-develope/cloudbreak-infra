@@ -97,7 +97,7 @@ export default class QrPaymentCategories {
   public async list(clubId: string): Promise<QrPaymentCategory[]> {
     const pk = `club#${clubId}`;
     const sk = 'qr-payment-category#';
-    const items = await this.dynamoHelper.query(pk, sk);
+    const items = await this.dynamoHelper.query({ pk, sk });
     return items.map((item) => this.getTypeQrPaymentCategory(item as QrPaymentCategoryDBItem));
   }
 }
