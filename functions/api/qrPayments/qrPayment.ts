@@ -102,10 +102,12 @@ export default class QrPayments {
      * - Archive QrPayment
      */
 
-    const pk = `club#${input.clubId}`;
-    const sk = `qr-payment#${input.id}`;
+    const { clubId, id } = input;
+    const pk = `club#${clubId}`;
+    const sk = `qr-payment#${id}`;
     await this.dynamoHelper.deleteItem(pk, sk);
-    // TODO: delete S3 object
+    await this.qrFile.deleteQR(clubId, id);
+    
     return {
       errors: [],
     };
