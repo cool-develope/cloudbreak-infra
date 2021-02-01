@@ -5,15 +5,26 @@ import {
   CreateQrPaymentCategoryInput,
   UpdateQrPaymentCategoryInput,
   DeleteQrPaymentCategoryInput,
+  CreateQrPaymentInput,
+  DeleteQrPaymentInput,
+  QrPaymentsFilterInput,
 } from './types';
 import QrPaymentCategory from './qrPaymentCategory';
+import QrPayment from './qrPayment';
 
-const { MAIN_TABLE_NAME, AWS_REGION = '' } = process.env;
+const {
+  MAIN_TABLE_NAME,
+  AWS_REGION = '',
+  IMAGES_DOMAIN = '',
+  IMAGES_BUCKET_NAME = '',
+} = process.env;
+
 const qrPaymentCategory = new QrPaymentCategory(AWS_REGION, MAIN_TABLE_NAME);
+const qrPayment = new QrPayment(AWS_REGION, MAIN_TABLE_NAME, IMAGES_BUCKET_NAME, IMAGES_DOMAIN);
 
 export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
   const {
-    arguments: { input, clubId },
+    arguments: { input, clubId, id, filter },
     identity,
     info: { fieldName },
   } = event;
@@ -27,6 +38,14 @@ export const handler: Handler = async (event: FunctionEvent): Promise<any> => {
       return await qrPaymentCategory.delete(identity, input as DeleteQrPaymentCategoryInput);
     } else if (fieldName === FieldName.qrPaymentCategories) {
       return await qrPaymentCategory.list(clubId);
+    } else if (fieldName === FieldName.createQrPayment) {
+      return await qrPayment.create(identity, input as CreateQrPaymentInput);
+    } else if (fieldName === FieldName.deleteQrPayment) {
+      return await qrPayment.delete(identity, input as DeleteQrPaymentInput);
+    } else if (fieldName === FieldName.qrPayment) {
+      return await qrPayment.retrieve(identity, clubId, id);
+    } else if (fieldName === FieldName.qrPayments) {
+      return await qrPayment.list(identity, filter as QrPaymentsFilterInput);
     }
   } catch (error) {
     return error;
