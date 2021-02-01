@@ -67,9 +67,9 @@ export interface QrPaymentCategory {
 
 export interface QrPayment {
   id: string;
-  club: ClubShort | null;
-  category: QrPayment | null;
-  createdBy: UserPublic | null;
+  club: Partial<ClubShort> | null;
+  category: Partial<QrPaymentCategory> | null;
+  createdBy: Partial<UserPublic> | null;
   amount: number;
   description: string;
   images: string[];
@@ -86,6 +86,7 @@ export interface QrCode {
 }
 
 export interface UserPublic {
+  id: string;
   firstName: string;
   lastName: string;
   photo?: Image;

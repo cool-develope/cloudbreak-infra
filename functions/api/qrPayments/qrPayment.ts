@@ -36,16 +36,20 @@ export default class QrPayments {
   }
 
   private getTypeQrPayment(item: QrPaymentDBItem): QrPayment {
-    // TODO: club
-    // TODO: category
-    // TODO: createdBy
-    // TODO: transactions
+    const clubId = item.pk.replace('club#', '');
+    const id = item.sk.replace('qr-payment#', '');
 
     return {
-      id: item.sk.replace('qr-payment#', ''),
-      club: null,
-      category: null,
-      createdBy: null,
+      id,
+      club: {
+        id: clubId,
+      },
+      category: {
+        id: item.categoryId,
+      },
+      createdBy: {
+        id: item.createdByUser,
+      },
       amount: item.amount,
       description: item.description,
       images: item.images,
