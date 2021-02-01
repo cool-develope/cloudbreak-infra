@@ -7,6 +7,17 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
+export interface QueryProps {
+  pk: string;
+  sk: string;
+  keyConditionExpression?: string;
+  indexName?: 'GSI1';
+  filterExpression?: string;
+  filterValues?: {
+    [key: string]: string | number | boolean;
+  };
+}
+
 export default class DynamoHelper {
   private readonly db: DynamoDBClient;
 
@@ -51,13 +62,23 @@ export default class DynamoHelper {
     return response.Attributes ? unmarshall(response.Attributes) : undefined;
   }
 
-  async query(pk: string, sk: string) {
+  async query({
+    pk,
+    sk,
+    keyConditionExpression,
+    indexName,
+    filterExpression,
+    filterValues,
+  }: QueryProps) {
     const params = {
       TableName: this.tableName,
-      KeyConditionExpression: 'pk = :pk and begins_with(sk, :sk)',
+      KeyConditionExpression: keyConditionExpression || 'pk = :pk and begins_with(sk, :sk)',
+      IndexName: indexName,
+      FilterExpression: filterExpression,
       ExpressionAttributeValues: marshall({
         ':pk': pk,
         ':sk': sk,
+        ...filterValues,
       }),
     };
 
