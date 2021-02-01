@@ -888,6 +888,10 @@ type Image {
   url: String
 }
 
+type QrCode {
+  url: String
+}
+
 type File {
   url: String
   key: String
@@ -1232,6 +1236,7 @@ type QrPayment {
   amount: Float
   description: String
   images: [String]
+  qrCode: QrCode
   createDate: AWSDateTime
 }
 
