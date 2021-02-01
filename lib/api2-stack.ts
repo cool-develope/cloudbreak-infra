@@ -113,7 +113,7 @@ export class Api2Stack extends cdk.Stack {
 
     this.submitSupportTicket();
 
-    // this.parentApproval();
+    this.qrPayments();
   }
 
   dictionaryQuery() {
@@ -746,32 +746,84 @@ export class Api2Stack extends cdk.Stack {
     });
   }
 
-  // parentApproval() {
-  //   const fn = this.getFunction('parentApproval', 'api-parentApproval', 'parentApproval', {
-  //     MAIN_TABLE_NAME: this.mainTable.tableName,
-  //     IMAGES_DOMAIN: this.imagesDomain,
-  //   });
+  qrPayments() {
+    const { IMAGES_BUCKET_NAME = '-' } = process.env;
 
-  //   this.allowDynamoDB(fn);
-  //   this.allowEventBridge(fn);
+    const fn = this.getFunctionNew(
+      'qrPayments',
+      'api-qrPayments',
+      'qrPayments',
+      {
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        IMAGES_BUCKET_NAME,
+      },
+      30,
+      256,
+    );
 
-  //   const dataSource = this.api.addLambdaDataSource('parentApprovalFn', fn);
+    this.allowDynamoDB(fn);
 
-  //   dataSource.createResolver({
-  //     typeName: 'Mutation',
-  //     fieldName: 'approveAsParent',
-  //   });
+    /**
+     * Allow S3
+     */
+    const s3PolicyQr = new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: ['s3:PutObject', 's3:GetObject', 's3:DeleteObject'],
+      resources: [`arn:aws:s3:::${IMAGES_BUCKET_NAME}/club/*/qr/*`],
+    });
 
-  //   dataSource.createResolver({
-  //     typeName: 'Mutation',
-  //     fieldName: 'rejectAsParent',
-  //   });
+    const s3PolicyLogo = new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: ['s3:GetObject'],
+      resources: [`arn:aws:s3:::${IMAGES_BUCKET_NAME}/logo.jpeg`],
+    });
 
-  //   dataSource.createResolver({
-  //     typeName: 'Query',
-  //     fieldName: 'checkParentApproval',
-  //   });
-  // }
+    fn.addToRolePolicy(s3PolicyQr);
+    fn.addToRolePolicy(s3PolicyLogo);
+
+    const dataSource = this.api.addLambdaDataSource('qrPaymentsFn', fn);
+
+    dataSource.createResolver({
+      typeName: ResolverType.Mutation,
+      fieldName: 'createQrPaymentCategory',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Mutation,
+      fieldName: 'updateQrPaymentCategory',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Mutation,
+      fieldName: 'deleteQrPaymentCategory',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Query,
+      fieldName: 'qrPaymentCategories',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Mutation,
+      fieldName: 'createQrPayment',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Mutation,
+      fieldName: 'deleteQrPayment',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Query,
+      fieldName: 'qrPayment',
+    });
+
+    dataSource.createResolver({
+      typeName: ResolverType.Query,
+      fieldName: 'qrPayments',
+    });
+  }
 
   allowSES(lambdaFunction: lambda.Function) {
     const sesPolicy = new PolicyStatement({ effect: Effect.ALLOW });
