@@ -73,10 +73,15 @@ export interface QrPayment {
   amount: number;
   description: string;
   images: string[];
+  qrCode: QrCode;
   createDate: string;
 }
 
 export interface Image {
+  url: string;
+}
+
+export interface QrCode {
   url: string;
 }
 
@@ -109,6 +114,7 @@ export interface QrPaymentDBItem {
   amount: number;
   description: string;
   images: string[];
+  qrCode: string;
   createdAt: string;
   createdByUser: string;
 }
