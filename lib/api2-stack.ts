@@ -831,4 +831,35 @@ export class Api2Stack extends cdk.Stack {
       layers: [this.commonModulesLayer],
     });
   }
+
+  getFunctionNew(
+    id: string,
+    functionName: string,
+    folderName: string,
+    environment?: any,
+    timeoutSeconds = 30,
+    memorySize = 128,
+  ) {
+    const FUNCTION_DEFAULT_PROPS = {
+      handler: 'handler',
+      bundling: {
+        target: 'node12',
+        nodeModules: [],
+        externalModules: ['qrcode', 'sharp'],
+      },
+      tracing: lambda.Tracing.ACTIVE,
+      layers: [this.commonModulesLayer, this.imageProcessingLayer],
+    };
+
+    const fn = new lambdaNodejs.NodejsFunction(this, id, {
+      functionName,
+      entry: path.join(__dirname, '../', 'functions', 'api', folderName, 'index.ts'),
+      ...FUNCTION_DEFAULT_PROPS,
+      environment,
+      timeout: cdk.Duration.seconds(timeoutSeconds),
+      memorySize,
+    });
+
+    return fn;
+  }
 }
