@@ -107,7 +107,7 @@ export default class QrPayments {
     const sk = `qr-payment#${id}`;
     await this.dynamoHelper.deleteItem(pk, sk);
     await this.qrFile.deleteQR(clubId, id);
-    
+
     return {
       errors: [],
     };
@@ -125,10 +125,22 @@ export default class QrPayments {
     identity: CognitoIdentity,
     filter: QrPaymentsFilterInput,
   ): Promise<QrPaymentsConnection> {
-    // TODO: filter by filter.categoryId
     const pk = `club#${filter.clubId}`;
     const sk = 'qr-payment#';
-    const queryResult = await this.dynamoHelper.query(pk, sk);
+
+    const filterExpression = filter.categoryId ? 'categoryId = :categoryId' : undefined;
+    const filterValues = filter.categoryId
+      ? {
+          ':categoryId': filter.categoryId,
+        }
+      : undefined;
+
+    const queryResult = await this.dynamoHelper.query({
+      pk,
+      sk,
+      filterExpression,
+      filterValues,
+    });
     const items = queryResult.map((item) => this.getTypeQrPayment(item as QrPaymentDBItem));
     return { items };
   }
