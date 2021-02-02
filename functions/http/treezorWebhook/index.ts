@@ -47,6 +47,7 @@ const db = new AWS.DynamoDB.DocumentClient();
 const cognito = new AWS.CognitoIdentityServiceProvider();
 const eventbridge = new AWS.EventBridge();
 const dynamoHelper = new DynamoHelper(db, MAIN_TABLE_NAME);
+const QR_PAYMENT_TAG_PATTERN = /^qr-payment:(?<id>[a-z0-9-]{36}),club:(?<club>[a-z0-9-]{36})+$/;
 
 const putEvents = (source: EventSource, type: string, detail: any) => {
   const params = {
@@ -303,16 +304,18 @@ const updateKycReview = async ({
 
 const getDetailsByTransferTag = (
   transferTag: string,
-): { type: TransferType; id: string } | null => {
+): { type: TransferType; id?: string; club?: string } | null => {
   if (transferTag.startsWith('event:')) {
     return {
       type: TransferType.Event,
       id: transferTag.replace('event:', ''),
     };
   } else if (transferTag.startsWith('qr-payment:')) {
+    const match = QR_PAYMENT_TAG_PATTERN.exec(transferTag);
     return {
       type: TransferType.QrPayment,
-      id: transferTag.replace('qr-payment:', ''),
+      id: match?.groups?.id,
+      club: match?.groups?.club,
     };
   }
 
@@ -415,6 +418,7 @@ const processTransferUpdate = async (transfer: Transfer) => {
       const sk = `user#${userId}`;
 
       await dynamoHelper.updateItem(pk, sk, {
+        clubId: transferDetails.club,
         treezorTransferId: transferId,
         createdAt: new Date().toISOString(),
       });
@@ -423,6 +427,7 @@ const processTransferUpdate = async (transfer: Transfer) => {
         sub: userId,
         qrPaymentId,
         amount,
+        clubId: transferDetails.club,
       });
 
       await takeFee(beneficiaryWalletId, amount, feeItem, transferId);
