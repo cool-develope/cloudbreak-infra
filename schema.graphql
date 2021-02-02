@@ -1229,7 +1229,7 @@ type Author {
 type QrPaymentCategory {
   id: ID
   name: String
-  image: String
+  image: Image
   vatFee: Float
 }
 

@@ -61,7 +61,7 @@ export interface QrPaymentsConnection {
 export interface QrPaymentCategory {
   id: string;
   name: string;
-  image: string;
+  image: Image;
   vatFee: number;
 }
 

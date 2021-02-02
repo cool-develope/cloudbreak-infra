@@ -14,13 +14,13 @@ import QrPaymentCategory from './qrPaymentCategory';
 import QrPayment from './qrPayment';
 
 const {
-  MAIN_TABLE_NAME='',
+  MAIN_TABLE_NAME = '',
   AWS_REGION = '',
   IMAGES_DOMAIN = '',
   IMAGES_BUCKET_NAME = '',
 } = process.env;
 
-const qrPaymentCategory = new QrPaymentCategory(AWS_REGION, MAIN_TABLE_NAME);
+const qrPaymentCategory = new QrPaymentCategory(AWS_REGION, MAIN_TABLE_NAME, IMAGES_DOMAIN);
 const qrPayment = new QrPayment(AWS_REGION, MAIN_TABLE_NAME, IMAGES_BUCKET_NAME, IMAGES_DOMAIN);
 
 export const handler: Handler = async (

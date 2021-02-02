@@ -11,21 +11,32 @@ import {
   QrPaymentCategory,
   CognitoIdentity,
   EventBatchQrPayment,
+  Image,
 } from './types';
 import { DynamoHelper } from '../../shared-code';
 
 export default class QrPaymentCategories {
   private readonly dynamoHelper: DynamoHelper;
 
-  constructor(private readonly region: string, private readonly tableName: string) {
+  constructor(
+    private readonly region: string,
+    private readonly tableName: string,
+    private readonly imagesDomain: string,
+  ) {
     this.dynamoHelper = new DynamoHelper(this.region, this.tableName);
+  }
+
+  private getTypeImage(s3Key: string = ''): Image {
+    return {
+      url: s3Key ? `https://${this.imagesDomain}/${s3Key}` : '',
+    };
   }
 
   private getTypeQrPaymentCategory(item: QrPaymentCategoryDBItem): QrPaymentCategory {
     return {
       id: item.sk.replace('qr-payment-category#', ''),
       name: item.name,
-      image: item.image,
+      image: this.getTypeImage(item.image),
       vatFee: item.vatFee,
     };
   }
