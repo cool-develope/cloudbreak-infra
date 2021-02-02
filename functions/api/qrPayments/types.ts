@@ -85,6 +85,11 @@ export interface QrCode {
   url: string;
 }
 
+export interface QrPaymentTransaction {
+  user: UserPublic;
+  createDate: string;
+}
+
 export interface UserPublic {
   id: string;
   firstName: string;
@@ -120,6 +125,14 @@ export interface QrPaymentDBItem {
   createdByUser: string;
 }
 
+export interface QrPaymentTransactionDBItem {
+  pk: string;
+  sk: string;
+  treezorTransferId: number;
+  createdAt: string;
+  status: string;
+}
+
 export enum FieldName {
   createQrPaymentCategory = 'createQrPaymentCategory',
   updateQrPaymentCategory = 'updateQrPaymentCategory',
@@ -129,6 +142,8 @@ export enum FieldName {
   deleteQrPayment = 'deleteQrPayment',
   qrPayment = 'qrPayment',
   qrPayments = 'qrPayments',
+  batchQrPaymentCategory = 'batchQrPaymentCategory',
+  batchQrPaymentTransactions = 'batchQrPaymentTransactions',
 }
 
 export interface FunctionEvent {
@@ -147,6 +162,11 @@ export interface FunctionEvent {
   info: { fieldName: FieldName };
 }
 
+export interface EventBatchQrPayment {
+  fieldName: FieldName;
+  source: QrPayment;
+  identity: CognitoIdentity;
+}
 export interface CognitoIdentity {
   sub: string;
   claims: CognitoClaims;
