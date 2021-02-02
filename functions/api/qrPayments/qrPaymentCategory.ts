@@ -10,13 +10,14 @@ import {
   QrPaymentCategoryDBItem,
   QrPaymentCategory,
   CognitoIdentity,
+  EventBatchQrPayment,
 } from './types';
 import { DynamoHelper } from '../../shared-code';
 
 export default class QrPaymentCategories {
   private readonly dynamoHelper: DynamoHelper;
 
-  constructor(private readonly region: string, private readonly tableName: string | undefined) {
+  constructor(private readonly region: string, private readonly tableName: string) {
     this.dynamoHelper = new DynamoHelper(this.region, this.tableName);
   }
 
@@ -99,5 +100,34 @@ export default class QrPaymentCategories {
     const sk = 'qr-payment-category#';
     const items = await this.dynamoHelper.query({ pk, sk });
     return items.map((item) => this.getTypeQrPaymentCategory(item as QrPaymentCategoryDBItem));
+  }
+
+  private async getCategoriesByKeys(
+    arrayOfKeys: { pk: string; sk: string }[],
+  ): Promise<Map<string, QrPaymentCategory>> {
+    const result = await this.dynamoHelper.batchGet(arrayOfKeys, 'sk', (item) =>
+      this.getTypeQrPaymentCategory(item),
+    );
+    return result;
+  }
+
+  public async batchCategory(
+    event: EventBatchQrPayment[],
+  ): Promise<(QrPaymentCategory | undefined)[]> {
+    const ids = event.map((item) => item.source.category?.id);
+    const uniqCategories = [...new Set(...ids)];
+    const arrayOfKeys = uniqCategories.map((id) => ({
+      pk: `club#${event[0].source.club?.id}`,
+      sk: `qr-payment-category#${id}`,
+    }));
+
+    const categories = await this.getCategoriesByKeys(arrayOfKeys);
+
+    const result = event.map((item) => {
+      const sk = `qr-payment-category#${item.source.category?.id}`;
+      return categories.get(sk);
+    });
+
+    return result;
   }
 }
