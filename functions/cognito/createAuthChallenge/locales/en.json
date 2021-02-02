@@ -54,6 +54,9 @@
     "childVerification": "Child verification",
     "childVerificationPending": "Your child {{childName}} verification status has been updated is Pending",
     "childVerificationApproved": "Your child {{childName}} verification status has been updated to Approved",
-    "childVerificationRejected": "Your child {{childName}} verification status has been updated to Rejected"
+    "childVerificationRejected": "Your child {{childName}} verification status has been updated to Rejected",
+    "paidQrPayment": "{{name}} has paid {{amount}} for the QR payment {{description}}",
+    "youPaidQrPayment": "Your QR payment for amount {{amount}} completed successfully",
+    "qrPayment": "QR Payment"
   }
 }
