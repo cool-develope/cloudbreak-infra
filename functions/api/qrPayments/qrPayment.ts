@@ -95,7 +95,7 @@ export default class QrPayments {
      */
 
     const paymentId = uuidv4();
-    const qrText = `qr-payment:${paymentId}`;
+    const qrText = `qr-payment:${paymentId},club:${input.clubId}`;
     const qrS3Key = await this.qrFile.createQR(input.clubId, paymentId, qrText);
     const pk = `club#${input.clubId}`;
     const sk = `qr-payment#${paymentId}`;
