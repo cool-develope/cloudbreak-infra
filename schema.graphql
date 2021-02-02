@@ -1236,7 +1236,7 @@ type QrPaymentCategory {
 type QrPayment {
   id: ID
   club: ClubShort
-  category: QrPayment
+  category: QrPaymentCategory
   createdBy: UserPublic
   amount: Float
   description: String
