@@ -892,6 +892,11 @@ type QrCode {
   url: String
 }
 
+type QrPaymentTransaction {
+  user: UserPublic
+  createDate: AWSDateTime
+}
+
 type File {
   url: String
   key: String
@@ -1238,6 +1243,7 @@ type QrPayment {
   images: [String]
   qrCode: QrCode
   createDate: AWSDateTime
+  transactions: [QrPaymentTransaction]
 }
 
 type EventTarget {
