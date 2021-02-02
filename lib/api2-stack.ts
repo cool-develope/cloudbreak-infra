@@ -823,6 +823,40 @@ export class Api2Stack extends cdk.Stack {
       typeName: ResolverType.Query,
       fieldName: 'qrPayments',
     });
+
+    dataSource.createResolver({
+      typeName: 'QrPayment',
+      fieldName: 'category',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "batchQrPaymentCategory",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
+
+    dataSource.createResolver({
+      typeName: 'QrPayment',
+      fieldName: 'transactions',
+      requestMappingTemplate: MappingTemplate.fromString(`
+{
+  "version" : "2017-02-28",
+  "operation": "BatchInvoke",
+  "payload": {
+    "fieldName": "batchQrPaymentTransactions",
+  	"source": $utils.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+`),
+      responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
+    });
   }
 
   allowSES(lambdaFunction: lambda.Function) {
