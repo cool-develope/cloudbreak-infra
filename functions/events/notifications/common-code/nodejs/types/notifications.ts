@@ -28,6 +28,8 @@ export enum NotificationType {
   ReceivedMoney = 'ReceivedMoney',
   ChildSendMoney = 'ChildSendMoney',
   SendMoney = 'SendMoney',
+  PaidQrPayment = 'PaidQrPayment',
+  YouPaidQrPayment = 'YouPaidQrPayment',
 }
 
 export enum WebhookEvent {

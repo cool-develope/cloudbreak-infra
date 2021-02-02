@@ -306,6 +306,30 @@ class PushNotifications {
           }),
         );
 
+      case NotificationType.PaidQrPayment:
+        return this.notification(
+          t('notification.qrPayment'),
+          t('notification.paidQrPayment', {
+            name: `${detail.firstName} ${detail.lastName}`,
+            description: detail.description,
+            amount: Number(detail.amount).toLocaleString('it', {
+              style: 'currency',
+              currency: 'EUR',
+            }),
+          }),
+        );
+
+      case NotificationType.YouPaidQrPayment:
+        return this.notification(
+          t('notification.qrPayment'),
+          t('notification.youPaidQrPayment', {
+            amount: Number(detail.amount).toLocaleString('it', {
+              style: 'currency',
+              currency: 'EUR',
+            }),
+          }),
+        );
+
       default:
         return null;
     }

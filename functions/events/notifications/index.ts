@@ -152,6 +152,72 @@ const acceptedPaidEventHandler = async (type: NotificationType, detail: any) => 
   }
 };
 
+const paidQrPayment = async (
+  type: NotificationType,
+  detail: { sub: string; qrPaymentId: string; amount: string; clubId: string },
+) => {
+  // TODO: Call in parallel
+  const { sub, qrPaymentId, amount, clubId } = detail;
+  const { Item: qrPayment } = await dynamoHelper.getItem(
+    `club#${clubId}`,
+    `qr-payment#${qrPaymentId}`,
+  );
+  const [
+    userPayerDeviceIds,
+    userPayerLanguage,
+    userOwnerDeviceIds,
+    userOwnerLanguage,
+    { Item: userPayer },
+  ] = await Promise.all([
+    getDeviceIds(sub),
+    getUserLanguage(sub),
+    getDeviceIds(qrPayment.createdByUser),
+    getUserLanguage(qrPayment.createdByUser),
+    dynamoHelper.getItem(`user#${sub}`, 'metadata'),
+  ]);
+
+  /**
+   * Notification for payer
+   */
+  await pushNotifications.send(
+    userPayerLanguage,
+    userPayerDeviceIds,
+    NotificationType.YouPaidQrPayment,
+    { amount: qrPayment.amount },
+  );
+  await notificationsModel.create(sub, {
+    type: NotificationType.YouPaidQrPayment,
+    attributes: objToKeyValueArray({
+      amount: qrPayment.amount,
+      description: qrPayment.description,
+    }),
+  });
+
+  /**
+   * Notification for QR payment owner
+   */
+  await pushNotifications.send(
+    userOwnerLanguage,
+    userOwnerDeviceIds,
+    NotificationType.PaidQrPayment,
+    {
+      firstName: userPayer.firstName,
+      lastName: userPayer.lastName,
+      amount: qrPayment.amount,
+      description: qrPayment.description,
+    },
+  );
+  await notificationsModel.create(qrPayment.createdByUser, {
+    type: NotificationType.PaidQrPayment,
+    attributes: objToKeyValueArray({
+      firstName: userPayer.firstName,
+      lastName: userPayer.lastName,
+      amount: qrPayment.amount,
+      description: qrPayment.description,
+    }),
+  });
+};
+
 const teamInvitation = async (type: NotificationType, detail: NotificationTeamInvitation) => {
   const [userData, deviceIds, language, parent] = await Promise.all([
     getUser(detail.sub),
@@ -829,6 +895,10 @@ export const handler: EventBridgeHandler<any, any, any> = async (event) => {
 
     case NotificationType.AcceptedPaidEvent:
       await acceptedPaidEventHandler(type, detail);
+      break;
+
+    case NotificationType.PaidQrPayment:
+      await paidQrPayment(type, detail);
       break;
 
     case WebhookEvent.card_lockunlock:
