@@ -14,6 +14,9 @@ import {
   QrPaymentTransaction,
   CognitoIdentity,
   EventBatchQrPayment,
+  ClubShort,
+  UserPublic,
+  Image,
 } from './types';
 import QrFile from './qrFile';
 
@@ -37,21 +40,44 @@ export default class QrPayments {
     };
   }
 
-  private getTypeQrPayment(item: QrPaymentDBItem): QrPayment {
+  getTypeImage(s3Key: string = ''): Image {
+    return {
+      url: s3Key ? `https://${this.imagesDomain}/${s3Key}` : '',
+    };
+  }
+
+  private async getClubShort(clubId: string): Promise<ClubShort> {
+    const item = await this.dynamoHelper.getItem(`club#${clubId}`, 'metadata');
+    return {
+      id: clubId,
+      name: item?.name,
+      logo: this.getTypeImage(item?.logo),
+    };
+  }
+
+  private async getUserPublic(userId: string): Promise<UserPublic> {
+    const item = await this.dynamoHelper.getItem(`user#${userId}`, 'metadata');
+    return {
+      id: userId,
+      firstName: item?.firstName,
+      lastName: item?.lastName,
+      photo: this.getTypeImage(item?.photo),
+    };
+  }
+
+  private async getTypeQrPayment(item: QrPaymentDBItem): Promise<QrPayment> {
     const clubId = item.pk.replace('club#', '');
     const id = item.sk.replace('qr-payment#', '');
+    const createdBy = await this.getUserPublic(item.createdByUser);
+    const club = await this.getClubShort(clubId);
 
     return {
       id,
-      club: {
-        id: clubId,
-      },
+      club,
       category: {
         id: item.categoryId,
       },
-      createdBy: {
-        id: item.createdByUser,
-      },
+      createdBy,
       amount: item.amount,
       description: item.description,
       images: item.images,
@@ -84,7 +110,7 @@ export default class QrPayments {
     };
 
     const item = await this.dynamoHelper.updateItem(pk, sk, attributes);
-    const payment = this.getTypeQrPayment(item as QrPaymentDBItem);
+    const payment = await this.getTypeQrPayment(item as QrPaymentDBItem);
 
     console.log({
       item,
@@ -124,7 +150,7 @@ export default class QrPayments {
     const sk = `qr-payment#${id}`;
 
     const item = await this.dynamoHelper.getItem(pk, sk);
-    return this.getTypeQrPayment(item as QrPaymentDBItem);
+    return await this.getTypeQrPayment(item as QrPaymentDBItem);
   }
 
   public async list(
@@ -147,7 +173,10 @@ export default class QrPayments {
       filterExpression,
       filterValues,
     });
-    const items = queryResult.map((item) => this.getTypeQrPayment(item as QrPaymentDBItem));
+    const arrayOfPromises = queryResult.map((item) =>
+      this.getTypeQrPayment(item as QrPaymentDBItem),
+    );
+    const items = await Promise.all(arrayOfPromises);
     return { items };
   }
 
