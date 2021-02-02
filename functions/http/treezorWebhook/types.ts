@@ -42,6 +42,7 @@ export enum WebhookEvent {
 export enum TransferType {
   Event,
   P2P,
+  QrPayment,
 }
 
 export enum KycReview {

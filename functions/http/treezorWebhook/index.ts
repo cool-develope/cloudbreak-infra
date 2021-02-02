@@ -309,6 +309,11 @@ const getDetailsByTransferTag = (
       type: TransferType.Event,
       id: transferTag.replace('event:', ''),
     };
+  } else if (transferTag.startsWith('qr-payment:')) {
+    return {
+      type: TransferType.QrPayment,
+      id: transferTag.replace('qr-payment:', ''),
+    };
   }
 
   return null;
@@ -319,7 +324,7 @@ const getFeeDetails = async (transferId: string, walletId: string): Promise<bool
   return Item && Item.pk ? true : false;
 };
 
-const takeFee = async (walletId: string, amount: string, eventId: string, transferId: string) => {
+const takeFee = async (walletId: string, amount: string, item: string, transferId: string) => {
   try {
     //TODO: log transfer if fee not taken due to exception
 
@@ -337,7 +342,7 @@ const takeFee = async (walletId: string, amount: string, eventId: string, transf
       walletId,
       amount,
       feeAmount,
-      eventId,
+      item,
       transferId,
     });
 
@@ -353,7 +358,7 @@ const takeFee = async (walletId: string, amount: string, eventId: string, transf
 
     await createTransfer(treezorToken, transferData);
     await dynamoHelper.updateItem(`fee#${transferId}`, walletId, {
-      eventId,
+      item,
       amount: Number(amount),
       fee: feeAmount,
       createdAt: new Date().toISOString(),
@@ -372,18 +377,26 @@ const processTransferUpdate = async (transfer: Transfer) => {
       throw Error(`processTransferUpdate, user not found by walletId: ${walletId}`);
     }
 
+    const userId = user.pk.replace('user#', '');
     const transferDetails = getDetailsByTransferTag(transferTag);
+
+    console.log({
+      action: 'Paid',
+      type: transferDetails?.type,
+      id: transferDetails?.id,
+      userId,
+      amount,
+      transferId,
+    });
 
     if (transferDetails && transferDetails.type === TransferType.Event) {
       // TODO: validate beneficiaryWalletId
       // TODO: validate amount
 
       const eventId = transferDetails.id;
-      const userId = user.pk.replace('user#', '');
+      const feeItem = `event#${eventId}`;
       const pk = `event#${eventId}`;
       const sk = `user#${userId}`;
-
-      console.log('Paid event:', { eventId, userId, amount, transferId });
 
       await dynamoHelper.updateItem(pk, sk, { a: true, treezorTransferId: transferId });
       await dynamoHelper.incrementField(pk, 'metadata', 'acceptedCount');
@@ -394,7 +407,25 @@ const processTransferUpdate = async (transfer: Transfer) => {
         amount,
       });
 
-      await takeFee(beneficiaryWalletId, amount, eventId, transferId);
+      await takeFee(beneficiaryWalletId, amount, feeItem, transferId);
+    } else if (transferDetails && transferDetails.type === TransferType.QrPayment) {
+      const qrPaymentId = transferDetails.id;
+      const feeItem = `qr-payment#${qrPaymentId}`;
+      const pk = `qr-payment#${qrPaymentId}`;
+      const sk = `user#${userId}`;
+
+      await dynamoHelper.updateItem(pk, sk, {
+        treezorTransferId: transferId,
+        createdAt: new Date().toISOString(),
+      });
+
+      await putEvents(EventSource.TifoApi, 'PaidQrPayment', {
+        sub: userId,
+        qrPaymentId,
+        amount,
+      });
+
+      await takeFee(beneficiaryWalletId, amount, feeItem, transferId);
     }
   }
 };
