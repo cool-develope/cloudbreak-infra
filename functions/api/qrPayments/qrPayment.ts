@@ -11,7 +11,9 @@ import {
   QrPayment,
   QrCode,
   QrPaymentDBItem,
+  QrPaymentTransaction,
   CognitoIdentity,
+  EventBatchQrPayment,
 } from './types';
 import QrFile from './qrFile';
 
@@ -21,7 +23,7 @@ export default class QrPayments {
 
   constructor(
     private readonly region: string,
-    private readonly tableName: string | undefined,
+    private readonly tableName: string,
     private readonly bucketName: string,
     private readonly imagesDomain: string,
   ) {
@@ -147,5 +149,9 @@ export default class QrPayments {
     });
     const items = queryResult.map((item) => this.getTypeQrPayment(item as QrPaymentDBItem));
     return { items };
+  }
+
+  public async batchTransactions(event: EventBatchQrPayment[]): Promise<QrPaymentTransaction[]> {
+    return [];
   }
 }
