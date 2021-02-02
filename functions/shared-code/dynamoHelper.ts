@@ -4,6 +4,8 @@ import {
   UpdateItemCommand,
   DeleteItemCommand,
   QueryCommand,
+  BatchGetItemCommand,
+  BatchGetItemCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
@@ -21,8 +23,66 @@ export interface QueryProps {
 export default class DynamoHelper {
   private readonly db: DynamoDBClient;
 
-  constructor(private readonly region: string, private readonly tableName: string | undefined) {
+  constructor(private readonly region: string, private readonly tableName: string) {
     this.db = new DynamoDBClient({ region: this.region });
+  }
+
+  /**
+   * Split items by batch max size (25)
+   * @param {*} keys
+   * @param {*} batchLimit
+   * @param {*} tableName
+   */
+  private splitRequestItems(keys: any[], batchLimit: number, tableName: string) {
+    const batchParams = [];
+
+    while (keys.length) {
+      const portionOfPutRequests = keys.splice(0, batchLimit);
+      batchParams.push({
+        RequestItems: {
+          [tableName]: {
+            Keys: portionOfPutRequests,
+          },
+        },
+      });
+    }
+
+    return batchParams;
+  }
+
+  /**
+   * Run all batchGet in parallel by portions
+   * @param {*} batchParams
+   */
+  private async runRequestItems(batchParams: any[]) {
+    const arrayOfCommands = batchParams.map((params) =>
+      this.db.send(new BatchGetItemCommand(params)),
+    );
+    const response = await Promise.all(arrayOfCommands);
+    const arrayOfItems = response.map((item) =>
+      item.Responses ? item.Responses[this.tableName] : [],
+    );
+    return arrayOfItems;
+  }
+
+  async batchGet(
+    uniqArrayOfKeys: { pk: string; sk: string }[],
+    idField: string,
+    getType: (data: any) => any = (data) => data,
+  ) {
+    const keys = uniqArrayOfKeys.map((k) => marshall(k));
+    const batchParams = this.splitRequestItems(keys, 25, this.tableName);
+    const arrayOfItems = await this.runRequestItems(batchParams);
+    const result = new Map();
+
+    for (const items of arrayOfItems) {
+      for (const rawItem of items) {
+        const item = unmarshall(rawItem);
+        result.set(item[idField], getType(item));
+      }
+    }
+
+    return result;
   }
 
   private getUpdateExpression(attributes: any = {}) {
