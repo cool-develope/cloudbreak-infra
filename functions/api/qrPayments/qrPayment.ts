@@ -80,7 +80,7 @@ export default class QrPayments {
       createdBy,
       amount: item.amount,
       description: item.description,
-      images: item.images,
+      images: item.images.map((s3Key) => this.getTypeImage(s3Key)),
       qrCode: this.getTypeQrCode(item.qrCode),
       createDate: item.createdAt,
     };
