@@ -72,7 +72,7 @@ export interface QrPayment {
   createdBy: Partial<UserPublic> | null;
   amount: number;
   description: string;
-  images: string[];
+  images: Image[];
   qrCode: QrCode;
   createDate: string;
 }
