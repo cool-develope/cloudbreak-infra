@@ -70,6 +70,7 @@ export interface QrPayment {
   club: Partial<ClubShort> | null;
   category: Partial<QrPaymentCategory> | null;
   createdBy: Partial<UserPublic> | null;
+  transactions: QrPaymentTransaction[];
   amount: number;
   description: string;
   images: Image[];
@@ -87,6 +88,7 @@ export interface QrCode {
 
 export interface QrPaymentTransaction {
   user: UserPublic;
+  transferId: string;
   createDate: string;
 }
 
@@ -128,7 +130,7 @@ export interface QrPaymentDBItem {
 export interface QrPaymentTransactionDBItem {
   pk: string;
   sk: string;
-  treezorTransferId: number;
+  treezorTransferId: string;
   createdAt: string;
   status: string;
 }
