@@ -1240,7 +1240,7 @@ type QrPayment {
   createdBy: UserPublic
   amount: Float
   description: String
-  images: [String]
+  images: [Image]
   qrCode: QrCode
   createDate: AWSDateTime
   transactions: [QrPaymentTransaction]
