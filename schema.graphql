@@ -894,6 +894,7 @@ type QrCode {
 
 type QrPaymentTransaction {
   user: UserPublic
+  transferId: Int
   createDate: AWSDateTime
 }
 
