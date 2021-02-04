@@ -12,6 +12,7 @@ import {
   QrCode,
   QrPaymentDBItem,
   QrPaymentTransaction,
+  QrPaymentTransactionDBItem,
   CognitoIdentity,
   EventBatchQrPayment,
   ClubShort,
@@ -78,6 +79,7 @@ export default class QrPayments {
         id: item.categoryId,
       },
       createdBy,
+      transactions: [],
       amount: item.amount,
       description: item.description,
       images: item.images.map((s3Key) => this.getTypeImage(s3Key)),
@@ -181,7 +183,37 @@ export default class QrPayments {
     return { items };
   }
 
-  public async batchTransactions(event: EventBatchQrPayment[]): Promise<QrPaymentTransaction[]> {
-    return [];
+  private async getTypeTransaction(
+    item: QrPaymentTransactionDBItem,
+  ): Promise<QrPaymentTransaction> {
+    const qrId = item.pk.replace('qr-payment#', '');
+    const userId = item.sk.replace('user#', '');
+    const user = await this.getUserPublic(userId);
+
+    return {
+      user,
+      transferId: item.treezorTransferId,
+      createDate: item.createdAt,
+    };
+  }
+
+  public async getTransactions(qrId: string): Promise<QrPaymentTransaction[]> {
+    const queryResult = await this.dynamoHelper.query({
+      pk: `qr-payment#${qrId}`,
+      sk: 'user#',
+    });
+
+    const arrayOfPromises = queryResult.map((item) =>
+      this.getTypeTransaction(item as QrPaymentTransactionDBItem),
+    );
+    const items = await Promise.all(arrayOfPromises);
+    return items;
+  }
+
+  public async batchTransactions(event: EventBatchQrPayment[]): Promise<QrPaymentTransaction[][]> {
+    const ids = event.map((item) => item.source.id);
+    const queries = ids.map((id) => this.getTransactions(id));
+    const result: QrPaymentTransaction[][] = await Promise.all(queries);
+    return result;
   }
 }
