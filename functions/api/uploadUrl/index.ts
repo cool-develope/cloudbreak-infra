@@ -17,6 +17,8 @@ enum UploadType {
   Team = 'Team',
   Federation = 'Federation',
   Company = 'Company',
+  QrPayment = 'QrPayment',
+  QrPaymentCategory = 'QrPaymentCategory',
 }
 
 interface Event {
@@ -54,6 +56,10 @@ const getS3Key = (type: UploadType, sub: string, fileName: string, id?: string) 
       return `team/i/${uuidv4()}/${fileName}`;
     case UploadType.Federation:
       return `federation/i/${uuidv4()}/${fileName}`;
+    case UploadType.QrPayment:
+      return `club/${id}/qr/i/${uuidv4()}-${fileName}`;
+    case UploadType.QrPaymentCategory:
+      return `club/${id}/qr/c/${uuidv4()}-${fileName}`;
   }
 };
 

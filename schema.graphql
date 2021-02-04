@@ -780,6 +780,8 @@ enum UploadType {
   Team
   Federation
   Company
+  QrPayment
+  QrPaymentCategory
 }
 
 enum RepeatType {
