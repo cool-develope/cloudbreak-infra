@@ -71,6 +71,7 @@ export default class QrPayments {
     const id = item.sk.replace('qr-payment#', '');
     const createdBy = await this.getUserPublic(item.createdByUser);
     const club = await this.getClubShort(clubId);
+    const images = item.images ? item.images.map((s3Key) => this.getTypeImage(s3Key)) : [];
 
     return {
       id,
@@ -82,7 +83,7 @@ export default class QrPayments {
       transactions: [],
       amount: item.amount,
       description: item.description,
-      images: item.images.map((s3Key) => this.getTypeImage(s3Key)),
+      images,
       qrCode: this.getTypeQrCode(item.qrCode),
       createDate: item.createdAt,
     };
@@ -114,11 +115,6 @@ export default class QrPayments {
 
     const item = await this.dynamoHelper.updateItem(pk, sk, attributes);
     const payment = await this.getTypeQrPayment(item as QrPaymentDBItem);
-
-    console.log({
-      item,
-      payment,
-    });
 
     return {
       errors: [],
