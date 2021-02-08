@@ -81,17 +81,6 @@ const getItem = (pk: string, sk: string) => {
   return db.get(params).promise();
 };
 
-const getTimeDifferenceInHours = (createdAt: string) => {
-  if (!createdAt) {
-    createdAt = new Date().toISOString();
-  }
-
-  const dateBegin = new Date(createdAt);
-  const dateEnd = Date.now();
-  const difference = (dateEnd - dateBegin.getTime()) / 1000 / 60 / 60;
-  return difference;
-};
-
 const acceptChildInvitation = async (sub: string, invitationId: string, pk: string, sk: string) => {
   const invitationData = {
     modifiedAt: new Date().toISOString(),
@@ -154,15 +143,8 @@ export const handler: Handler = async (event): Promise<{ errors: string[] }> => 
   if (!invitation) {
     errors.push('Invitation not found');
   } else if (invitation.inviteStatus === 'pending') {
-    const hoursFromCreation = getTimeDifferenceInHours(invitation.createdAt);
-    const invitationExpired = hoursFromCreation > 720;
-
     if (field === FieldName.acceptChildInvitation) {
-      if (invitationExpired) {
-        errors.push('Invitation is expired');
-      } else {
-        await acceptChildInvitation(sub, invitationId, pk, sk);
-      }
+      await acceptChildInvitation(sub, invitationId, pk, sk);
     } else if (field === FieldName.declineChildInvitation) {
       await declineChildInvitation(pk, sk);
     }
