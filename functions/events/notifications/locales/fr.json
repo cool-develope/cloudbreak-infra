@@ -3,11 +3,11 @@
     "inviteParentBirth": "Date de naissance ",
     "inviteParentButton": "Vérifier dans l'App",
     "inviteParentLine1": "Êtes-vous le parent de cet enfant ?",
-    "inviteParentLine2": "Ce lien expirera dans 15 minutes et ne peut-être utilisé qu’une seule fois.",
+    "inviteParentLine2": "",
     "inviteParentSubject": "{{fullName}} vous invite en tant que parent ",
     "signinButton": "Connectez-vous à Tifo ",
     "signinLine1": "Cliquez sur le lien ci-dessous pour vous connecter à votre compte Tifo ",
-    "signinLine2": "Ce lien expirera dans 15 minutes et ne peut-être utilisé qu’une seule fois.",
+    "signinLine2": "Ce lien expirera dans 3 minutes et ne peut-être utilisé qu’une seule fois.",
     "signinSubject": "Connexion à Tifo "
   },
   "notification": {

@@ -3,11 +3,11 @@
     "inviteParentBirth": "Data di nascita",
     "inviteParentButton": "Controlla in app",
     "inviteParentLine1": "Sei il genitore di questa persona?",
-    "inviteParentLine2": "Il link scadrà in 15 minuti e potrà essere usato solo una volta.",
+    "inviteParentLine2": "",
     "inviteParentSubject": "{{fullName}} ti ha mandato un invito come genitore",
     "signinButton": "Entra in tifo",
     "signinLine1": "Clicca sul link qui sotto per entrare nel tuo profilo TIFO.",
-    "signinLine2": "Il link scadrà fra 15 minuti e potrà essere usato solo una volta.",
+    "signinLine2": "Il link scadrà fra 3 minuti e potrà essere usato solo una volta.",
     "signinSubject": "Tifo login"
   },
   "notification": {
