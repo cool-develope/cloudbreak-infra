@@ -71,14 +71,23 @@ const sendEmail = async (signinUrl: string, emailAddress: string, language: stri
   await ses.sendEmail(params).promise();
 };
 
+const getAuthCodeExpiresTimestamp = () => {
+  const now = new Date();
+  const addedTime = 3 * 60 * 1000;
+  now.setTime(now.getTime() + addedTime);
+  return now.getTime();
+};
+
 const getSigninUrl = (clientId: string, code: string) => {
+  const expires = getAuthCodeExpiresTimestamp();
+
   switch (clientId) {
     case COGNITO_MANAGER_CLIENT_ID:
-      return `${SIGNIN_MANAGER_URL}?code=${code}`;
+      return `${SIGNIN_MANAGER_URL}?code=${code}&expires=${expires}`;
     case COGNITO_WEB_CLIENT_ID:
-      return `${SIGNIN_WEB_URL}?code=${code}`;
+      return `${SIGNIN_WEB_URL}?code=${code}&expires=${expires}`;
     default:
-      return `${SIGNIN_MOBILE_URL}?code=${code}`;
+      return `${SIGNIN_MOBILE_URL}?code=${code}&expires=${expires}`;
   }
 };
 
