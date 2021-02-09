@@ -401,7 +401,11 @@ const processTransferUpdate = async (transfer: Transfer) => {
       const pk = `event#${eventId}`;
       const sk = `user#${userId}`;
 
-      await dynamoHelper.updateItem(pk, sk, { a: true, treezorTransferId: transferId });
+      await dynamoHelper.updateItem(pk, sk, {
+        a: true,
+        treezorTransferId: transferId,
+        acceptedAt: new Date().toISOString(),
+      });
       await dynamoHelper.incrementField(pk, 'metadata', 'acceptedCount');
 
       await putEvents(EventSource.TifoApi, 'AcceptedPaidEvent', {
