@@ -862,6 +862,8 @@ enum NotificationType {
   ReceivedMoney
   RejectMoneyRequest
   ApproveMoneyRequest
+  PaidQrPayment
+  YouPaidQrPayment
 }
 
 enum TransactionType {
