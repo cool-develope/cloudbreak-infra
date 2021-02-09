@@ -118,10 +118,10 @@ export const handler: Handler = async (event): Promise<{ errors: string[]; event
         errors.push('You need to pay for the Event');
       }
     } else {
-      await updateItem(pk, sk, { a: true });
+      await updateItem(pk, sk, { a: true, acceptedAt: new Date().toISOString() });
     }
   } else if (field === FieldName.declineEvent) {
-    await updateItem(pk, sk, { a: false });
+    await updateItem(pk, sk, { a: false, acceptedAt: null });
   }
 
   return {
