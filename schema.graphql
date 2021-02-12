@@ -494,6 +494,7 @@ input UpdateQrPaymentCategoryInput {
   clubId: String!
   name: String
   image: String
+  vatFee: Float!
 }
 
 input DeleteQrPaymentCategoryInput {
