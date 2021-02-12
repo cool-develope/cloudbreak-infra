@@ -1,11 +1,12 @@
 import * as cdk from '@aws-cdk/core';
 import * as s3 from '@aws-cdk/aws-s3';
 import * as cloudfront from '@aws-cdk/aws-cloudfront';
+import * as origins from '@aws-cdk/aws-cloudfront-origins';
 import * as route53 from '@aws-cdk/aws-route53';
 import * as route53tg from '@aws-cdk/aws-route53-targets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import { Certificate, ICertificate } from '@aws-cdk/aws-certificatemanager';
-import { CloudFrontWebDistribution, OriginAccessIdentity } from '@aws-cdk/aws-cloudfront';
+import { AllowedMethods, Distribution, OriginAccessIdentity } from '@aws-cdk/aws-cloudfront';
 
 export interface StorageStackProps extends cdk.StackProps {
   bucketName: string;
@@ -88,34 +89,22 @@ export class StorageStack extends cdk.Stack {
       comment: `OAI for ${bucket.bucketName}`,
     });
 
-    const distribution = new cloudfront.CloudFrontWebDistribution(this, `${domain}-cloudfront`, {
-      originConfigs: [
-        {
-          s3OriginSource: {
-            s3BucketSource: bucket,
-            originAccessIdentity: cloudFrontOAI,
-          },
-          behaviors: [
-            {
-              isDefaultBehavior: true,
-            },
-          ],
-        },
-      ],
-      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
-        aliases: [domain],
-      }),
+    const distribution = new cloudfront.Distribution(this, `${domain}-cloudfront`, {
+      defaultBehavior: {
+        origin: new origins.S3Origin(bucket, {
+          originAccessIdentity: cloudFrontOAI,
+        }),
+        originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+      },
+      domainNames: [domain],
+      certificate: certificate,
     });
 
     return distribution;
   }
 
-  createDomainRecord(
-    zoneId: string,
-    zoneName: string,
-    domain: string,
-    distribution: CloudFrontWebDistribution,
-  ) {
+  createDomainRecord(zoneId: string, zoneName: string, domain: string, distribution: Distribution) {
     const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-tifo-sport', {
       hostedZoneId: zoneId,
       zoneName,
