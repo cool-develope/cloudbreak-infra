@@ -77,6 +77,7 @@ export default class QrPaymentCategories {
     const attributes: Partial<QrPaymentCategoryDBItem> = {
       name: input.name,
       image: input.image,
+      vatFee: input.vatFee,
       modifiedAt: new Date().toISOString(),
     };
     const item = await this.dynamoHelper.updateItem(pk, sk, attributes);

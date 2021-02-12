@@ -9,6 +9,7 @@ export interface UpdateQrPaymentCategoryInput {
   clubId: string;
   name?: string;
   image?: string;
+  vatFee?: number;
 }
 export interface DeleteQrPaymentCategoryInput {
   id: string;
