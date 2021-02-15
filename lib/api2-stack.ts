@@ -21,6 +21,11 @@ enum ResolverType {
   Query = 'Query',
 }
 
+enum LambdaLayer {
+  CommonModules,
+  ImageProcessing,
+}
+
 export class Api2Stack extends cdk.Stack {
   public readonly api: appsync.IGraphqlApi;
   public readonly dictionaryTable: dynamodb.ITable;
