@@ -30,29 +30,28 @@
 ## AWS CDK Bootsteap
 
 ```shell
-export TIFO_ENV=test
 npm run build && cdk synth
-cdk bootstrap --profile tifo-$TIFO_ENV
+cdk bootstrap --profile tifo-dev
 ```
 
 ## Deployment
 
 ```shell
-cdk deploy acm-us-stack --profile tifo-$TIFO_ENV
-cdk deploy acm-eu-stack --profile tifo-$TIFO_ENV
-cdk deploy layers-stack --profile tifo-$TIFO_ENV
-cdk deploy es-stack --profile tifo-$TIFO_ENV
-cdk deploy table-stack --profile tifo-$TIFO_ENV
-cdk deploy admin-website-stack --profile tifo-$TIFO_ENV
-cdk deploy mobile-website-stack --profile tifo-$TIFO_ENV
-cdk deploy images-storage-stack --profile tifo-$TIFO_ENV
-cdk deploy private-storage-stack --profile tifo-$TIFO_ENV
-cdk deploy cognito-stack --profile tifo-$TIFO_ENV
-cdk deploy events-stack --profile tifo-$TIFO_ENV
-cdk deploy hapi-stack --profile tifo-$TIFO_ENV
-cdk deploy api-stack --profile tifo-$TIFO_ENV
-cdk deploy api2-stack --profile tifo-$TIFO_ENV
-cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
+cdk deploy acm-us-stack --profile tifo-dev
+cdk deploy acm-eu-stack --profile tifo-dev
+cdk deploy layers-stack --profile tifo-dev
+cdk deploy es-stack --profile tifo-dev
+cdk deploy table-stack --profile tifo-dev
+cdk deploy admin-website-stack --profile tifo-dev
+cdk deploy mobile-website-stack --profile tifo-dev
+cdk deploy images-storage-stack --profile tifo-dev
+cdk deploy private-storage-stack --profile tifo-dev
+cdk deploy cognito-stack --profile tifo-dev
+cdk deploy events-stack --profile tifo-dev
+cdk deploy hapi-stack --profile tifo-dev
+cdk deploy api-stack --profile tifo-dev
+cdk deploy api2-stack --profile tifo-dev
+cdk deploy api-domain-stack --profile tifo-dev
 ```
 
 ## Manual installation
@@ -76,18 +75,18 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
   ```shell
   aws cognito-idp list-user-pools\
     --max-results 20\
-    --profile tifo-$TIFO_ENV
+    --profile tifo-dev
 
   aws cognito-idp list-user-pool-clients\
     --user-pool-id XXX-XXX \
     --max-results 20\
-    --profile tifo-$TIFO_ENV
+    --profile tifo-dev
 
   # LIST
-  aws cognito-idp list-users --user-pool-id XXX-XXX --max-items 300 --profile tifo-$TIFO_ENV
+  aws cognito-idp list-users --user-pool-id XXX-XXX --max-items 300 --profile tifo-dev
   
   # DELETE
-  aws cognito-idp admin-delete-user --user-pool-id XXX-XXX --profile tifo-$TIFO_ENV --username ХХХ-ХХХХ;
+  aws cognito-idp admin-delete-user --user-pool-id XXX-XXX --profile tifo-dev --username ХХХ-ХХХХ;
   ```
 
 - ACM
@@ -95,7 +94,7 @@ cdk deploy api-domain-stack --profile tifo-$TIFO_ENV
   aws acm list-certificates\
     --max-items 20\
     --region us-east-1\
-    --profile tifo-$TIFO_ENV
+    --profile tifo-dev
   ```
 
 ## Events
