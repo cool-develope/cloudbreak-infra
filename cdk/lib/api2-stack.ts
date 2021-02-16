@@ -3,27 +3,17 @@ import * as cdk from '@aws-cdk/core';
 import * as appsync from '@aws-cdk/aws-appsync';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as lambda from '@aws-cdk/aws-lambda';
-import * as lambdaNodejs from '@aws-cdk/aws-lambda-nodejs';
 import { Fn } from '@aws-cdk/core';
 import { MappingTemplate } from '@aws-cdk/aws-appsync';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 import { Duration } from '@aws-cdk/core';
+import { LambdaBuilder, FunctionPrefix, getBatchTemplate, ResolverType } from '../helpers';
 
 export interface Api2StackProps extends cdk.StackProps {
   imagesDomain: string;
   commonModulesLayerArn: string;
   imageProcessingLayerArn: string;
-}
-
-enum ResolverType {
-  Mutation = 'Mutation',
-  Query = 'Query',
-}
-
-enum LambdaLayer {
-  CommonModules,
-  ImageProcessing,
 }
 
 export class Api2Stack extends cdk.Stack {
@@ -754,24 +744,6 @@ export class Api2Stack extends cdk.Stack {
   qrPayments() {
     const { IMAGES_BUCKET_NAME = '-' } = process.env;
 
-    const fn = this.getFunctionNew(
-      'qrPayments',
-      'api-qrPayments',
-      'qrPayments',
-      {
-        MAIN_TABLE_NAME: this.mainTable.tableName,
-        IMAGES_DOMAIN: this.imagesDomain,
-        IMAGES_BUCKET_NAME,
-      },
-      30,
-      256,
-    );
-
-    this.allowDynamoDB(fn);
-
-    /**
-     * Allow S3
-     */
     const s3PolicyQr = new PolicyStatement({
       effect: Effect.ALLOW,
       actions: ['s3:PutObject', 's3:GetObject', 's3:DeleteObject'],
@@ -784,8 +756,21 @@ export class Api2Stack extends cdk.Stack {
       resources: [`arn:aws:s3:::${IMAGES_BUCKET_NAME}/logo.jpeg`],
     });
 
-    fn.addToRolePolicy(s3PolicyQr);
-    fn.addToRolePolicy(s3PolicyLogo);
+    const fn = new LambdaBuilder(this, 'qrPayments', FunctionPrefix.api)
+      .setEnv({
+        MAIN_TABLE_NAME: this.mainTable.tableName,
+        IMAGES_DOMAIN: this.imagesDomain,
+        IMAGES_BUCKET_NAME,
+      })
+      .setTimeout(30)
+      .setMemory(256)
+      .addExternalModules(['qrcode', 'sharp', 'uuid'])
+      .allowDynamoDB(this.mainTable.tableName, this.region, this.account)
+      .addLayer(this.commonModulesLayer)
+      .addLayer(this.imageProcessingLayer)
+      .addPolicy(s3PolicyQr)
+      .addPolicy(s3PolicyLogo)
+      .build();
 
     const dataSource = this.api.addLambdaDataSource('qrPaymentsFn', fn);
 
@@ -921,36 +906,5 @@ export class Api2Stack extends cdk.Stack {
       memorySize,
       layers: [this.commonModulesLayer],
     });
-  }
-
-  getFunctionNew(
-    id: string,
-    functionName: string,
-    folderName: string,
-    environment?: any,
-    timeoutSeconds = 30,
-    memorySize = 128,
-  ) {
-    const FUNCTION_DEFAULT_PROPS = {
-      handler: 'handler',
-      bundling: {
-        target: 'node12',
-        nodeModules: [],
-        externalModules: ['qrcode', 'sharp'],
-      },
-      tracing: lambda.Tracing.ACTIVE,
-      layers: [this.commonModulesLayer, this.imageProcessingLayer],
-    };
-
-    const fn = new lambdaNodejs.NodejsFunction(this, id, {
-      functionName,
-      entry: path.join(__dirname, '../../', 'functions', 'api', folderName, 'index.ts'),
-      ...FUNCTION_DEFAULT_PROPS,
-      environment,
-      timeout: cdk.Duration.seconds(timeoutSeconds),
-      memorySize,
-    });
-
-    return fn;
   }
 }
