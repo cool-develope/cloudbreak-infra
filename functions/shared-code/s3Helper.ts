@@ -31,14 +31,19 @@ export default class S3Helper {
     });
 
     const response = await this.s3Client.send(command);
-    const contentStream = Readable.from(response.Body);
-    let contentBuffer = Buffer.from([]);
+    if (response?.Body) {
+      // @ts-ignore
+      const contentStream = Readable.from(response.Body);
+      let contentBuffer = Buffer.from([]);
 
-    for await (const chunk of contentStream) {
-      contentBuffer = Buffer.concat([contentBuffer, chunk]);
+      for await (const chunk of contentStream) {
+        contentBuffer = Buffer.concat([contentBuffer, chunk]);
+      }
+
+      return contentBuffer;
     }
 
-    return contentBuffer;
+    return Buffer.from([]);
   }
 
   deleteObject(bucketName: string, key: string) {
