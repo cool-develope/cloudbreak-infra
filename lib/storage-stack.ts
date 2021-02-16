@@ -6,7 +6,12 @@ import * as route53 from '@aws-cdk/aws-route53';
 import * as route53tg from '@aws-cdk/aws-route53-targets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import { Certificate, ICertificate } from '@aws-cdk/aws-certificatemanager';
-import { AllowedMethods, Distribution, OriginAccessIdentity } from '@aws-cdk/aws-cloudfront';
+import {
+  AllowedMethods,
+  CachedMethods,
+  Distribution,
+  OriginAccessIdentity,
+} from '@aws-cdk/aws-cloudfront';
 
 export interface StorageStackProps extends cdk.StackProps {
   bucketName: string;
@@ -96,6 +101,7 @@ export class StorageStack extends cdk.Stack {
         }),
         originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        cachedMethods: CachedMethods.CACHE_GET_HEAD_OPTIONS,
       },
       domainNames: [domain],
       certificate: certificate,
