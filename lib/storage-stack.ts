@@ -94,14 +94,26 @@ export class StorageStack extends cdk.Stack {
       comment: `OAI for ${bucket.bucketName}`,
     });
 
+    const customCachePolicy = new cloudfront.CachePolicy(this, 'customCachePolicy', {
+      cachePolicyName: 'CustomPolicy',
+      comment: 'A default policy',
+      defaultTtl: cdk.Duration.days(30),
+      minTtl: cdk.Duration.days(1),
+      maxTtl: cdk.Duration.days(30),
+      cookieBehavior: cloudfront.CacheCookieBehavior.all(),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('Origin'),
+      enableAcceptEncodingGzip: true,
+      enableAcceptEncodingBrotli: true,
+    });
+
     const distribution = new cloudfront.Distribution(this, `${domain}-cloudfront`, {
       defaultBehavior: {
         origin: new origins.S3Origin(bucket, {
           originAccessIdentity: cloudFrontOAI,
         }),
-        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
+        cachePolicy: customCachePolicy,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        cachedMethods: CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        cachedMethods: CachedMethods.CACHE_GET_HEAD,
       },
       domainNames: [domain],
       certificate: certificate,
