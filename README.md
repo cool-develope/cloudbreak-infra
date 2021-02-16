@@ -19,12 +19,22 @@
 
 ## Architecture
 
+![AWS Architecture](architecture2.png)
+
+![AWS Architecture](architecture.png)
+
 ## Commands
 
+From `root` folder
+
 - `npm run build` compile typescript to js
+
+From `cdk` folder
+
+- `npm run build` compile typescript to js
+- `cdk synth` emits the synthesized CloudFormation template
 - `cdk deploy` deploy this stack to your default AWS account/region
 - `cdk diff` compare deployed stack with current state
-- `cdk synth` emits the synthesized CloudFormation template
 - `cdk ls` lists all stacks in the app
 
 ## AWS CDK Bootsteap
@@ -84,7 +94,7 @@ cdk deploy api-domain-stack --profile tifo-dev
 
   # LIST
   aws cognito-idp list-users --user-pool-id XXX-XXX --max-items 300 --profile tifo-dev
-  
+
   # DELETE
   aws cognito-idp admin-delete-user --user-pool-id XXX-XXX --profile tifo-dev --username ХХХ-ХХХХ;
   ```
@@ -98,7 +108,9 @@ cdk deploy api-domain-stack --profile tifo-dev
   ```
 
 ## Events
+
 tifo.api
+
 - SendTeamInvitation (sub, teamId, clubId, teamName, role)
 - DeclineTeamInvitation (sub, teamId, clubId, teamName, role)
 - AcceptTeamInvitation (sub, teamId, clubId, teamName, role)
@@ -114,4 +126,7 @@ tifo.api
 - ChildAcceptedPaidEvent (childFirstName, childLastName, eventName, price)
 
 tifo.treezor
+
 - KycReview (sub, status)
+
+## Localication
