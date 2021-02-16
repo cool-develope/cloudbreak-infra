@@ -13,7 +13,7 @@ import {
   EventBatchQrPayment,
   Image,
 } from './types';
-import { DynamoHelper } from '../../shared-code';
+import { DynamoHelper } from '@shared-code/index';
 
 export default class QrPaymentCategories {
   private readonly dynamoHelper: DynamoHelper;

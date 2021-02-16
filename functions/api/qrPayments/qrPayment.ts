@@ -1,6 +1,6 @@
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
-import { DynamoHelper } from '../../shared-code';
+import { DynamoHelper } from '@shared-code/index';
 import {
   CreateQrPaymentInput,
   DeleteQrPaymentInput,

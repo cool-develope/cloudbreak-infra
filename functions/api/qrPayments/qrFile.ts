@@ -1,4 +1,4 @@
-import { S3Helper } from '../../shared-code';
+import { S3Helper } from '@shared-code/index';
 
 // @ts-ignore
 import * as QRCode from 'qrcode';
