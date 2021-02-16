@@ -99,7 +99,7 @@ export class StorageStack extends cdk.Stack {
         origin: new origins.S3Origin(bucket, {
           originAccessIdentity: cloudFrontOAI,
         }),
-        originRequestPolicy: cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         cachedMethods: CachedMethods.CACHE_GET_HEAD_OPTIONS,
       },
