@@ -119,12 +119,12 @@ export class Api2Stack extends cdk.Stack {
     const dictionaryDS = this.api.addLambdaDataSource('dictionaryFunction', dictionaryFunction);
 
     dictionaryDS.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'countries',
     });
 
     dictionaryDS.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'languages',
     });
   }
@@ -163,12 +163,12 @@ export class Api2Stack extends cdk.Stack {
     );
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'createTreezorUser',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'createTreezorCompany',
     });
   }
@@ -191,22 +191,22 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('sendMoneyRequestFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'sendMoneyRequest',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'rejectMoneyRequest',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'approveMoneyRequest',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'moneyRequests',
     });
   }
@@ -222,7 +222,7 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('cardTypesFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'cardTypes',
     });
   }
@@ -253,27 +253,27 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('clubFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'createClubPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'updateClubPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'club',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'clubs',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'clubsPrivate',
     });
   }
@@ -288,17 +288,17 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('companyFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'createCompanyPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'updateCompanyPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'companyPrivate',
     });
   }
@@ -316,73 +316,43 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('teamFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'createTeamPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'updateTeamPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'team',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'teamsPrivate',
     });
 
     dataSource.createResolver({
       typeName: 'Team',
       fieldName: 'parentTeam',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "parentTeam",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('parentTeam')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Team',
       fieldName: 'children',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "childrenTeams",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('childrenTeams')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'teams',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "clubTeams",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('clubTeams')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
@@ -401,32 +371,32 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('teamInvitationFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'sendTeamInvitation',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'acceptTeamInvitationPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'declineTeamInvitationPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'changeTeamRolePrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'approveTeamInvitationByParent',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'rejectTeamInvitationByParent',
     });
   }
@@ -452,20 +422,6 @@ export class Api2Stack extends cdk.Stack {
     lambdaFunction.addToRolePolicy(eventsPolicy);
   }
 
-  getBatchInvokeTemplate(fieldName: string) {
-    return `
-   {
-     "version" : "2017-02-28",
-     "operation": "BatchInvoke",
-     "payload": {
-       "fieldName": "${fieldName}",
-       "source": $utils.toJson($context.source),
-       "identity": $util.toJson($context.identity)
-     }
-   }
-   `;
-  }
-
   user() {
     const fn = this.getFunction('user', 'api-user', 'user', {
       MAIN_TABLE_NAME: this.mainTable.tableName,
@@ -479,71 +435,59 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('userFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'usersPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'userPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'updateUserPrivate',
     });
 
     dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'coaches',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('clubCoaches'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('clubCoaches')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'members',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('clubMembers'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('clubMembers')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Club',
       fieldName: 'friends',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('clubFriends'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('clubFriends')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Team',
       fieldName: 'coaches',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('teamCoaches'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('teamCoaches')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Team',
       fieldName: 'members',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('teamMembers'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('teamMembers')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Team',
       fieldName: 'friends',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('teamFriends'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('teamFriends')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
@@ -561,7 +505,7 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('notificationsFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'notifications',
     });
   }
@@ -586,18 +530,14 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'Event',
       fieldName: 'organization',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('eventOrganization'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('eventOrganization')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Post',
       fieldName: 'organization',
-      requestMappingTemplate: MappingTemplate.fromString(
-        this.getBatchInvokeTemplate('eventOrganization'),
-      ),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('eventOrganization')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
@@ -628,56 +568,36 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('federationFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'createFederationPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'updateFederationPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'federationsPrivate',
     });
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'federation',
     });
 
     dataSource.createResolver({
       typeName: 'Federation',
       fieldName: 'children',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "childrenFederation",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('childrenFederation')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'Team',
       fieldName: 'federations',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "teamFederations",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(getBatchTemplate('teamFederations')),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
@@ -713,7 +633,7 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('treezorFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Query',
+      typeName: ResolverType.Query,
       fieldName: 'transactions',
     });
   }
@@ -736,7 +656,7 @@ export class Api2Stack extends cdk.Stack {
     const dataSource = this.api.addLambdaDataSource('submitSupportTicketFn', fn);
 
     dataSource.createResolver({
-      typeName: 'Mutation',
+      typeName: ResolverType.Mutation,
       fieldName: 'submitSupportTicket',
     });
   }
@@ -817,34 +737,18 @@ export class Api2Stack extends cdk.Stack {
     dataSource.createResolver({
       typeName: 'QrPayment',
       fieldName: 'category',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "batchQrPaymentCategory",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(
+        getBatchTemplate('batchQrPaymentCategory'),
+      ),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
 
     dataSource.createResolver({
       typeName: 'QrPayment',
       fieldName: 'transactions',
-      requestMappingTemplate: MappingTemplate.fromString(`
-{
-  "version" : "2017-02-28",
-  "operation": "BatchInvoke",
-  "payload": {
-    "fieldName": "batchQrPaymentTransactions",
-  	"source": $utils.toJson($context.source),
-    "identity": $util.toJson($context.identity)
-  }
-}
-`),
+      requestMappingTemplate: MappingTemplate.fromString(
+        getBatchTemplate('batchQrPaymentTransactions'),
+      ),
       responseMappingTemplate: MappingTemplate.fromString('$util.toJson($context.result)'),
     });
   }
