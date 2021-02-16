@@ -7,14 +7,14 @@ export class LayersStack extends cdk.Stack {
     super(scope, id, props);
 
     const commonModules = new lambda.LayerVersion(this, 'layers-common-modules', {
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'layers', 'common-modules')),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../', 'layers', 'common-modules')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_12_X],
       description: 'UUID, Elasticsearch, Xray',
       layerVersionName: 'common-modules',
     });
 
     const imageProcessing = new lambda.LayerVersion(this, 'layers-image-processing', {
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'layers', 'image-processing')),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../', 'layers', 'image-processing')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_12_X],
       description: 'Sharp, QRCode',
       layerVersionName: 'image-processing',

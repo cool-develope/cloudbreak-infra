@@ -175,7 +175,7 @@ export class ApiHttpStack extends cdk.Stack {
   getFunction(functionName: string, environment?: any, timeoutSeconds = 30, memorySize = 128) {
     return new lambda.Function(this, `http-${functionName}-fn`, {
       functionName: `hapi-${functionName}`,
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'http', functionName)),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../', 'functions', 'http', functionName)),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment,

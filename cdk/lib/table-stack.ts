@@ -121,7 +121,7 @@ export class TableStack extends cdk.Stack {
   getFunction(id: string, functionName: string, folderName: string, environment?: any) {
     return new lambda.Function(this, id, {
       functionName,
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'events', folderName)),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../', 'functions', 'events', folderName)),
       runtime: lambda.Runtime.NODEJS_12_X,
       handler: 'index.handler',
       environment,

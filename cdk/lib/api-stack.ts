@@ -10,7 +10,7 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 import { PolicyStatement, Effect } from '@aws-cdk/aws-iam';
 import { Duration } from '@aws-cdk/core';
 
-const SCHEMA_FILE = '../schema.graphql';
+const SCHEMA_FILE = '../../schema.graphql';
 
 export interface ApiStackProps extends cdk.StackProps {
   imagesDomain: string;
@@ -745,7 +745,7 @@ export class ApiStack extends cdk.Stack {
   ) {
     return new lambda.Function(this, id, {
       functionName,
-      code: lambda.Code.fromAsset(path.join(__dirname, '../', 'functions', 'api', folderName), {
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../', 'functions', 'api', folderName), {
         exclude: ['*.ts'],
       }),
       runtime: lambda.Runtime.NODEJS_12_X,
