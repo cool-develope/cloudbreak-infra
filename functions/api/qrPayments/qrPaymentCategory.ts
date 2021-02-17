@@ -127,7 +127,7 @@ export default class QrPaymentCategories {
     event: EventBatchQrPayment[],
   ): Promise<(QrPaymentCategory | undefined)[]> {
     const ids = event.map((item) => item.source.category?.id);
-    const uniqCategories = [...new Set(...ids)];
+    const uniqCategories = [...new Set(ids)];
     const arrayOfKeys = uniqCategories.map((id) => ({
       pk: `club#${event[0].source.club?.id}`,
       sk: `qr-payment-category#${id}`,
