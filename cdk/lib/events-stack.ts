@@ -52,7 +52,7 @@ export class EventsStack extends cdk.Stack {
         ES_DOMAIN: esDomain,
         ONESIGNAL_APP_ID,
         ONESIGNAL_API_KEY,
-        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
+        SES_FROM_ADDRESS: 'cloudbreak <no-reply@cloudbreak-telehealth.com>',
         SES_REGION: 'eu-west-1',
       },
       256,
@@ -82,7 +82,7 @@ export class EventsStack extends cdk.Stack {
     const teamRule = new Rule(this, 'TeamRule', {
       enabled: true,
       eventPattern: {
-        source: ['tifo.api'],
+        source: ['cloudbreak.api'],
         detailType: ['SendTeamInvitation', 'DeclineTeamInvitation', 'AcceptTeamInvitation'],
       },
       targets: [new targets.LambdaFunction(teamFunction)],
@@ -91,7 +91,7 @@ export class EventsStack extends cdk.Stack {
     const notificationsRule = new Rule(this, 'NotificationsRule', {
       enabled: true,
       eventPattern: {
-        source: ['tifo.api', 'tifo.treezor'],
+        source: ['cloudbreak.api', 'cloudbreak.treezor'],
         // all detailType
       },
       targets: [new targets.LambdaFunction(notificationsFunction)],
@@ -140,8 +140,8 @@ export class EventsStack extends cdk.Stack {
       'dynamodb:DeleteItem',
     );
     dbPolicy.addResources(
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak/index/*',
     );
 
     lambdaFunction.addToRolePolicy(dbPolicy);

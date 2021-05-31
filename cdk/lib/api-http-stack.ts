@@ -47,7 +47,7 @@ export class ApiHttpStack extends cdk.Stack {
      * Create HTTP API Gateway
      */
     this.api = new HttpApi(this, 'HttpApi', {
-      apiName: 'tifo-http-api',
+      apiName: 'cloudbreak-http-api',
       defaultDomainMapping: {
         domainName,
       },
@@ -69,7 +69,7 @@ export class ApiHttpStack extends cdk.Stack {
       TREEZOR_BASE_URL,
       TREEZOR_CLIENT_ID,
       TREEZOR_CLIENT_SECRET,
-      TREEZOR_TIFO_WALLET_ID,
+      TREEZOR_cloudbreak_WALLET_ID,
       ONESIGNAL_API_KEY,
       ONESIGNAL_APP_ID,
     } = process.env;
@@ -84,7 +84,7 @@ export class ApiHttpStack extends cdk.Stack {
         TREEZOR_BASE_URL,
         TREEZOR_CLIENT_ID,
         TREEZOR_CLIENT_SECRET,
-        TREEZOR_TIFO_WALLET_ID,
+        TREEZOR_cloudbreak_WALLET_ID,
         ONESIGNAL_APP_ID,
         ONESIGNAL_API_KEY,
       },
@@ -115,7 +115,7 @@ export class ApiHttpStack extends cdk.Stack {
   }
 
   createDomainRecord(zoneId: string, zoneName: string, domain: string, apiDomain: string) {
-    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-tifo-sport', {
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-cloudbreak-telehealth', {
       hostedZoneId: zoneId,
       zoneName,
     });
@@ -165,8 +165,8 @@ export class ApiHttpStack extends cdk.Stack {
       'dynamodb:DeleteItem',
     );
     dbPolicy.addResources(
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak/index/*',
     );
 
     lambdaFunction.addToRolePolicy(dbPolicy);

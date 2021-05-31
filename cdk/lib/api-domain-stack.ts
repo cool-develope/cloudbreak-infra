@@ -24,7 +24,7 @@ export class ApiDomainStack extends cdk.Stack {
 
     const certificate = Certificate.fromCertificateArn(this, 'us-certificate', certificateArn);
 
-    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-tifo-sport', {
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-cloudbreak-telehealth', {
       hostedZoneId: zoneId,
       zoneName,
     });
@@ -69,7 +69,7 @@ export class ApiDomainStack extends cdk.Stack {
     recordName: string,
     distribution: CloudFrontWebDistribution,
   ) {
-    new route53.ARecord(this, 'record-api-tifo-sport', {
+    new route53.ARecord(this, 'record-api-cloudbreak-telehealth', {
       zone: hostedZone,
       recordName,
       target: route53.RecordTarget.fromAlias(new route53tg.CloudFrontTarget(distribution)),

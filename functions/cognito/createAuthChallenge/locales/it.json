@@ -5,10 +5,10 @@
     "inviteParentLine1": "Sei il genitore di questa persona?",
     "inviteParentLine2": "",
     "inviteParentSubject": "{{fullName}} ti ha mandato un invito come genitore",
-    "signinButton": "Entra in tifo",
-    "signinLine1": "Clicca sul link qui sotto per entrare nel tuo profilo TIFO.",
+    "signinButton": "Entra in cloudbreak",
+    "signinLine1": "Clicca sul link qui sotto per entrare nel tuo profilo cloudbreak.",
     "signinLine2": "Il link scadrà fra 3 minuti e potrà essere usato solo una volta.",
-    "signinSubject": "Tifo login"
+    "signinSubject": "cloudbreak login"
   },
   "notification": {
     "acceptedTeamInvitation": "La tua richiesta di connessione a \"{{teamName}}\" è stata approvata",

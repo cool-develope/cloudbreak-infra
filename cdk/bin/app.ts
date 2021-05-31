@@ -17,7 +17,7 @@ import { LayersStack } from '../lib/layers-stack';
 import * as dotenv from 'dotenv';
 
 dotenv.config({
-  path: `.env.${process.env.TIFO_ENV || 'dev'}`,
+  path: `.env.${process.env.cloudbreak_ENV || 'dev'}`,
 });
 
 const app = new cdk.App();
@@ -82,7 +82,7 @@ new ApiHttpStack(app, 'hapi-stack', {
 });
 
 /**
- * WebSite: https://admin.tifo-sport.com
+ * WebSite: https://admin.cloudbreak-telehealth.com
  */
 new WebSiteStack(app, 'admin-website-stack', {
   bucketName: process.env.ADMIN_BUCKET_NAME || '',
@@ -94,7 +94,7 @@ new WebSiteStack(app, 'admin-website-stack', {
 });
 
 /**
- * WebSite: https://mobile.tifo-sport.com
+ * WebSite: https://mobile.cloudbreak-telehealth.com
  */
 new WebSiteStack(app, 'mobile-website-stack', {
   bucketName: process.env.MOBILE_BUCKET_NAME || '',
@@ -107,7 +107,7 @@ new WebSiteStack(app, 'mobile-website-stack', {
 });
 
 /**
- * Storage: https://images.tifo-sport.com
+ * Storage: https://images.cloudbreak-telehealth.com
  */
 new StorageStack(app, 'images-storage-stack', {
   bucketName: process.env.IMAGES_BUCKET_NAME || '',

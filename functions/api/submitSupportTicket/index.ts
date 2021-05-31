@@ -13,7 +13,7 @@ const sendEmail = async (email: string, fullName: string, type: string, message:
   ${message}<br />`;
 
   const params: AWS.SES.SendEmailRequest = {
-    Destination: { ToAddresses: ['tifo@tifo-sport.com'] },
+    Destination: { ToAddresses: ['cloudbreak@cloudbreak-telehealth.com'] },
     Message: {
       Body: {
         Html: {

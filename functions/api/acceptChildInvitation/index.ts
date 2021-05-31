@@ -15,7 +15,7 @@ const putEvents = (type: string, detail: any) => {
   const params = {
     Entries: [
       {
-        Source: 'tifo.api',
+        Source: 'cloudbreak.api',
         EventBusName: 'default',
         Time: new Date(),
         DetailType: type,

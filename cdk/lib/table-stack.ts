@@ -111,8 +111,8 @@ export class TableStack extends cdk.Stack {
       'dynamodb:DeleteItem',
     );
     dbPolicy.addResources(
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak/index/*',
     );
 
     lambdaFunction.addToRolePolicy(dbPolicy);

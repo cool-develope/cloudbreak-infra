@@ -1,4 +1,4 @@
-# Cloud Infrastructure of TIFO
+# Cloud Infrastructure of cloudbreak
 
 ## AWS Services
 
@@ -41,39 +41,39 @@ From `cdk` folder
 
 ```shell
 npm run build && cdk synth
-cdk bootstrap --profile tifo-dev
+cdk bootstrap --profile cloudbreak-dev
 ```
 
 ## Deployment
 
 ```shell
-cdk deploy acm-us-stack --profile tifo-dev
-cdk deploy acm-eu-stack --profile tifo-dev
-cdk deploy layers-stack --profile tifo-dev
-cdk deploy es-stack --profile tifo-dev
-cdk deploy table-stack --profile tifo-dev
-cdk deploy admin-website-stack --profile tifo-dev
-cdk deploy mobile-website-stack --profile tifo-dev
-cdk deploy images-storage-stack --profile tifo-dev
-cdk deploy private-storage-stack --profile tifo-dev
-cdk deploy cognito-stack --profile tifo-dev
-cdk deploy events-stack --profile tifo-dev
-cdk deploy hapi-stack --profile tifo-dev
-cdk deploy api-stack --profile tifo-dev
-cdk deploy api2-stack --profile tifo-dev
-cdk deploy api-domain-stack --profile tifo-dev
+cdk deploy acm-us-stack --profile cloudbreak-dev
+cdk deploy acm-eu-stack --profile cloudbreak-dev
+cdk deploy layers-stack --profile cloudbreak-dev
+cdk deploy es-stack --profile cloudbreak-dev
+cdk deploy table-stack --profile cloudbreak-dev
+cdk deploy admin-website-stack --profile cloudbreak-dev
+cdk deploy mobile-website-stack --profile cloudbreak-dev
+cdk deploy images-storage-stack --profile cloudbreak-dev
+cdk deploy private-storage-stack --profile cloudbreak-dev
+cdk deploy cognito-stack --profile cloudbreak-dev
+cdk deploy events-stack --profile cloudbreak-dev
+cdk deploy hapi-stack --profile cloudbreak-dev
+cdk deploy api-stack --profile cloudbreak-dev
+cdk deploy api2-stack --profile cloudbreak-dev
+cdk deploy api-domain-stack --profile cloudbreak-dev
 ```
 
 ## Manual installation
 
 - Route53
-  - tifo-sport.com
+  - cloudbreak-telehealth.com
 - SES
-  - no-reply@tifo-sport.com (eu-central-1)
+  - no-reply@cloudbreak-telehealth.com (eu-central-1)
 - ACM
   - Click "Add to Route53"
 - SNS
-  - SenderID: Tifo
+  - SenderID: cloudbreak
   - Budget
 - ES
   - Access Policy + Mapping
@@ -85,18 +85,18 @@ cdk deploy api-domain-stack --profile tifo-dev
   ```shell
   aws cognito-idp list-user-pools\
     --max-results 20\
-    --profile tifo-dev
+    --profile cloudbreak-dev
 
   aws cognito-idp list-user-pool-clients\
     --user-pool-id XXX-XXX \
     --max-results 20\
-    --profile tifo-dev
+    --profile cloudbreak-dev
 
   # LIST
-  aws cognito-idp list-users --user-pool-id XXX-XXX --max-items 300 --profile tifo-dev
+  aws cognito-idp list-users --user-pool-id XXX-XXX --max-items 300 --profile cloudbreak-dev
 
   # DELETE
-  aws cognito-idp admin-delete-user --user-pool-id XXX-XXX --profile tifo-dev --username ХХХ-ХХХХ;
+  aws cognito-idp admin-delete-user --user-pool-id XXX-XXX --profile cloudbreak-dev --username ХХХ-ХХХХ;
   ```
 
 - ACM
@@ -104,12 +104,12 @@ cdk deploy api-domain-stack --profile tifo-dev
   aws acm list-certificates\
     --max-items 20\
     --region us-east-1\
-    --profile tifo-dev
+    --profile cloudbreak-dev
   ```
 
 ## Events
 
-tifo.api
+cloudbreak.api
 
 - SendTeamInvitation (sub, teamId, clubId, teamName, role)
 - DeclineTeamInvitation (sub, teamId, clubId, teamName, role)
@@ -125,7 +125,7 @@ tifo.api
 - ChildSendMoneyRequest (childFirstName, childLastName, recipientFirstName, recipientLastName, amount, note)
 - ChildAcceptedPaidEvent (childFirstName, childLastName, eventName, price)
 
-tifo.treezor
+cloudbreak.treezor
 
 - KycReview (sub, status)
 

@@ -6,7 +6,7 @@ export enum CognitoGroup {
   ClubCoaches = 'club-coaches',
   ClubOwners = 'club-owners',
   FederationOwners = 'federation-owners',
-  TifoManager = 'tifo-manager',
+  cloudbreakManager = 'cloudbreak-manager',
 }
 
 interface ListGroupsForUser {
@@ -42,7 +42,7 @@ const canLoginToWeb = async (userPoolId: string, sub: string) => {
     groups.includes(CognitoGroup.ClubCoaches) ||
     groups.includes(CognitoGroup.ClubOwners) ||
     groups.includes(CognitoGroup.FederationOwners) ||
-    groups.includes(CognitoGroup.TifoManager);
+    groups.includes(CognitoGroup.cloudbreakManager);
   // console.log('canLoginToWeb', groups, allowed);
 
   return allowed;
@@ -50,7 +50,7 @@ const canLoginToWeb = async (userPoolId: string, sub: string) => {
 
 const canLoginToManage = async (userPoolId: string, sub: string) => {
   const groups = await getGroups(userPoolId, sub);
-  const allowed = groups.includes(CognitoGroup.TifoManager);
+  const allowed = groups.includes(CognitoGroup.cloudbreakManager);
   // console.log('canLoginToManage', groups, allowed);
   return allowed;
 };

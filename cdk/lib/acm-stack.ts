@@ -14,7 +14,7 @@ export class AcmStack extends cdk.Stack {
 
     const { domainName, prefix } = props;
 
-    this.certificate = new Certificate(this, `certificate-tifo-sport${prefix}`, {
+    this.certificate = new Certificate(this, `certificate-cloudbreak-telehealth${prefix}`, {
       domainName,
       subjectAlternativeNames: [`*.${domainName}`],
       validationMethod: ValidationMethod.DNS,

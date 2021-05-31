@@ -5,10 +5,10 @@
     "inviteParentLine1": "Êtes-vous le parent de cet enfant ?",
     "inviteParentLine2": "",
     "inviteParentSubject": "{{fullName}} vous invite en tant que parent ",
-    "signinButton": "Connectez-vous à Tifo ",
-    "signinLine1": "Cliquez sur le lien ci-dessous pour vous connecter à votre compte Tifo ",
+    "signinButton": "Connectez-vous à cloudbreak ",
+    "signinLine1": "Cliquez sur le lien ci-dessous pour vous connecter à votre compte cloudbreak ",
     "signinLine2": "Ce lien expirera dans 3 minutes et ne peut-être utilisé qu’une seule fois.",
-    "signinSubject": "Connexion à Tifo "
+    "signinSubject": "Connexion à cloudbreak "
   },
   "notification": {
     "acceptedTeamInvitation": "Votre demande de connexion au \"{{teamName}}\" a été approuvé ",

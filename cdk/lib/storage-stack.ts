@@ -123,7 +123,7 @@ export class StorageStack extends cdk.Stack {
   }
 
   createDomainRecord(zoneId: string, zoneName: string, domain: string, distribution: Distribution) {
-    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-tifo-sport', {
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-cloudbreak-telehealth', {
       hostedZoneId: zoneId,
       zoneName,
     });

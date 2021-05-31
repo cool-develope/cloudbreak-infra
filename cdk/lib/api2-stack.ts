@@ -645,7 +645,7 @@ export class Api2Stack extends cdk.Stack {
       'submitSupportTicket',
       {
         MAIN_TABLE_NAME: this.mainTable.tableName,
-        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
+        SES_FROM_ADDRESS: 'cloudbreak <no-reply@cloudbreak-telehealth.com>',
         SES_REGION: 'eu-west-1',
       },
     );
@@ -777,8 +777,8 @@ export class Api2Stack extends cdk.Stack {
       'dynamodb:DeleteItem',
     );
     dbPolicy.addResources(
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak/index/*',
     );
 
     lambdaFunction.addToRolePolicy(dbPolicy);

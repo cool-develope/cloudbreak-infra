@@ -45,7 +45,7 @@ export class ApiStack extends cdk.Stack {
      * AppSync API
      */
     this.api = new appsync.GraphqlApi(this, 'api-appsync', {
-      name: `tifo-api`,
+      name: `cloudbreak-api`,
       logConfig: {
         fieldLogLevel: appsync.FieldLogLevel.ALL,
       },
@@ -709,8 +709,8 @@ export class ApiStack extends cdk.Stack {
       'dynamodb:DeleteItem',
     );
     dbPolicy.addResources(
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo',
-      'arn:aws:dynamodb:eu-central-1:596882852595:table/Tifo/index/*',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak',
+      'arn:aws:dynamodb:eu-central-1:596882852595:table/cloudbreak/index/*',
     );
 
     lambdaFunction.addToRolePolicy(dbPolicy);

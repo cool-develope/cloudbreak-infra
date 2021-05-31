@@ -117,7 +117,7 @@ export class WebSiteStack extends cdk.Stack {
     domain: string,
     distribution: CloudFrontWebDistribution,
   ) {
-    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-tifo-sport', {
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'zone-cloudbreak-telehealth', {
       hostedZoneId: zoneId,
       zoneName,
     });

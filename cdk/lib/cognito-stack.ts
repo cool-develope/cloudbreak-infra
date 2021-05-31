@@ -66,8 +66,8 @@ export class CognitoStack extends cdk.Stack {
       userPoolId: this.userPool.userPoolId,
     });
 
-    new cognito.CfnUserPoolGroup(this, 'tifo-manager-group', {
-      groupName: 'tifo-manager',
+    new cognito.CfnUserPoolGroup(this, 'cloudbreak-manager-group', {
+      groupName: 'cloudbreak-manager',
       userPoolId: this.userPool.userPoolId,
     });
 
@@ -170,7 +170,7 @@ export class CognitoStack extends cdk.Stack {
       'cognito-createAuthChallenge',
       'createAuthChallenge',
       {
-        SES_FROM_ADDRESS: 'Tifo <no-reply@tifo-sport.com>',
+        SES_FROM_ADDRESS: 'cloudbreak <no-reply@cloudbreak-telehealth.com>',
         SES_REGION: 'eu-west-1',
         IMAGES_DOMAIN: imagesDomain,
         SIGNIN_WEB_URL: signinWebUrl,
@@ -259,7 +259,7 @@ export class CognitoStack extends cdk.Stack {
     cfnUserPool.emailConfiguration = {
       emailSendingAccount: 'DEVELOPER',
       sourceArn: sesArn,
-      from: 'Tifo <no-reply@tifo-sport.com>',
+      from: 'cloudbreak <no-reply@cloudbreak-telehealth.com>',
     };
   }
 

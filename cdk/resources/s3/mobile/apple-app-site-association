@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "VPHLN74RBS.com.mobile.tifo",
+        "appID": "VPHLN74RBS.com.mobile.cloudbreak",
         "paths": ["/signin", "/invitation_child"]
       }
     ]

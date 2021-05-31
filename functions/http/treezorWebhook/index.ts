@@ -26,8 +26,8 @@ const KYC_REVIEW_NAMES = new Map<string, string>([
 ]);
 
 enum EventSource {
-  TifoTreezor = 'tifo.treezor',
-  TifoApi = 'tifo.api',
+  cloudbreakTreezor = 'cloudbreak.treezor',
+  cloudbreakApi = 'cloudbreak.api',
 }
 
 const {
@@ -40,7 +40,7 @@ const {
   TREEZOR_BASE_URL,
   TREEZOR_CLIENT_ID = '',
   TREEZOR_CLIENT_SECRET = '',
-  TREEZOR_TIFO_WALLET_ID = '',
+  TREEZOR_cloudbreak_WALLET_ID = '',
 } = process.env;
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -225,7 +225,7 @@ const createWallet = async (treezorUserId: string) => {
     throw Error(`Can't find user: ${treezorUserId}`);
   }
 
-  const tifoUserId: string = user.pk.replace('user#', '');
+  const cloudbreakUserId: string = user.pk.replace('user#', '');
   const fullName = `${user.firstName} ${user.lastName}`;
 
   /**
@@ -250,7 +250,7 @@ const createWallet = async (treezorUserId: string) => {
    */
   await updateUserAttributes({
     userPoolId: COGNITO_USERPOOL_ID,
-    sub: tifoUserId,
+    sub: cloudbreakUserId,
     trzWalletsId: String(treezorWalletId),
   });
 
@@ -261,17 +261,17 @@ const createWallet = async (treezorUserId: string) => {
 
   console.log('WALLET CREATED', {
     treezorUserId,
-    tifoUserId,
+    cloudbreakUserId,
     treezorWalletId,
   });
 
-  const parentTifoUserId = user.parentUserId;
-  if (parentTifoUserId) {
-    const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, parentTifoUserId);
+  const parentcloudbreakUserId = user.parentUserId;
+  if (parentcloudbreakUserId) {
+    const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, parentcloudbreakUserId);
     await cognitoHelper.addChildrenData(Number(treezorUserId), [], [Number(treezorWalletId)]);
     console.log('ADDED CHILD TO TOKEN', {
-      parentTifoUserId,
-      tifoUserId,
+      parentcloudbreakUserId,
+      cloudbreakUserId,
       treezorUserId,
       treezorWalletId,
     });
@@ -287,7 +287,7 @@ const updateKycReview = async ({
 }) => {
   const kycReviewName = KYC_REVIEW_NAMES.get(kycReview);
   const user = await getUserByTreezorUserId(treezorUserId);
-  const tifoUserId = user.pk.replace('user#', '');
+  const cloudbreakUserId = user.pk.replace('user#', '');
 
   await updateItem(user.pk, 'metadata', {
     kycReview: kycReviewName,
@@ -295,8 +295,8 @@ const updateKycReview = async ({
   });
 
   if (kycReview === KycReview.VALIDATED || kycReview === KycReview.REFUSED) {
-    await putEvents(EventSource.TifoTreezor, 'KycReview', {
-      sub: tifoUserId,
+    await putEvents(EventSource.cloudbreakTreezor, 'KycReview', {
+      sub: cloudbreakUserId,
       status: kycReviewName,
     });
   }
@@ -351,7 +351,7 @@ const takeFee = async (walletId: string, amount: string, item: string, transferI
 
     const transferData: TransferBody = {
       walletId: Number(walletId),
-      beneficiaryWalletId: Number(TREEZOR_TIFO_WALLET_ID),
+      beneficiaryWalletId: Number(TREEZOR_cloudbreak_WALLET_ID),
       transferTag: `fee:${transferId}`,
       label: 'Fee',
       amount: feeAmount,
@@ -408,7 +408,7 @@ const processTransferUpdate = async (transfer: Transfer) => {
       });
       await dynamoHelper.incrementField(pk, 'metadata', 'acceptedCount');
 
-      await putEvents(EventSource.TifoApi, 'AcceptedPaidEvent', {
+      await putEvents(EventSource.cloudbreakApi, 'AcceptedPaidEvent', {
         sub: userId,
         eventId,
         amount,
@@ -427,7 +427,7 @@ const processTransferUpdate = async (transfer: Transfer) => {
         createdAt: new Date().toISOString(),
       });
 
-      await putEvents(EventSource.TifoApi, 'PaidQrPayment', {
+      await putEvents(EventSource.cloudbreakApi, 'PaidQrPayment', {
         sub: userId,
         qrPaymentId,
         amount,
@@ -452,8 +452,8 @@ const processCreateVirtualCard = async (card: Card) => {
     throw Error(`processCreateVirtualCard, user not found by userId: ${userId}`);
   }
 
-  const tifoUserId = user.pk.replace('user#', '');
-  const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, tifoUserId);
+  const cloudbreakUserId = user.pk.replace('user#', '');
+  const cognitoHelper = new CognitoHelper(cognito, COGNITO_USERPOOL_ID, cloudbreakUserId);
   await cognitoHelper.addCard(cardId);
 
   const { parentUserId } = user;
@@ -462,14 +462,14 @@ const processCreateVirtualCard = async (card: Card) => {
     await parentCognito.addChildrenData(Number(userId), [Number(cardId)], []);
     console.log('Add child card to parent', {
       childId: parentUserId,
-      parentId: tifoUserId,
+      parentId: cloudbreakUserId,
       userId,
       cardId,
     });
   }
 
   console.log('card_createvirtual', {
-    tifoUserId,
+    cloudbreakUserId,
     userId,
     walletId,
     cardId,
@@ -500,7 +500,7 @@ const processWebhook = async (h: Webhook) => {
       await processCreateVirtualCard(card);
       break;
     default:
-      await putEvents(EventSource.TifoTreezor, h.webhook, h.object_payload);
+      await putEvents(EventSource.cloudbreakTreezor, h.webhook, h.object_payload);
       break;
   }
 };
